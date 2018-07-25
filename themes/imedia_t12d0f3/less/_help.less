@@ -1,0 +1,40 @@
+.hl-list {
+
+}
+.hl-list-category {
+	margin-bottom: 30px;
+}
+.hl-list-title {
+	font-size: 18px;
+}
+.hl-list-items {
+	.clear-ul();
+	> li {
+		+ li {
+			margin-top: 10px;
+		}
+	}
+}
+.hl-list-textshort {
+	padding-top: 10px;
+	padding-bottom: 15px;
+}
+.hl-list-search {
+	.clear-ul();
+	> li {
+		position: relative;
+		padding-left: 30px;
+		+ li {
+			margin-top: 10px;
+		}
+		em {
+			background-color: #f8e26d;
+			font-style: normal;
+		}
+	}
+}
+.hl-list-search-num {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
