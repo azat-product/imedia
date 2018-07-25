@@ -1,0 +1,165 @@
+.publicator .canvas { font-size: 12px; background-color: #fff; padding: 10px 0;}
+.publicator tr.drag, .publicator tr.drag textarea { border-color: #EBF6FF; background-color: #EBF6FF; }
+.publicator tr:hover .mask-top, .publicator tr:hover .mask-bottom, .publicator tr:hover td.action div, .publicator tr:hover .dragger div { display: block; }
+.publicator tr.dragged .mask-top, .publicator tr.dragged .mask-bottom, .publicator tr.dragged td.action div, .publicator tr.dragged .dragger div { display: none !important; }
+
+.publicator textarea { position: relative; height: 20px; line-height: 20px; border: 1px solid transparent; background-color: transparent; overflow: hidden; -moz-box-sizing:content-box; }
+.publicator textarea.active { border-color: #DDD9D8 !important; background-color: #fff !important; }
+.publicator textarea:hover, .publicator textarea.hover { border-color: #DDD9D8; background-color:#f6f6f6;}
+.publicator textarea.video-url { width: 85%; float: left; }        
+.publicator textarea.photo {max-width: 580px; }
+
+.publicator .tip { position: absolute; height: 20px; top: 18px; left: 8px; color: #999898; cursor: text;  }
+
+.publicator .publicatorTitle .tip { position: relative; top:-23px; padding: 0 8px; left:auto; }
+.publicator .publicatorTitle textarea {font-weight: bold; text-transform: uppercase;}
+
+.publicator .subtitle .tip {font-size: 12px; font-weight: bold; text-transform: uppercase; top:19px}
+.publicator .subtitle textarea { float: left; width: 580px; font-size:12px; font-weight: bold; text-transform: uppercase;}
+.publicator .subtitle .size { float: right; }
+.publicator .subtitle .size select { width: 55px; margin-top: 2px; }
+
+.publicator .mask { position: relative; padding: 12px 2px 12px 0; }
+.publicator .mask-top { position: absolute; left: 0; top: 0; height: 10px; width: 100%; display: none; }
+.publicator .mask-top .insert { position: relative; width: 70px; height: 20px; margin: 0 auto; display: none; text-align: center; margin-top: -10px; cursor: pointer; }
+.publicator .mask-top:hover .insert { display: block; }
+.publicator .mask-bottom { position: absolute; left: 0; bottom: 0; height: 4px; width: 100%; display: none; }
+
+.publicator .mask td {vertical-align: top;}
+
+.publicator td.action { width: 30px; }
+.publicator td.action div {background-image: url('img/actions.gif'); background-repeat: no-repeat; cursor: pointer; display: none; margin: 0 auto;}
+
+.publicator td.action div.close {background-position: 0 -60px; width: 18px; height:18px;}
+.publicator td.action div.close:hover {background-position: 0 -78px;}
+.publicator td.action div.edit {background-position: 0 -20px; width: 20px; height:20px; margin-bottom: 8px;}
+.publicator td.action div.edit:hover {background-position: 0 -40px;}
+.publicator td.action div.view {background-position: 0 0; width: 20px; height:10px; margin-bottom: 8px;}
+.publicator td.action div.view:hover {background-position: 0 -10px;}
+
+.publicator .dragger { width: 30px; }
+.publicator .dragger div {cursor: pointer; display: none; margin: 0 auto;}
+
+.publicator .photo-progress { position: relative; min-width: 168px; min-height: 80px; }
+.publicator .progress-title { #position: relative; width: 168px; height: 160px; display: table; border: 1px solid #ECECEC; color: #969798; #z-index: 100; }
+.publicator .progress-cell { #position: absolute; #top: 50%; display: table-cell; text-align: center; padding-top: 15px;}
+.publicator .progress-cell div { position: relative; #top: -50%; #width:154px; z-index: 100; }
+.publicator .progress-bg { position: absolute; top: 1px; left: 1px; width: 168px; height: 160px; background: url('img/noPhoto.gif') 0 0 no-repeat; z-index: 25; }
+.publicator .photo-error { color: #D8062D; } 
+.publicator .photo-text { position: relative; padding-left: 10px; width:100%; min-height: 20px; }
+.publicator .photo-text .tip { left: 16px; top: 4px; }
+.publicator .photo-align { padding-left: 17px; padding-top:10px; opacity: 0.75; float: left; }
+.publicator .photo-align label { margin-right: 10px; }
+.publicator .photo-zoom { padding-left: 17px; padding-top:10px; opacity: 0.75; float: left; }
+
+.publicator .video-submit {margin-left: 10px; float:left; }
+
+.publicator .gallery-item {display: block; float: left; width: 72px; height: 72px; margin: 5px 3px; border: 1px solid #AFAFAF; text-align: center;}
+.publicator .gallery-item img {width: 72px; height: 72px;}  
+.publicator .gallery-item .swfupload {position: absolute; top:0; left:0;}
+.publicator .gallery-upload {position: absolute; outline: medium none;}
+.publicator .gallery-edit {float: left; padding-top: 6px; margin-left: 10px; width: 85%; min-height: 50px; position: relative;}
+.publicator .gallery-edit .tip {top: 11px; }   
+.publicator .gallery-plus {font-size: 30px; }
+
+.publicator .controls .swfupload { position: absolute; top:0; left:0; height: 32px; width: 32px;}
+
+.publicator .control-text, 
+.publicator .control-textmd,
+.publicator .control-photo,
+.publicator .control-gallery, 
+.publicator .control-video, 
+.publicator .control-subtitle,
+.control-quote
+{ background-image:url(img/icons_publisher.png?2); background-repeat:no-repeat; }
+
+/*==== Публикатор ====*/    
+.control-text, .control-textmd, .control-photo,  .control-gallery, .control-video, .control-subtitle, .control-quote, .publicator .controls .swfupload {display:block; width:32px; height:32px; margin-bottom:4px; margin-left: 9px;}
+.control-text {background-position:-4px -4px;}
+.control-text:hover {background-position:-4px -39px;}
+.control-textmd {background-position:-4px -4px;}
+.control-textmd:hover {background-position:-4px -39px;}
+.control-photo {background-position:-74px -4px;}
+.control-photo:hover {background-position:-74px -39px;}
+.control-gallery {background-position:-109px -4px;}
+.control-gallery:hover {background-position:-109px -39px;}
+.control-video {background-position:-146px -4px;}
+.control-video:hover {background-position:-146px -39px;}
+.control-subtitle {background-position:-180px -4px;}
+.control-subtitle:hover {background-position:-180px -39px;}
+.control-quote {background-position:-39px -4px;}
+.control-quote:hover {background-position:-39px -39px;}
+
+.publicator .controls .swfupload:hover {background-position:-74px -39px;}
+
+.publicator div.adragger {width:14px; height:32px;}
+.publicator td.action {width:24px;}
+
+.publicator .adragger, 
+.publicator a.close
+{ background-image:url(img/wIcons.gif); background-repeat:no-repeat; }
+
+.publicator .adragger {display:block; width:15px; height:32px; background-position:-1px -190px;}
+.publicator .adragger:hover {background-position:-1px -156px;}
+.publicator a.close {display:block; width:16px; height:16px; background-position:-83px -160px;}
+.publicator a.close:hover {background-position:-83px -142px;}
+
+.publicator {font:12px Arial, Verdana, Sans-serif, Helvetica;}
+.publicator .mask .mask-top, .publicator .mask .mask-bottom, .publicator .mask td.action a.close, .publicator .mask .dragger a.dragger {display:none;}
+.publicator .mask:hover .mask-top, .publicator .mask:hover .mask-bottom, .publicator .mask:hover td.action a.close, .publicator .mask:hover .dragger a.dragger {display:block;}
+.publicator textarea {margin:0; padding:2px 0 0 2px; font:12px Arial, Verdana, Sans-serif, Helvetica; line-height:16px; background:none; overflow:hidden; resize:none;}
+.publicator textarea.markdown {box-shadow: none; border-radius:0; resize: vertical;}
+.publicator .text-to-wy {padding:2px 0 0 8px; max-width: 755px; word-wrap: break-word; }
+.publicator .text-to-wy .code {white-space: pre-wrap;}
+.publicator div.quote {font-weight: bold;}
+.publicator div.quote:before {content: "«"; margin-left: -6px;}
+.publicator div.quote:after {content: "»";}
+.publicator .tip label {display:block; position:absolute; color:#afafaf; cursor:text;}
+
+.publicator .mask {position:relative; padding:12px 0; min-height: 22px;}
+.publicator .mask-top {display:none; position:absolute; left:0; top:0; height:12px; width:100%; background:url(img/border.gif) 0 0 repeat-x;}
+.publicator .mask-top .insert {display:none; position:relative; width:68px; height:20px; margin:0 auto; background:url(img/insert.png) 0 0 no-repeat; margin-top:-8px; cursor:pointer;}
+.publicator .mask-top:hover .insert {display:block;}
+.publicator .mask-bottom {display:none; position:absolute; left:0; bottom:-8px; height:4px; width:100%; background:url(img/border.gif) 0 0 repeat-x;}
+.publicator tr:last-of-type .mask-bottom {background:none;}
+
+.publicatorTitle {position:relative; height:22px; margin:10px 40px;}
+.publicatorTitle:hover {height:22px; cursor:text;}
+.publicatorTitle label {top:3px; width:100%; font-size:14px; font-weight: bold; text-transform: uppercase;}
+.publicatorTitle label span {position:absolute; top:2px; right:16px; font-size:11px; font-weight: normal; text-transform: none;}
+.publicatorTitle textarea {height:20px; margin:0; font-size:14px;}
+
+.publicatorText label, .publicatorPhoto label {top:22px; padding-left:10px;}
+.publicatorText textarea {width:96%; margin:4px 0 0 0; padding:4px 8px; border:1px solid transparent; background:transparent;}
+.publicatorText textarea:hover {border:1px solid #e6e7e7; background-color:#f6f6f6;}
+
+.publicatorPhoto textarea {width:94%; margin:4px 0 0 0; padding:4px 8px; border:1px solid transparent; background:transparent;}
+.publicatorPhoto textarea:hover {border:1px solid #e6e7e7; background-color:#f6f6f6;}
+.publicatorPhoto .cover {float:left; width:100%; margin-right:-184px;}
+.publicatorPhoto .description {margin-right:184px;}
+.publicatorPhoto .pic {float:left; width:184px; margin:4px 0 0 0;}
+.publicatorPhoto .photoTitle {display:block; position:absolute; top:32px; width:168px; text-align:center; line-height:16px; color:#969798;}
+
+.publicatorVideo textarea {width:94%; margin:6px 0 6px 0; padding:3px 8px; border:1px solid #e6e7e7; background-color:#f6f6f6;}
+.publicatorVideo textarea:hover {border:1px solid #d6d6d6; background-color:#fff;}
+.publicatorVideo .button {margin:6px 0;}
+
+.publicator .controlsBorder {position:relative; height:4px; background:url(img/border.gif) 0 0 repeat-x;}
+.publicator .controls {position:relative; width:236px; height:68px; margin:0 auto; text-align:center; font-size: 11px;}
+.publicator .controls .center {float: left; background:url(img/pabControlsBg.png) 0 0 repeat-x; width: 200px; height: 68px; padding:12px 0 0 8px;}
+.publicator .controls .leftCorner {float: left; background:url(img/pabControlsLeft.png) 0 bottom no-repeat; width: 8px; height:68px;}
+.publicator .controls .rightCorner {float: left; background:url(img/pabControlsRight.png) 0 bottom no-repeat; width: 8px; height:68px;}
+.publicator .controls a.text { background: none; padding: 0;}
+
+.publicator .controls a {display:block; float:left; width:52px; margin:0 0 0 0; color:#4a4d4f; text-decoration:none;}
+.publicator .controls a:hover {color:#4a4d4f; text-decoration:none;}
+.publicator .langs {position: absolute; right: 0; top: 4px; width: 100px; height: 30px; margin: 0 auto; text-align: right;}
+.publicator .langs a { padding: 2px 5px 5px 5px; background-position: center; }
+.publicator .langs a.active { background-color: #d6d6d6; border: none; border-radius:0 0 2px 2px; }
+
+.publicator .save {margin:40px 0 0 0;}
+.publicator .active, .publicator textarea.active {border:1px solid #d6d6d6; background-color:#fff; /*color:#4a4d4f;*/}
+
+.publicator ul {list-style: disc; }
+
+.publicator-title h1 {padding-left: 0; margin-bottom: 18px;}

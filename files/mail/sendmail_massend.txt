@@ -1,0 +1,1 @@
+{"subject":{"ru":"","uk":"","en":""},"body":{"ru":"{msg}","uk":"{msg}","en":"{msg}"},"is_html":0,"wrapper_id":0}

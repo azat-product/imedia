@@ -1,0 +1,481 @@
+.usr-signBlock {
+	display: table;
+	width: 100%;
+	border: 1px solid @border-color;
+	padding: 15px;
+	margin-top: 15px;
+	@media (max-width: 767px) {
+		display: block;
+	}
+}
+.usr-signBlock-l {
+	display: table-cell;
+	vertical-align: middle;
+	@media (max-width: 767px) {
+		display: block;
+		text-align: center;
+	}
+}
+.usr-signBlock-r {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: right;
+	@media (max-width: 767px) {
+		display: block;
+		text-align: left;
+		margin-top: 10px;
+		text-align: center;
+	}
+}
+.usr-content {
+	margin-top: 15px;
+}
+.usr-content-top {
+	margin-bottom: 15px;
+}
+.usr-content-top-search {
+	width: 300px;
+	float: right;
+	margin: 5px 0;
+	@media (max-width: 991px) {
+		width: 180px;
+	}
+	@media (max-width: 767px) {
+		float: none;
+		margin: 0 0 10px 0;
+		width: auto;
+	}
+}
+.usr-content-top-right {
+	float: right;
+	@media (max-width: 767px) {
+		float: none;
+		margin-bottom: 10px;
+		.btn {
+			display: block;
+			width: 100%;
+		}
+	}
+}
+
+.usr-ads-actions {
+	padding: 10px;
+	margin-bottom: 15px;
+	background-color: @grey-bg;
+}
+.usr-ads-actions-count {
+	display: inline-block;
+	@media (max-width: 767px) {
+		display: block;
+	}
+}
+.usr-ads-actions-list {
+	.clear-ul();
+	display: inline-block;
+	margin-left: 10px;
+	> li {
+		display: inline-block;
+		margin-right: 8px;
+	}
+	@media (max-width: 767px) {
+		display: block;
+		margin: 0;
+		> li {
+			display: block;
+			margin-right: 0;
+			margin-top: 8px;
+		}
+	}
+}
+
+/* Pagination */
+.usr-pagination {
+	&:after {
+		.clear();
+	}
+}
+.usr-pagination-dropdown {
+	margin: 15px 0;
+	float: right;
+	@media (max-width: 767px) {
+		float: none;
+		.btn {
+			display: block;
+			width: 100%;
+		}
+	}
+}
+
+/* Internal Mail */
+.usr-dialogs {
+	border-top: 1px solid @border-color;
+}
+.usr-dialogs-item {
+	display: table;
+	width: 100%;
+	padding: 10px;
+	border-bottom: 1px dotted @border-color;
+	cursor: pointer;
+	&:hover, &.active {
+		background-color: @grey-bg;
+	}
+}
+.usr-dialogs-item-avatar {
+	display: table-cell;
+	vertical-align: top;
+	width: 65px;
+	padding-right: 15px;
+	@media (max-width: 767px) {
+		display: none;
+	}
+}
+.usr-dialogs-item-content {
+	display: table-cell;
+	vertical-align: top;
+}
+.usr-dialogs-item-content-top {
+	display: table;
+	width: 100%;
+}
+.usr-dialogs-item-title {
+	display: table-cell;
+	vertical-align: middle;
+	font-weight: bold;
+}
+.usr-dialogs-item-actions {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: right;
+}
+.usr-dialogs-item-msg {
+	padding: 10px;
+	background-color: @grey-bg;
+	border: 1px solid @border-color;
+	margin-top: 5px;
+	.rounded(@border-radius);
+}
+.usr-dialogs-item-msg-title {
+	font-weight: bold;
+}
+.usr-dialogs-item-msg-date {
+	float: right;
+	font-size: 12px;
+	color: @text-muted;
+}
+
+.usr-chat-nav {
+	display: table;
+	width: 100%;
+	border: 1px solid @border-color;
+	padding: 10px 15px;
+	@media (max-width: 767px) {
+		display: block;
+		padding: 10px;
+	}
+}
+.usr-chat-nav-person {
+	display: table-cell;
+	width: 100%;
+	vertical-align: middle;
+	@media (max-width: 767px) {
+		display: block;
+		text-align: center;
+	}
+}
+.usr-chat-nav-r {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: right;
+	white-space: nowrap;
+	@media (max-width: 767px) {
+		display: block;
+		margin-top: 10px;
+		text-align: center;
+	}
+}
+.usr-chat-box {
+	border: 1px solid @border-color;
+	border-top: 0;
+}
+.usr-chat-box-content {
+	padding: 10px;
+	overflow-y: auto;
+}
+.usr-chat-box-form {
+	border-top: 1px solid @border-color;
+	padding: 15px;
+}
+.usr-chat-box-form-file {
+	float: right;
+	padding-top: 5px;
+}
+.usr-chat-box-item {
+	margin: 15px 0;
+	&:after {
+		.clear();
+	}
+	&_self {
+		float: right;
+		background-color: @msg-self;
+	}
+	&_others {
+		background-color: @msg-others;
+	}
+}
+.usr-chat-box-item-in {
+	.rounded(@border-radius);
+	padding: 15px;
+	width: 80%;
+}
+.usr-chat-box-item-content {
+  word-wrap: break-word;    
+}
+.usr-chat-box-item-file {
+	border: 1px dashed @border-color-darken;
+	padding: 10px;
+	margin-top: 10px;
+}
+.usr-chat-box-item-ad {
+	display: table;
+	width: 100%;
+	border: 1px dashed @border-color-darken;
+	padding: 10px;
+	margin-top: 10px;
+}
+.usr-chat-box-item-ad-img {
+	display: table-cell;
+	vertical-align: top;
+	width: 100px;
+	padding-right: 15px;
+}
+.usr-chat-box-item-ad-content {
+	display: table-cell;
+	vertical-align: top;
+}
+.usr-chat-box-item-ad-title {
+	font-weight: bold;
+}
+.usr-chat-box-date {
+	text-align: center;
+	color: @text-muted;
+}
+
+/* Bill */
+.usr-bill-top {
+	display: table;
+	width: 100%;
+	margin: 20px 0;
+	@media (max-width: 767px) {
+		display: block;
+	}
+}
+.usr-bill-top-heading {
+	display: table-cell;
+	vertical-align: middle;
+	@media (max-width: 767px) {
+		display: block;
+	}
+}
+.usr-bill-top-title {
+	margin: 0;
+	font-size: 18px;
+}
+.usr-bill-top-r {
+	display: table-cell;
+	text-align: right;
+	white-space: nowrap;
+	@media (max-width: 767px) {
+		margin-top: 10px;
+		display: block;
+		text-align: left;
+		white-space: normal;
+		span {
+			display: block;
+			margin-bottom: 10px;
+		}
+	}
+}
+.usr-bill-list {
+
+}
+.usr-bill-list-date {
+	font-weight: bold;
+	font-size: 13px;
+}
+.usr-bill-list-id {
+	text-align: center;
+	width: 140px;
+	@media (max-width: 767px) {
+		display: none;
+	}
+}
+.usr-bill-list-summ {
+	text-align: center;
+	width: 140px;
+}
+
+.usr-bill-pay {
+	margin-top: 30px;
+	text-align: center;
+}
+.usr-bill-pay-row {
+	margin-bottom: 30px;
+}
+.usr-bill-pay-title {
+	font-weight: bold;
+	margin-bottom: 15px;
+}
+.usr-bill-pay-input {
+	.form-control {
+		display: inline-block;
+		width: 100px;
+		text-align: center;
+	}
+	label {
+		position: absolute;
+		top: 3px;
+		left: 100%;
+		font-weight: normal;
+		margin-left: 8px;
+		color: @text-muted;
+	}
+}
+.usr-bill-pay-input-in {
+	position: relative;
+	display: inline-block;
+}
+
+/* Limits */
+.usr-limit {
+  display: table;
+  width: 100%;
+  border:1px solid @border-color;
+  background-color: white;
+  margin-bottom: 15px;
+  position: relative;
+  > div {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 15px;
+  }
+  @media (max-width: 767px) {
+    display: block;
+    > div {
+      display: block;
+    }
+  }
+}
+.usr-limit-services-count {
+  margin-top: 10px;
+}
+.usr-limit-stat {
+  border-left: 1px solid @border-color;
+  width: 25%;
+  @media (max-width: 767px) {
+    width: auto;
+    border-left: 0;
+    border-top: 1px solid @border-color;
+  }
+}
+
+/* Packages */
+.usr-package {
+	position: relative;
+	display: table;
+	width: 100%;
+	border: 2px solid @border-color;
+	cursor: pointer;
+	padding: 15px 15px 15px 50px;
+	margin-bottom: 15px;
+	&:hover {
+		border-color: @border-color-darken;
+	}
+	&.active {
+		border-color: @primary-base-color;
+		cursor: default;
+	}
+	@media (max-width: 767px) {
+		display: block;
+	}
+}
+.usr-package-text {
+	display: table-cell;
+  vertical-align: middle;
+  padding: 0 10px;
+  @media (max-width: 767px) {
+		display: block;
+		padding: 0;
+	}
+}
+.usr-package-text-title {
+	font-weight: bold;
+}
+.usr-packag-label {
+	position: absolute;
+	top: 50%;
+  left: 15px;
+  margin-top: -13px;
+  width: 26px;
+  height: 26px;
+  text-align: center;
+  line-height: 26px;
+}
+.usr-package-price {
+	display: table-cell;
+	vertical-align: middle;
+	width: 110px;
+	text-align: right;
+	@media (max-width: 767px) {
+		display: block;
+		width: auto;
+		text-align: left;
+		margin-top: 10px;
+	}
+}
+.usr-package-select {
+	display: table-cell;
+	vertical-align: middle;
+	width: 140px;
+	@media (max-width: 767px) {
+		display: block;
+		width: auto;
+		margin-top: 10px;
+	}
+}
+
+/* Settings */
+.usr-settings {
+
+}
+.usr-settings-box {
+	border: 1px solid @border-color;
+	margin-bottom: 5px;
+}
+.usr-settings-box-title {
+	> a {
+		text-decoration: none !important;
+		display: block;
+		padding: 10px 15px;
+		&.active {
+			background-color: @link-active-bg;
+		}
+	}
+}
+.usr-settings-box-title-icon {
+	position: relative;
+	top: 3px;
+	float: right;
+}
+.usr-settings-box-content {
+	border-top: 1px solid @border-color;
+	padding: 15px;
+}
+
+
+.usr-settings-photo {
+	width: 200px;
+	margin-bottom: 10px;
+}
+.usr-settings-photo-upload {
+	margin-bottom: 10px;
+}

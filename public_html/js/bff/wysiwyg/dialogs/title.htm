@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+	<title></title>
+	<script type="text/javascript">
+	<!--
+	function setTitle(el) {
+        var bffw = self.parent._bffwysiwyg[self.frameElement.getAttribute('rel')];
+		bffw.setTitle(el.id);
+	}
+	//-->
+	</script>
+    <style type="text/css"> 
+        * {padding:0; margin:0;}
+        html, body{ min-height:100% !important; height:100%; }    
+        body { background: #fff; margin: 0;  }
+        .titleSelect {
+            cursor: pointer; padding:1px 3px;
+            font-size: 13px;
+        } 
+        .titleSelect:hover {
+            background-color: #BBDAFD;
+        }
+        .titleRow {
+            font-family:arial,sans-serif;
+            -moz-user-select: none;
+        }
+    </style>    
+</head>
+<body>
+<div style="border: 1px solid #ccc;">
+    <div class="titleRow" id="1" onclick="setTitle(this);">
+        <div class="titleSelect">H1</div>
+    </div>
+    <div class="titleRow" id="2" onclick="setTitle(this);">
+        <div class="titleSelect">H2</div>
+    </div>
+    <div class="titleRow" id="3" onclick="setTitle(this);">
+        <div class="titleSelect">H3</div>
+    </div>
+    <div class="titleRow" id="4" onclick="setTitle(this);">
+        <div class="titleSelect">H4</div>
+    </div>
+    <div class="titleRow" id="5" onclick="setTitle(this);">
+        <div class="titleSelect">H5</div>
+    </div>
+    <div class="titleRow" id="0" onclick="setTitle(this);">
+        <div class="titleSelect">--</div>
+    </div>
+</div>
+</body>
+</html>

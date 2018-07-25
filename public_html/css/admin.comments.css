@@ -1,0 +1,64 @@
+/* Update Comments
+-------------------------------------------------------------------*/
+.update { background: none repeat scroll 0 0; width: 42px; float: right; position: fixed; top: 220px; right: 0; text-align: center; }
+.update .tl { background:url(../img/admin/comment-update-bg.gif) no-repeat scroll 0 0; font-size: 1px; height: 9px; }
+.update .bl { background:url(../img/admin/comment-update-bg.gif) no-repeat scroll 0 bottom; font-size: 1px; height: 9px; }
+.update .wrapper { border-left: 1px solid #dddede; background: #fafbfb; }
+.update .update-comments { cursor: pointer; vertical-align: top; }
+.update .refresh { background: #fafbfb; }
+.update .new-comments { border-top: 1px solid #ececed; color: #3cc600; padding-top: 7px; margin-top: 3px; cursor: pointer; background: #fafbfb; }
+
+
+/* Comments
+-------------------------------------------------------------------*/
+.comments { padding: 5px 2px; background-color: white; }
+.comments .comment { /*overflow: hidden; position: relative;*/ zoom: 1; }
+.comments .comment .comment { padding-left: 30px; }                                          
+
+/* Comment Types */
+.comments .comment .ccontent { background: #f7f7f7; } /* default background of comment */
+.comments .comment .ccontent.self { background: #fdf5e6 !important; }
+.comments .comment .ccontent.new { background: #e4fbf1 !important; }
+.comments .comment .ccontent.del { background: #ffdfe3 !important; }
+.comments .comment .ccontent.view { background: #cdf5a6 !important; }
+
+/* Single Comment */
+.comment .folding { width: 9px; height: 9px; float: left; position: relative; top: 17px; cursor: pointer; }
+.comment .folding-open { width: 9px; height: 9px; float: left; position: relative; top: 17px; cursor: pointer; }
+.comment .folding.off { display: none; }
+.comment .ccontent { margin-left: 15px; padding: 0; }
+.comment span.delete { color: #c5c5c5; font-size: 16px; }
+.comment input.check {  position: relative; top: 29px; right:3px; }
+
+/* Rounded Corners */
+.comment .ccontent .tb { height: 7px; overflow: hidden; background: url(../img/admin/comment-tb.gif) repeat-x; }
+.comment .ccontent .tl { height: 7px; background: url(../img/admin/comment-tl.gif) no-repeat left top; }
+.comment .ccontent .tr { height: 7px; background: url(../img/admin/comment-tr.gif) no-repeat right top; }
+.comment .ccontent .bb { height: 15px; background: url(../img/admin/comment-bb.gif) repeat-x; margin-left: 24px; }
+.comment .ccontent .bl { height: 15px; background: url(../img/admin/comment-bl.gif) no-repeat left bottom; }
+.comment .ccontent .br { height: 15px; background: url(../img/admin/comment-br.gif) no-repeat right bottom; }
+
+/* Text of Comment */
+.comment .ccontent .ctext { font-size:12px; line-height:18px; border-left: 1px solid #dddede; border-right:1px solid #dddede; overflow: hidden; zoom: 1; padding:5px 25px 5px 10px; }
+
+/* Info Block */
+.comment .info { font-size: 11px; line-height: 14px; margin: 0 0 15px 27px; overflow: hidden; zoom: 1; }
+.comment .info p { font-size: 10px; }
+.comment .info p a.author { font-size: 11px; font-weight: bold; color: #000; text-decoration: none; }
+.comment .info p a.author:hover { color: #555; }
+.comment .info p a.author.blocked { color:#D8062D; }
+.comment .info img.avatar { float: left; margin: 3px 7px 0 0; *margin: 2px 7px 0 0; }
+
+.comment .info ul li { float: left; font-size: 10px; margin-right: 10px; list-style: none; }
+.comment .info ul li.date { color: #999; font-size: 10px; padding-right: 5px; }
+.comment .info a.imglink { display: block; width: 9px; height: 11px; text-decoration: none; position: relative; top: 3px; }
+.comment .info ul li.goto-comment-parent a { text-decoration: none; border-bottom: 1px dotted #79B1D4; font-family: tahoma;}
+.comment .info ul li.goto-comment-child a { text-decoration: none; border-bottom: 1px dotted #79B1D4; font-family: tahoma;}  
+.comment .info a.off { color: #999; }
+.comment .info a.moderate { color: #47B915; }
+.comment .info a.delete { color: #D8062D; }
+
+.reply-title { margin-left: 10px; }
+.reply { padding: 0px 0px 10px 10px; }
+.reply textarea { width: 100%; height: 70px; }
+.reply textarea.loader { background: #F7F7F7 url(../img/admin/comment-loader.gif) no-repeat center;}

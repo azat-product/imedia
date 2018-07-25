@@ -1,0 +1,32 @@
+
+.im-conv-list .from  {
+    color:#A34747;
+}
+
+.im-conv-tri-from {
+    background: url('../img/admin/triangle_red.gif') 0 0 no-repeat;
+    width: 4px; height: 11px;
+}
+.im-conv-tri-to{
+    background: url('../img/admin/triangle_gray.gif');
+    width: 4px; height: 11px;
+}
+
+.im-folders-actions .f-action {
+    background: #cccccc;
+    text-align: center;
+    padding: 2px 5px 2px 4px;
+    border-radius: 5px;
+    font-size: 13px;
+    line-height: 18px;
+    opacity: 0.9;
+}
+.im-folders-actions .f-action-fav:hover, .im-folders-actions .f-action-fav.active {
+    background: #5ebb13;
+}
+.im-folders-actions .f-action-ignore:hover, .im-folders-actions .f-action-ignore.active {
+    background: #c91414;
+}
+.im-folders-actions .f-action-remove:hover {
+    background: #c91414;
+}

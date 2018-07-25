@@ -1,0 +1,1 @@
+{"subject":{"ru":"Интересный магазин!","uk":"Интересный магазин!","en":"Интересный магазин!"},"body":{"ru":"Вот ссылка:\r\n<a href=\"{shop_link}\">{shop_title}</a>","uk":"Вот ссылка:\r\n<a href=\"{shop_link}\">{shop_title}</a>","en":"Вот ссылка:\r\n<a href=\"{shop_link}\">{shop_title}</a>"},"is_html":0,"wrapper_id":0}

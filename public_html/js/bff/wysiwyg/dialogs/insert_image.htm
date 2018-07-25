@@ -1,0 +1,58 @@
+<div align="left">
+    <form id="bffwInsertImageForm" method="post" action="" enctype="multipart/form-data">
+    <input type="hidden" name="a" value="1" />
+    <table class="bffw-modal-table">
+        <tr>
+            <td colspan="2" class="bffw-modal-header">
+                Изображение
+            </td>
+        </tr>
+	    <tr>
+		    <td colspan="2">                 
+                Загрузите новое:
+			    <input name="file" size="12" type="file" />
+                <input type="hidden" name="MAX_FILE_SIZE" value="4194304" />
+		    </td>
+	    </tr>
+	    <tr>
+		    <td colspan="2">
+			    <span class="left">или укажите ссылку на изображение:</span><br />
+                <div class="input left">
+                    <span class="left"></span>                             
+                    <input type="text" value="" name="bffw_image_link" style="width:263px;" id="bffw_image_link" />
+                    <span class="right"></span>
+                </div>
+		    </td>
+	    </tr>
+	    <tr>
+		    <td style="width: 118px;">Подсказка:</td>
+		    <td>
+                <div class="input left">
+                    <span class="left"></span>                             
+                    <input type="text" value="" name="bffw_image_alt" style="width:140px;" id="bffw_image_alt" />
+                    <span class="right"></span>
+                </div>
+            </td>
+	    </tr>
+	    <tr>
+		    <td>Обтекание текстом:</td>
+		    <td>
+			    <select id="bffw_image_align">
+				    <option value="0">нет</option>
+				    <option value="right">слева</option>
+				    <option value="left">справа</option>
+			    </select>
+		    </td>
+	    </tr>
+
+    </table>
+
+
+    <p>
+    <div class="button"><span class="left"></span><input type="button" name="upload" id="bffwUploadBtn" value="Вставить" style="width:70px;" onclick="this.value='Подождите..';" /></div>
+    <div class="button-separator"></div>
+    <div class="button"><span class="left"></span><input type="button" class="popup_close" value="Отменить" style="width:70px;" /></div>
+    <div class="clear-all"></div>
+    </p>
+    </form>
+</div>

@@ -1,0 +1,24 @@
+<?php
+
+use bff\db\migrations\Migration as Migration;
+
+class $className extends Migration
+{
+    /**
+     * Use this function to write migration.
+     * Remember to use Table::update instead of Table::save
+     */
+    public function migrate()
+    {
+
+    }
+
+    /**
+     * Use this function to describe rollback actions
+     * Remember to use Table::dropIfExists instead of Table::drop
+     */
+    public function rollback()
+    {
+
+    }
+}

@@ -1,0 +1,25 @@
+
+# system
+.DS_Store
+Thumbs.db
+.idea/*
+.svn/*
+composer.lock
+package-lock.json
+node_modules
+.viminfo
+.bash_history
+.cache
+.config
+.local
+.mysql_history
+
+# files
+files/cache/cache_*
+files/logs/*.log
+files/locale/ru_RU/LC_MESSAGES/msg.pot.*
+files/locale/uk_UA/LC_MESSAGES/msg.pot.*
+
+# config
+config/site.php
+config/sys-local.php 

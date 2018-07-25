@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+	<title>FontSize</title>                                                              
+	<script type="text/javascript">
+	<!--
+	function setFont(el) {
+        var bffw = self.parent._bffwysiwyg[self.frameElement.getAttribute('rel')];
+		bffw.setFontSize(el.id);
+	}
+	//-->
+	</script>
+    <style type="text/css"> 
+        * {padding:0; margin:0;}
+        html, body{ min-height:100% !important; height:100%; }    
+        body { background: #fff; margin: 0;  }
+        .fontSelect {     
+            cursor: pointer; padding:1px 3px;             
+        } 
+        .fontSelect:hover{
+            background-color: #BBDAFD;
+        }
+        .fontRow{
+            font-family:arial,sans-serif;
+            -moz-user-select: none;
+        }
+    </style>    
+</head>
+<body>
+<div style="border: 1px solid #ccc;">
+    <div class="fontRow" style="font-size: x-small;" id="1" onclick="setFont(this);">
+        <div class="fontSelect">Небольшой</div>                                   
+    </div>
+    <div class="fontRow" style=" font-size: medium;" id="2" onclick="setFont(this);">
+        <div class="fontSelect">Обычный</div>
+    </div>
+    <div class="fontRow" style="font-size: large;" id="4" onclick="setFont(this);">
+        <div class="fontSelect">Крупный</div>
+    </div>
+    <div class="fontRow" style="font-size: xx-large;" id="6" onclick="setFont(this);">
+        <div class="fontSelect">Огромный</div>
+    </div>
+</div>
+</body>
+</html>

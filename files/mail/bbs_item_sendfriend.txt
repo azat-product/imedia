@@ -1,0 +1,1 @@
+{"subject":{"ru":"Интересное объявление!","uk":"Интересное объявление!","en":"Интересное объявление!"},"body":{"ru":"Вот ссылка:\r\n<a href=\"{item_link}\">{item_title}</a>","uk":"Вот ссылка:\r\n<a href=\"{item_link}\">{item_title}</a>","en":"Вот ссылка:\r\n<a href=\"{item_link}\">{item_title}</a>"},"is_html":0,"wrapper_id":0}

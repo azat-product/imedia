@@ -1,0 +1,9 @@
+#!/usr/bin/env php
+<?php
+
+define('BFF_CONSOLE', 1);
+define('BFF_SESSION_START', 0);
+
+require 'bff.php';
+$app = new bff\console\App();
+$app->run();

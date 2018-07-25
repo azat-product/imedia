@@ -1,0 +1,67 @@
+<div align="left">
+    <form id="bffwInsertTableForm" method="post" action="">
+    <input type="hidden" name="a" value="1" />
+    <table class="bffw-modal-table">
+        <tr><td colspan="2" class="bffw-modal-header">Свойства таблицы</td></tr>
+        <tr>
+            <td style="width: 250px;">ячейки:</td>
+            <td style="width: 250px;">название таблицы:</td>
+        </tr>
+        <tr>
+            <td valign="top">
+                <div id="tb_cells">
+                    
+                </div>
+            </td>
+            <td valign="top">
+                <textarea style="width: 234px; height:40px; margin-bottom:2px;" name="bffw_table_caption" id="bffw_table_caption"></textarea>
+
+                
+                <table>
+                    <tr>
+                        <td style="width: 20px;">ширина:</td>
+                        <td style="width: 73px;">
+                            <div class="input left">
+                                <span class="left"></span>                             
+                                <input type="text" value="200" name="bffw_table_width" style="width: 60px;" id="bffw_table_width">
+                                <span class="right"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <select id="bffw_table_width_type" style="padding:2px 2px 3px 2px; width:45px;"><option value="0" selected>px</option><option value="1">%</option></select>                        
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>высота:</td>
+                        <td>
+                            <div class="input left">
+                                <span class="left"></span>                             
+                                <input type="text" value="100" name="bffw_table_height" style="width: 60px;" id="bffw_table_height">
+                                <span class="right"></span>
+                            </div>
+                        </td>
+                        <td>px</td>
+                    </tr> 
+                </table>
+                                
+                <br />
+                <label><input type="checkbox" name="bffw_table_th" id="bffw_table_th"> добавить заголовок</label>
+
+            </td>
+        </tr>        
+
+    </table>
+
+
+    <p>
+        <div class="button" style="margin-left: 155px;"><span class="left"></span><input type="button" name="ok" id="bffw_table_ok" value="Продолжить" /></div>
+        <div style="display: none;" id="bffw_table_del_block">
+            <div class="button-separator"></div>       
+            <div class="button"><span class="left"></span><input type="button" name="del" id="bffw_table_del" value="Удалить" /></div>
+        </div>
+        <div class="button-separator"></div>
+        <div class="button"><span class="left"></span><input type="button" class="popup_close" value="Отменить" /></div>
+        <div class="clear-all"></div>
+    </p>
+    </form>
+</div>
