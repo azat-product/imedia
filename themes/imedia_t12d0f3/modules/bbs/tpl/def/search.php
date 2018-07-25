@@ -27,7 +27,7 @@
     extract($f, EXTR_REFS | EXTR_PREFIX_ALL, 'f');
 
     $rightBanner = Banners::view('bbs_search_right', array('cat'=>$cat['id'], 'region'=>$f['region'])); # Баннер (справа)
-    $rightBlock = $filterVertical || $rightBanner || ! empty($premiumBlock);
+    $rightBlock = $filterVertical || $rightBanner;
     $isMapVertical = false;
     if ($rightBlock && $isMap) {
         $isMapVertical = true;
@@ -35,6 +35,8 @@
         config::set('bbs-map-vertical', true);
     }
 ?>
+
+<?= ! empty($premiumBlock) ? $premiumBlock : '' ?>
 
 <?php if(DEVICE_DESKTOP_OR_TABLET) {
   echo tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb');
@@ -145,7 +147,6 @@
           <?= $filterVerticalBlock; ?>
         </div>
       <?php $filterVerticalBlock = ''; } ?>
-      <?= ! empty($premiumBlock) ? $premiumBlock : '' ?>
       <?php if ($rightBanner) { ?>
       <div class="l-banner-v">
         <?= $rightBanner ?>

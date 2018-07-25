@@ -11,12 +11,13 @@
 
 <!-- Desktop or Tablet -->
 <?php if (DEVICE_DESKTOP_OR_TABLET) { tpl::includeJS('site.index', false, 1); ?>
-  <?php if ( ! empty($titleh1) ) { ?>
+  <? if ( ! empty($titleh1) ) : ?>
   <div class="index-title">
     <h1 class="align-center hidden-xs"><?= $titleh1; ?></h1>
   </div>
-  <?php } ?>
+  <? endif; ?>
 
+  <?= $last; // /modules/bbs/tpl/def/index.last.block.php ?>
   <?= $centerBlock ?>
 
   <?php if($banner = Banners::view('site_index_last_before')) { ?>
@@ -24,7 +25,7 @@
     <?= $banner; ?>
   </div>
   <?php } ?>
-  <?= $last; // /modules/bbs/tpl/def/index.last.block.php ?>
+
   <?= $lastBlog // /modules/blog/tpl/def/index.last.block.php ?>
   <?php if($banner = Banners::view('site_index_last_after')) { ?>
   <div class="l-banner-h">

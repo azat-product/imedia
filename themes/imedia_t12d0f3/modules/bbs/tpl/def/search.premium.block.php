@@ -20,6 +20,17 @@
             <?php } ?>
           </div>
         </a>
+          <div class="sr-glItem-subtext">
+              <span class="sr-glItem-subtext-i">
+                  <?= $v['cat_title'] ?>
+              </span>
+              <span class="sr-glItem-subtext-i">
+                  <? if ( ! empty($v['city_title'])): ?>
+                      <i class="fa fa-map-marker"></i> <?= $v['city_title'] ?>
+                    <?= ! empty($v['district_title']) ? ', '.$v['district_title'] : ''?>
+                  <? endif; ?>
+              </span>
+          </div>
       </li>
     <?php endforeach; ?>
   </ul>
