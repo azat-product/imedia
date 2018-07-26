@@ -1,0 +1,114 @@
+.slider-premium {
+  display: flex!important;
+  flex-wrap: wrap;
+  padding: 20px 60px 60px 20px;
+  @media(max-width: 767px) {
+    padding: 0;
+  }
+  &__item {
+    padding: 10px;
+    flex: 0 0 11.1%;
+    width: 11.1%;
+    position: relative;
+    color: #ffffff;
+    //max-height: 150px;
+    &:hover {
+      color: #ffffff;
+      .slider-premium__info {
+        opacity: 1;
+        visibility: visible;
+        z-index: 5;
+        @media(max-width: 767px) {
+          display: none;
+        }
+      }
+    }
+    &:focus {
+      color: #ffffff;
+    }
+    @media(max-width: 767px) {
+      flex: 0 0 33%;
+      width: 33%;
+    }
+  }
+  &__img {
+    display: block;
+    width: 100%;
+    background-repeat: no-repeat!important;
+    background-size: contain!important;
+    position: relative;
+    overflow: hidden; /* clearfix */
+    background-position: 50% 50% !important;
+    &:before {
+      content: "";
+      padding-top: 100%;
+      float: left;
+    }
+  }
+  &__title {
+    display: inline-block;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  &__info {
+    display: flex;
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    top: -10px;
+    left: -10px;
+    background: #3b5998;
+    padding: 0 10px;
+    width: 190px;
+    max-height: 170px;
+    flex-direction: column;
+    img {
+      max-width: 170px;
+      max-height: 150px;
+    }
+    @media(max-width: 767px) {
+      display: none;
+    }
+  }
+  &__price {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  &__bg {
+    margin-top: 5px;
+    display: block;
+    width: 100%;
+    background-repeat: no-repeat!important;
+    background-size: contain!important;
+    position: relative;
+    overflow: hidden;
+    background-position: 50% 50% !important;
+    &:before {
+      content: "";
+      padding-top: 100%;
+      float: left;
+    }
+  }
+}
+
+.arrow-slider {
+  z-index: 1;
+  position: absolute;
+  top: -20px;
+  right: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 1px solid #cccccc;
+  color: #CCCCCC;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &.fa-chevron-left {
+    right: 40px;
+  }
+}
