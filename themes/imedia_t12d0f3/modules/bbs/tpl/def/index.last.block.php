@@ -9,54 +9,49 @@
 $lng_fav_in = _te('bbs', 'Добавить в избранное');
 $lng_fav_out = _te('bbs', 'Удалить из избранного');
 $lng_quick = _t('bbs', 'срочно');
+$count = 36;
+if(DEVICE_PHONE) {
+    $count = 9;
+}
 ?>
 <div class="c-carousel" id="j-bbs-index-<?= $type ?>-block">
   <div class="c-carousel-heading">
-    <div class="c-carousel-heading-nav">
-      <span class="c-carousel-arrow c-carousel-heading-nav-arrow j-prev"><i class="fa fa-chevron-left"></i></span>
-      <span class="c-carousel-arrow c-carousel-heading-nav-arrow j-next"><i class="fa fa-chevron-right"></i></span>
-    </div>
+
     <h2><?= $title ?></h2>
   </div>
-  <div id="j-bbs-index-<?= $type ?>-carousel" class="owl-carousel">
-    <?php foreach ($items as &$v) {
-      // Gallery Item Template
-      echo View::template('search.item.gallery', array('item' => &$v), 'bbs');
-    }
-    unset ($v); ?>
+  <div id="j-bbs-index-<?= $type ?>-carousel" class="mrgt20">
+      <? $i = 0; ?>
+      <? foreach ($items as &$v): ?>
+          <? if($i == 0): ?>
+              <div class="slider-premium">
+          <? endif; ?>
+          <? $i++; ?>
+
+            <? echo View::template('search.item.gallery', array('item' => &$v), 'bbs'); ?>
+
+          <? if($i == $count): ?>
+              </div>
+              <? $i = 0; ?>
+          <? endif; ?>
+      <? endforeach; ?>
+      <? if ($i <= $count - 1): ?>
+          </div>
+      <? endif; ?>
   </div>
 </div>
 
 <script type="text/javascript">
-  <?php
-  tpl::includeCSS('owl.carousel', true);
-  tpl::includeJS('owl.carousel.min', false);
+  <?
+  tpl::includeCSS('slick', true);
+  tpl::includeJS('slick.min', false);
   ?>
   <?php js::start(); ?>
   $(function(){
-    var $block = $('#j-bbs-index-<?= $type ?>-block');
-
-    var $carousel = $block.find('#j-bbs-index-<?= $type ?>-carousel');
-    if ($carousel.length) {
-      $carousel.owlCarousel({
-        rewind: true,
-        margin: 15,
-        nav: false,
-        dots: true,
-        responsive: {
-          0: {items: 1},
-          767: {items: 2},
-          991: {items: 3},
-          1199: {items: 4}
-        }
+      $('#j-bbs-index-<?= $type ?>-carousel').slick({
+          adaptiveHeight: true,
+          prevArrow: '<i class="fa fa-chevron-left arrow-slider" aria-hidden="true"></i>\n',
+          nextArrow: '<i class="fa fa-chevron-right arrow-slider" aria-hidden="true"></i>\n'
       });
-      $block.on('click', '.j-prev', function () {
-        $carousel.owlCarousel().trigger('prev.owl.carousel');
-      });
-      $block.on('click', '.j-next', function () {
-        $carousel.owlCarousel().trigger('next.owl.carousel');
-      });
-    }
   });
   <?php js::stop(); ?>
 </script>

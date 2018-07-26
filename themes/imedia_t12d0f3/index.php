@@ -119,6 +119,9 @@ class Theme_Imedia_t12d0f3 extends Theme
      */
     protected function start()
     {
+        # CSS:
+        $this->css('css/dist/imedia');
+
         # Логотипы:
         bff::hookAdd('site.logo.url.header', function($url){
             $logo = $this->configImages('logo', 'view');
