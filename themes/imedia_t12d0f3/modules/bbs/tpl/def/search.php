@@ -38,6 +38,7 @@
 
 <?= ! empty($premiumBlock) ? $premiumBlock : '' ?>
 
+
 <?php if(DEVICE_DESKTOP_OR_TABLET) {
   echo tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb');
 } ?>
