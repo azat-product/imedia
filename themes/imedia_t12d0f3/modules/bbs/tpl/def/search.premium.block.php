@@ -12,7 +12,7 @@ if(DEVICE_PHONE) {
     $count = 9;
 }
 ?>
-<div class="c-carousel" >
+<div class="c-carousel c-carousel-imedia pdb35" >
     <div class="c-carousel-heading">
 
         <h2><?= _t('search', 'Премиум объявления'); ?></h2>
@@ -28,24 +28,26 @@ if(DEVICE_PHONE) {
             <a href="<?= $v['link'] ?>" class="slider-premium__item">
                 <span class="slider-premium__img" style="background: url(<?= $v['img_m'] ?>);"></span>
                 <div class="slider-premium__info">
-                    <div class="slider-premium__title" title="<?= $v['title'] ?>">
-                        <?= $v['title'] ?>
-                    </div>
-                    <span style="background: url(<?= $v['img_m'] ?>);" class="slider-premium__bg"></span>
-                        <div class="slider-premium__price">
-                            <span>
-                                <?php if ( ! empty($v['city_title'])): ?>
-                                    <i class="fa fa-map-marker"></i>
-                                    <?= $v['city_title'] ?>
-                                    <?= ! empty($v['district_title']) ? ', '.$v['district_title'] : ''?>
-                                <?php endif; ?>
-                            </span>
+                    <div class="slider-premium__price">
+                        <span>
+                            <?php if ( ! empty($v['city_title'])): ?>
+                                <i class="fa fa-map-marker"></i>
+                                <?= $v['city_title'] ?>
+                                <?= ! empty($v['district_title']) ? ', '.$v['district_title'] : ''?>
+                            <?php endif; ?>
+                        </span>
                         <span>
                             <?php if ($v['price_on']) : ?>
                                 <?= $v['price'] ?>
                                 <?= $v['price_mod'] ?>
                             <? endif; ?>
                         </span>
+                    </div>
+                    <div class="slider-premium__bg-box">
+                        <span style="background: url(<?= $v['img_m'] ?>);" class="slider-premium__bg"></span>
+                    </div>
+                    <div class="slider-premium__title" title="<?= $v['title'] ?>">
+                        <?= $v['title'] ?>
                     </div>
                 </div>
             </a>

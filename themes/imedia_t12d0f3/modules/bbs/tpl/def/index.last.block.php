@@ -14,7 +14,7 @@ if(DEVICE_PHONE) {
     $count = 9;
 }
 ?>
-<div class="c-carousel" id="j-bbs-index-<?= $type ?>-block">
+<div class="c-carousel c-carousel-imedia pdb35" id="j-bbs-index-<?= $type ?>-block">
   <div class="c-carousel-heading">
 
     <h2><?= $title ?></h2>
