@@ -2,9 +2,14 @@
 
 return [
     # баннеры: отображение, переход
-    'banners-view' => [
-        'pattern'  => 'bn/(click|show)/(.*)',
-        'callback' => 'banners/$1/id=$2',
+    'banners-click' => [
+        'pattern'  => 'bn/click/{id}',
+        'callback' => 'banners/click/id=$1',
         'priority' => 260,
+    ],
+    'banners-show' => [
+        'pattern'  => 'bn/show/{id}',
+        'callback' => 'banners/show/id=$1',
+        'priority' => 265,
     ],
 ];

@@ -14,7 +14,7 @@ tpl::includeJS('bbs.comments', false, 1);
 ?>
 
 <div class="l-blockHeading">
-  <h2 class="l-blockHeading-title"><?= _t('comments', 'Комментарии'); ?></h2>
+  <div class="l-blockHeading-title"><?= _t('comments', 'Комментарии'); ?></div>
   <span class="label label-default"><?= $commentsTotal ?></span>
 </div>
 

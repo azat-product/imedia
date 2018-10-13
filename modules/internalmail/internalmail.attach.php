@@ -35,4 +35,21 @@ class InternalMailAttachment_ extends Attachment
         (!empty($data[3]) ? HTML::escape($data[3]) : $data[0]) .
         '</a> <small>(' . tpl::filesize($data[1]) . ')</small>';
     }
+
+    /**
+     * Формирование пути вложения
+     * @param $attachData
+     * @return string
+     */
+    public function getAttachPath($attachData)
+    {
+        if(empty($attachData)){
+            return '';
+        }
+        $data = explode(';', strval($attachData), 4);
+        if (empty($data) || sizeof($data) < 3) {
+            return '';
+        }
+        return $this->path.$data[0];
+    }
 }

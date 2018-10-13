@@ -59,6 +59,8 @@ class BBSItemsSearchSphinx_ extends \bff\db\Sphinx
                 'reg1_country',
                 'reg2_region',
                 'reg3_city',
+                'addr_lat',
+                'addr_lon',
                 'district_id',
                 'metro_id',
                 'cat_id',
@@ -69,8 +71,6 @@ class BBSItemsSearchSphinx_ extends \bff\db\Sphinx
             ),
             'sql_attr_float' => array(
                 'price_search',
-                'addr_lat',
-                'addr_lon',
             ),
             'sql_attr_timestamp' => array(
                 'created',
@@ -98,7 +98,7 @@ class BBSItemsSearchSphinx_ extends \bff\db\Sphinx
             ':descr' => 'IFNULL({prefix}.descr_translates, {prefix}.descr) AS descr',
             'phones'/*new*/,
             'reg1_country', 'reg2_region', 'reg3_city', 'district_id', 'metro_id', 'regions_delivery',
-            'addr_lat'/*new*/, 'addr_lon'/*new*/,
+            'addr_addr'/*new*/, 'addr_lat'/*new*/, 'addr_lon'/*new*/,
             'imgcnt', 'price_search', 'cat_id', 'cat_type', 'owner_type', 'svc_fixed', 'svc'/*new*/,
             ':created' => 'UNIX_TIMESTAMP({prefix}.created) as created',
         );
@@ -137,6 +137,7 @@ class BBSItemsSearchSphinx_ extends \bff\db\Sphinx
             'sql_query_pre' => array(
                 'SET CHARACTER_SET_RESULTS='.$settings['charset'],
                 'SET NAMES '.$settings['charset'],
+                'UPDATE '.$settings['table'].' SET indexed_delta = NOW() WHERE counter_id = '.$this->moduleID(),
             ),
             'sql_query' => ' \\
         SELECT '.join(', ', $query).' \\
@@ -297,6 +298,10 @@ class BBSItemsSearchSphinx_ extends \bff\db\Sphinx
             LIMIT '.($offset ? $offset.',' : '').$limit.'
             '.(!empty($opt) ? 'OPTION '.join(',', $opt) : ''),
             $bind, PDO::FETCH_COLUMN, 'fetchAll');
+        if ($data === false) {
+            return false;
+        }
+
         if ($count) {
             # только подсчет кол-ва
             # http://khaletskiy.blogspot.com/2014/06/sphinx-pagination.html

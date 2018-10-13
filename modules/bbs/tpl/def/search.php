@@ -38,33 +38,31 @@
 ?>
 <?= $catsBlock ?>
 <div class="row-fluid">
-    <div class="l-page<? if( ! $isMap ) { ?> l-page_right<? } ?> sr-page span12">
-        <? if( ! $isMap ) { ?><div class="l-table"><div class="l-table-row"><? } ?>
-            <div class="l-main<? if( ! $isMap ) { ?> l-table-cell<? } ?>">
+    <div class="l-page<?php if( ! $isMap ) { ?> l-page_right<?php } ?> sr-page span12">
+        <?php if( ! $isMap ) { ?><div class="l-table"><div class="l-table-row"><?php } ?>
+            <div class="l-main<?php if( ! $isMap ) { ?> l-table-cell<?php } ?>">
                 <div class="l-main__content<?= $rightBlock ? ' l-main__content__short' : '' ?>">
                     <div id="j-bbs-search-list">
                         <ul class="sr-page__main__navigation nav nav-tabs">
-                            <?
+                            <?php
                             # Типы категорий:
                             if(DEVICE_DESKTOP_OR_TABLET) {
                                 foreach($cat['types'] as $k=>$v) {
-                                    ?><li class="<? if($k == $f_ct) { ?>active <? } ?>hidden-phone"><a href="javascript:void(0);" class="j-f-cattype-desktop" data="{id:<?= $v['id'] ?>,title:'<?= HTML::escape($v['title'], 'js') ?>'}" data-id="<?= $v['id'] ?>"><b><?= $v['title'] ?></b></a></li><?
+                                    ?><li class="<?php if($k == $f_ct) { ?>active <?php } ?>hidden-phone"><a href="javascript:void(0);" class="j-f-cattype-desktop" data="{id:<?= $v['id'] ?>,title:'<?= HTML::escape($v['title'], 'js') ?>'}" data-id="<?= $v['id'] ?>"><b><?= $v['title'] ?></b></a></li><?php
                                 }
                             }
                             if(DEVICE_PHONE) { ?>
-                            <li class="sr-page__navigation__type dropdown rel <? if( sizeof($cat['types']) > 1 ) { ?>visible-phone<? } else { ?>hidden<? } ?>">
+                            <li class="sr-page__navigation__type dropdown rel <?php if( sizeof($cat['types']) > 1 ) { ?>visible-phone<?php } else { ?>hidden<?php } ?>">
                                 <a class="dropdown-toggle" id="j-f-cattype-phone-dd-link" data-current="<?= $f_ct ?>" href="javascript:void(0);">
                                     <span class="lnk"><?= $cat['types'][$f_ct]['title'] ?></span> <i class="fa fa-caret-down"></i>
                                 </a>
                                 <ul class="dropdown-menu dropdown-block box-shadow" id="j-f-cattype-phone-dd">
-                                    <?
-                                        foreach($cat['types'] as $k=>$v) {
-                                        ?><li><a href="javascript:void(0);" class="j-f-cattype-phone" data="{id:<?= $k ?>,title:'<?= HTML::escape($v['title'], 'js') ?>'}"><?= $v['title'] ?></a> </li><?
-                                    }
-                                    ?>
+                                    <?php foreach($cat['types'] as $k=>$v): ?>
+                                        <li><a href="javascript:void(0);" class="j-f-cattype-phone" data="{id:<?= $k ?>,title:'<?= HTML::escape($v['title'], 'js') ?>'}"><?= $v['title'] ?></a> </li>
+                                    <?php endforeach; ?>
                                 </ul>
                             </li>
-                            <? }
+                            <?php }
                             # Сортировка:
                             if( sizeof($sortTypes) > 1 ) {
                             ?>
@@ -75,35 +73,33 @@
                                     <span class="lnk"><?= $sortTypes[$f_sort]['t'] ?></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-block box-shadow" id="j-f-sort-dd">
-                                    <? foreach($sortTypes as $k=>$v) { ?><li><a href="javascript:void(0);" class="j-f-sort" data="{key:'<?= $k ?>',title:'<?= HTML::escape($v['t'], 'js') ?>'}"><?= $v['t'] ?></a></li><? } ?>
+                                    <?php foreach($sortTypes as $k=>$v) { ?><li><a href="javascript:void(0);" class="j-f-sort" data="{key:'<?= $k ?>',title:'<?= HTML::escape($v['t'], 'js') ?>'}"><?= $v['t'] ?></a></li><?php } ?>
                                 </ul>
                             </li>
-                            <? } ?>
+                            <?php } ?>
                         </ul>
-                        <? # Хлебные крошки: ?>
-                        <? if(DEVICE_DESKTOP_OR_TABLET) {
-                               echo tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb');
-                        } ?>
+                        <?php # Хлебные крошки: ?>
+                        <?= tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb'); ?>
                         <div class="sr-page__result__navigation rel">
                             <div class="sr-page__result__navigation__title pull-left"><h1 class="pull-left"><?= $titleh1 ?></h1></div>
                             <div class="sr-page__list__navigation_view pull-right">
-                                <? # Тип списка: ?>
+                                <?php # Тип списка: ?>
                                 <div id="j-f-listtype" class="<?= (empty($items) ? 'hide' : '') ?>">
-                                <? foreach($listTypes as $k=>$v) {
-                                        ?><a href="javascript:void(0);" data="{id:<?= $k ?>}" data-id="<?= $k ?>" class="j-type<? if($v['a']){ ?> active<? } ?>"><i class="<?= $v['i'] ?>"></i><span class="hidden-phone"><?= $v['t'] ?></span></a><?
+                                <?php foreach($listTypes as $k=>$v) {
+                                        ?><a href="javascript:void(0);" data="{id:<?= $k ?>}" data-id="<?= $k ?>" class="j-type<?php if($v['a']){ ?> active<?php } ?>"><i class="<?= $v['i'] ?>"></i><span class="hidden-phone"><?= $v['t'] ?></span></a><?php
                                    } ?>
                                 </div>
                             </div>
                             <div class="clearfix"></div>
                         </div>
-                        <? if ($filterVertical) { ?>
+                        <?php if ($filterVertical) { ?>
                             <div class="f-asideFilter__tablet hidden-desktop">
                                 <button class="f-asideFilter__toggle collapsed" data-toggle="collapse" data-target="#j-filter-vertical-tablet"><?= _t('filter', 'Фильтр'); ?></button>
                                 <div class="f-asideFilter collapse" id="j-filter-vertical-tablet">
-                                    <? if(DEVICE_PHONE) { ?><? echo $filterVerticalBlock; $filterVerticalBlock = ''; } ?>
+                                    <?php if(DEVICE_PHONE) { ?><?php echo $filterVerticalBlock; $filterVerticalBlock = ''; } ?>
                                 </div>
                             </div>
-                        <? } ?>
+                        <?php } ?>
                         <? # Результаты поиска (список объявлений): ?>
                         <? if(DEVICE_DESKTOP_OR_TABLET) { ?>
                         <!-- for: desktop & tablet -->
@@ -116,48 +112,48 @@
                             <?= $this->searchList(bff::DEVICE_PHONE, $f_lt, $items, array('numStart' => $num_start, 'showBanners' => true)); ?>
                         </div>
                         <? }  ?>
-                        <? # RSS: ?>
-                        <? if ( ! empty($rss) && ! empty($items)): ?>
+                        <?php # RSS: ?>
+                        <?php if ( ! empty($rss) && ! empty($items)): ?>
                         <div class="l-rssSubscribe">
                             <a href="<?= $rss['link'] ?>" class="ico" target="_blank" rel="nofollow"><i class="fa fa-rss"></i> <span><?= _t('bbs', 'Подписка через RSS на "[title]"', array('title' => $rss['title'])); ?></span></a>
                         </div>
-                        <? endif; ?>
-                        <? # Постраничная навигация: ?>
+                        <?php endif; ?>
+                        <?php # Постраничная навигация: ?>
                         <div id="j-bbs-search-pgn">
                             <?= $pgn ?>
                         </div>
                     </div>
                 </div>
             </div>
-            <? if (DEVICE_DESKTOP_OR_TABLET && $rightBlock) {  ?>
+            <?php if (DEVICE_DESKTOP_OR_TABLET && $rightBlock) {  ?>
             <div class="l-right l-table-cell visible-desktop">
                 <div class="l-right__content">
-                    <? if ($filterVertical) { ?>
-                        <h2><?= _t('filter','Фильтр') ?></h2>
+                    <?php if ($filterVertical) { ?>
+                        <div class="l-right__content__title"><?= _t('filter','Фильтр') ?></div>
                         <div class="f-asideFilter" id="j-filter-vertical-desktop">
                             <?php echo $filterVerticalBlock; $filterVerticalBlock = ''; ?>
                         </div>
-                    <? } ?>
+                    <?php } ?>
                     <?= $premiumBlock ?>
-                    <? if ($rightBanner) { ?>
+                    <?php if ($rightBanner) { ?>
                     <div class="l-banner banner-right">
                         <div class="l-banner__content">
                             <?= $rightBanner ?>
                         </div>
                     </div>
-                    <? } ?>
+                    <?php } ?>
                 </div>
             </div>
-            <? } ?>
-        <? if( ! $isMap ) { ?></div></div><? } ?>
+            <?php } ?>
+        <?php if( ! $isMap ) { ?></div></div><?php } ?>
         <?= $relinkBlock ?>
         <div class="l-info">
-            <? if($f['page'] <= 1 && ! empty($cat['seotext'])) echo $cat['seotext'] ?>
+            <?php if($f['page'] <= 1 && ! empty($cat['seotext'])) echo $cat['seotext'] ?>
         </div>
     </div>
 </div>
 <script type="text/javascript">
-<? js::start(); ?>
+<?php js::start(); ?>
     $(function(){
         jBBSSearch.init(<?= func::php2js(array(
             'lang'=>array(
@@ -176,12 +172,12 @@
             'defaultCoords' => Geo::mapDefaultCoords(true),
             'isVertical' => $filterVertical,
             'isMapVertical' => $isMapVertical,
-            'ajax'     => (bff::isIndex() ? false : true),
+            'ajax'     => false,
         )) ?>);
     });
-<? js::stop(); ?>
+<?php js::stop(); ?>
 </script>
-<?
+<?php
 
 # актуализируем данные формы поиска
 # формируемой позже в фаблоне /tpl/filter.php

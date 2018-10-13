@@ -27,36 +27,40 @@ class GeoModelBase extends Model
 
     /**
      * Формируем список регионов (стран / областей / городов)
-     * @param int|array $mNumlevel тип региона(нескольких регионов) (Geo::lvl_)
-     * @param array $aFilter фильтр регионов
-     * @param int $nSelectedID текущий активный регион (из выбираемого списка) или 0
-     * @param int $nLimit
-     * @param string $sOrderBy
+     * @param int|array $numLevel тип региона(нескольких регионов) (Geo::lvl_)
+     * @param array $filter фильтр регионов
+     * @param int $selectedID текущий активный регион (из выбираемого списка) или 0
+     * @param int $limit лимит
+     * @param string $orderBy порядок сортировки
+     * @param array $opts доп. параметры
      * @return mixed
      */
-    public function regionsList($mNumlevel, array $aFilter, $nSelectedID = 0, $nLimit = 0, $sOrderBy = '')
+    public function regionsList($numLevel, array $filter, $selectedID = 0, $limit = 0, $orderBy = '', array $opts = array())
     {
-        $aBind = array();
-        if (is_array($mNumlevel)) {
-            $aFilter[':numlevel'] = 'R.numlevel IN (' . join(',', $mNumlevel) . ')';
+        \func::array_defaults($opts, array(
+            'ttl' => 60, # кешировать запрос (сек)
+        ));
+        $bind = array();
+        if (is_array($numLevel)) {
+            $filter[':numlevel'] = 'R.numlevel IN (' . join(',', $numLevel) . ')';
         } else {
-            $aFilter['numlevel'] = $mNumlevel;
+            $filter['numlevel'] = $numLevel;
         }
-        if (!empty($nSelectedID) && $nSelectedID > 0 && isset($aFilter['enabled'])) {
-            unset($aFilter['enabled']);
-            $aFilter[':EnabledOrSel'] = '(R.enabled = 1 OR R.id = :sel)';
-            $aBind[':sel'] = $nSelectedID;
+        if ( ! empty($selectedID) && $selectedID > 0 && isset($filter['enabled'])) {
+            unset($filter['enabled']);
+            $filter[':EnabledOrSel'] = '(R.enabled = 1 OR R.id = :sel)';
+            $bind[':sel'] = $selectedID;
         }
 
-        $aFilter = $this->prepareFilter($aFilter, 'R', $aBind);
+        $filter = $this->prepareFilter($filter, 'R', $bind);
 
         return $this->db->select_key('SELECT R.*, R.title_' . LNG . ' as title,
                                P.keyword as pkey, P.title_' . LNG . ' as ptitle
                       FROM ' . TABLE_REGIONS . ' R
                          LEFT JOIN ' . TABLE_REGIONS . ' P ON R.pid = P.id
-                      ' . $aFilter['where'] . '
-                      ORDER BY ' . (!empty($sOrderBy) ? $sOrderBy : 'R.main DESC, R.num') . '
-                      ' . (!empty($nLimit) ? $this->db->prepareLimit(0, $nLimit) : ''), 'id', $aFilter['bind'], 60
+                      ' . $filter['where'] . '
+                      ORDER BY ' . (!empty($orderBy) ? $orderBy : 'R.main DESC, R.num') . '
+                      ' . (!empty($limit) ? $this->db->prepareLimit(0, $limit) : ''), 'id', $filter['bind'], $opts['ttl']
         );
     }
 
@@ -326,7 +330,38 @@ class GeoModelBase extends Model
         }
     }
 
-    public function regionsRotate($aCond = '', $sOrderField = 'num')
+    /**
+     * Обновление данных регионов по фильтру
+     * @param array $update обновляемые данные
+     * @param array $filter параметры фильтра
+     * @param array $opts:
+     *   array 'bind' доп. параметры подставляемые в запрос
+     *   string|array 'orderBy' условие запроса ORDER BY
+     *   integer|string|array 'limit' лимит выборки, например: 15
+     *   array 'cryptKeys' шифруемые столбцы
+     * @return integer кол-во обновленных регионов
+     */
+    public function regionsUpdateByFilter(array $filter, array $update, array $opts = array())
+    {
+        # default options:
+        \func::array_defaults($opts, array(
+            'context'   => '?',
+            'tag'       => '',
+            'bind'      => array(),
+            'orderBy'   => false,
+            'limit'     => false,
+            'cryptKeys' => array(),
+        ));
+
+        # tag
+        if (!empty($opts['tag'])) {
+            $this->db->tag($opts['tag']);
+        }
+
+        return $this->db->update(TABLE_REGIONS, $update, $filter, $opts['bind'], $opts['cryptKeys'], $opts);
+    }
+
+    public function regionsRotate(array $aCond, $sOrderField = 'num')
     {
         if (!empty($aCond)) {
             $aCond = ' AND ' . join(' AND ', $aCond);

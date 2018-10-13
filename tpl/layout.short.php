@@ -7,10 +7,13 @@
 <!DOCTYPE html>
 <html xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml" class="no-js">
 <head>
+<?php View::blockStart('head'); ?>
 <?= SEO::i()->metaRender(array('content-type'=>true,'csrf-token'=>true)) ?>
 <?= View::template('css'); ?>
+<?php View::blockEnd(); ?>
 </head>
-<body data-dbq="<?= bff::database()->statQueryCnt(); ?>">
+<body>
+<?php View::blockStart('body'); ?>
 <?= View::template('alert'); ?>
 <div id="wrap">
     <?= View::template('header.short'); ?>
@@ -26,5 +29,6 @@
     <div id="push"></div>
 </div>
 <?= View::template('footer'); ?>
+<?php View::blockEnd(); ?>
 </body>
 </html>

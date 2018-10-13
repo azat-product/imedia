@@ -158,7 +158,7 @@ class BBSModel_ extends Model
                  ((I.svc & ' . BBS::SERVICE_MARK . ') > 0) as svc_marked, I.svc_fixed,
                  ((I.svc & ' . BBS::SERVICE_QUICK . ') > 0) as svc_quick,
                  ((I.svc & ' . BBS::SERVICE_UP . ') > 0) as svc_up,
-                 I.publicated,  I.modified,
+                 I.publicated, I.publicated_order as publicated_last,  I.modified,
                  C.price_sett, C.price as price_on, CL.title as cat_title,
                  R.title_'.$lang.' AS city_title, I.regions_delivery, I.lang '.
                  ( ! empty($fields) ? ','.join(',', $fields) : '').'
@@ -197,6 +197,16 @@ class BBSModel_ extends Model
             $aFavoritesID = $this->controller->getFavorites($opts['user'], false, $itemsID);
         }
         foreach ($aData as &$v) {
+            # выполнялось ли поднятие
+            $v['publicated_up'] = false;
+            if ($v['publicated'] !== $v['publicated_last']) {
+                $publicated = strtotime($v['publicated']);
+                $publicated_last = strtotime($v['publicated_last']);
+                if ($publicated_last > $publicated &&
+                    ($publicated_last - $publicated) >= 86400 /* 1 day */) {
+                    $v['publicated_up'] = true;
+                }
+            }
             # помечаем избранные
             $v['fav'] = ($opts['favs'] && in_array($v['id'], $aFavoritesID));
             # форматируем цену
@@ -236,6 +246,8 @@ class BBSModel_ extends Model
             }
         }
         unset($v);
+
+        bff::hook('bbs.model.items.list.data', ['data'=>&$aData,'filter'=>&$filter,'opts'=>&$opts]);
 
         return $aData;
     }
@@ -430,9 +442,10 @@ class BBSModel_ extends Model
                  I.status, I.moderated, I.publicated, I.publicated_to,
                  I.views_item_total, I.views_contacts_total,
                  I.messages_total, I.messages_new, I.publicated_order, I.svc_up_free, I.svc_upauto_on,
-                 I.price, I.price_curr, I.price_ex, svc_fixed,
+                 I.price, I.price_curr, I.price_ex, I.svc_fixed, I.svc, 
                  ((I.svc & ' . BBS::SERVICE_MARK . ') > 0) as svc_marked,
                  ((I.svc & ' . BBS::SERVICE_QUICK . ') > 0) as svc_quick,
+                 I.svc_marked_to, I.svc_fixed_to, I.svc_premium_to, I.svc_quick_to, 
                  C.price_sett, C.price as price_on, CL.title as cat_title
                  '.( ! empty($aFields) ? ','.join(',', $aFields) : '').'
             FROM ' . TABLE_BBS_ITEMS . ' I
@@ -468,6 +481,8 @@ class BBSModel_ extends Model
             $v['link'] = BBS::urlDynamic($v['link']);
         }
         unset($v);
+
+        bff::hook('bbs.model.items.list.my.data', ['data'=>&$aData,'filter'=>&$filter,'opts'=>&$opts]);
 
         return $aData;
     }
@@ -703,6 +718,7 @@ class BBSModel_ extends Model
             # обновляем данные об объявлении
             $result = $this->db->update(TABLE_BBS_ITEMS, $aData, array('id' => $nItemID), array(), $this->cryptItems);
             if ($result) {
+                \bff::hook('bbs.item.save', $nItemID, array('data'=>&$aData));
                 if ($translate || ! empty($translates)) {
                     $this->itemSaveTranslate($nItemID, $aData, $translates, $old);
                 }
@@ -740,6 +756,7 @@ class BBSModel_ extends Model
                 if (isset($aData['moderated']) && $aData['moderated'] == 1) {
                     $this->itemSaveModerated($nItemID);
                 }
+                \bff::hook('bbs.item.create', $nItemID, array('data'=>&$aData));
             }
             $result = $nItemID;
         }
@@ -980,7 +997,7 @@ class BBSModel_ extends Model
         $fields = array_keys($this->langItem);
         foreach ($fields as $f) {
             if (in_array($f, $noTranslate)) continue;
-            $search[$f . '_translates'] = $data[$f];
+            $search[$f . '_translates'] = isset($data[$f]) ? $data[$f] : '';
         }
 
         # сохраняем указанные локали
@@ -1188,7 +1205,7 @@ class BBSModel_ extends Model
 
         $aData = $this->db->one_array('SELECT ' . join(',', $aParams) . '
                        FROM ' . TABLE_BBS_ITEMS . ' I
-                            INNER JOIN ' . TABLE_USERS . ' U ON U.user_id = I.user_id
+                            LEFT JOIN ' . TABLE_USERS . ' U ON U.user_id = I.user_id
                        ' . $aFilter['where'] . '
                        LIMIT 1', $aFilter['bind']
         );
@@ -1216,7 +1233,7 @@ class BBSModel_ extends Model
         $aFields = array();
         $aData = $this->db->tag('bbs-item-data-to-email', array('fields'=>&$aFields))->one_array('SELECT I.id as item_id, I.status,
                     I.link as item_link, I.title as item_title,
-                    I.user_id, U.name, U.email, U.blocked as user_blocked, U.lang, U.user_id_ex, S.last_login
+                    I.user_id, U.name, U.email, U.blocked as user_blocked, U.lang, U.user_id_ex, U.fake, S.last_login
                     '.(!empty($aFields) ? ','.join(',', $aFields) : '').'
                     FROM ' . TABLE_BBS_ITEMS . ' I,
                          ' . TABLE_USERS . ' U,
@@ -1240,6 +1257,10 @@ class BBSModel_ extends Model
             # Проверяем владельца:
             # - незарегистрированный
             if (empty($aData['user_id'])) {
+                break;
+            }
+            # - фейковый
+            if (!empty($aData['fake'])) {
                 break;
             }
             # - заблокирован
@@ -1301,7 +1322,7 @@ class BBSModel_ extends Model
                 } else {
                     $data['price_mod'] = '';
                 }
-                unset($data['price_ex'], $data['price_sett'], $data['price_search']);
+                unset($data['price_sett'], $data['price_search']);
             }
 
             # формируем данные о городе и метро
@@ -1488,7 +1509,8 @@ class BBSModel_ extends Model
         # Sphinx:
         if (isset($filter[':query']) && BBSItemsSearchSphinx::enabled()) {
             $sphinx = $this->controller->itemsSearchSphinx();
-            return $sphinx->searchItems($filter[':query'], $filter, $opts['count'], $opts['limit'], $opts['offset']);
+            $data = $sphinx->searchItems($filter[':query'], $filter, $opts['count'], $opts['limit'], $opts['offset']);
+            if ($data !== false) return $data;
         }
 
         # MySQL:
@@ -1891,9 +1913,11 @@ class BBSModel_ extends Model
         $timeout = config::sysAdmin('bbs.publicate.topup.timeout', 7, TYPE_UINT);
         if ($timeout > 0) {
             # Публикуем + поднимаем
+            $updateUp = $update; $updateUp['publicated_order'] = $now;
+            $filterUp = $aFilter; $filterUp[] = 'DATEDIFF(:now, publicated_order) >= :days';
             $result += $this->itemsUpdateByFilter(
-                $update + array('publicated_order' => $now),
-                $aFilter + array('DATEDIFF(:now, publicated_order) >= :days'), array(
+                $updateUp,
+                $filterUp, array(
                 'bind' => array(
                     ':now' => $now,
                     ':days' => $timeout,
@@ -2017,7 +2041,7 @@ class BBSModel_ extends Model
         $aFields = array();
         $aData = $this->db->tag('bbs-items-delete-data', array('fields'=>&$aFields))->select('SELECT I.id, I.user_id, I.status, I.cat_id, '.join(', ', $cats).', I.cat_type,
                                            I.imgcnt, I.svc_press_status, I.claims_cnt, I.messages_total, I.moderated,
-                                           I.reg1_country, I.reg2_region, I.reg3_city, I.regions_delivery,
+                                           I.reg1_country, I.reg2_region, I.reg3_city, I.regions_delivery, I.created,
                                            U.activated as user_activated
                                            '.(!empty($aFields) ? ','.join(',', $aFields) : '').'
                                     FROM ' . TABLE_BBS_ITEMS . ' I
@@ -2111,6 +2135,54 @@ class BBSModel_ extends Model
         }
 
         return intval($res);
+    }
+
+    /**
+     * Полное удаление всех объявлений пользователя
+     * @param integer $userID ID пользователя
+     * @param array $opts доп. параметры:
+     *  'markDeleted' - только пометить как удаленные
+     * @return integer кол-во затронутых объявлений
+     */
+    public function itemsDeleteByUser($userID, array $opts = array())
+    {
+        $total = 0;
+        if ($userID <= 0) {
+            return $total;
+        }
+
+        if ( ! empty($opts['markDeleted'])) {
+            $total = $this->itemsUpdateByFilter(array(
+                'publicated_to' => $this->db->now(), # помечаем дату снятия с публикации
+                'status_prev = status',
+                'status_changed'=> $this->db->now(),
+                'status'        => BBS::STATUS_DELETED,
+                'deleted'       => 1,
+                'is_publicated' => 0,
+                'is_moderating' => 0,
+            ), array(
+                'user_id' => $userID,
+            ), array(
+                'context' => 'user-items-delete',
+            ));
+        } else {
+            $data = array();
+            $this->db->tag('bbs-items-delete-by-user')->select_iterator('SELECT id
+                    FROM ' . TABLE_BBS_ITEMS . '
+                    WHERE user_id = :user_id', array(':user_id' => $userID),
+                function($row) use(& $data, &$total){
+                $data[] = $row['id'];
+                if (count($data) > 100) {
+                    $total += $this->itemsDelete($data, true);
+                    $data = array();
+                }
+            });
+            if ( ! empty($data)) {
+                $total += $this->itemsDelete($data, true);
+            }
+        }
+
+        return $total;
     }
 
     /**
@@ -2560,7 +2632,7 @@ class BBSModel_ extends Model
 
     /**
      * Счетчики количества объявлений по фильтру
-     * @param array $filter
+     * @param array $filter [cat_id, region_id, delivery]
      * @param bool|array $fields false - только количество
      * @param bool $oneArray
      * @return mixed
@@ -2774,6 +2846,12 @@ class BBSModel_ extends Model
         ));
     }
 
+    /**
+     * Получаем список объявлений исходя из даты завершения публикации
+     * @param integer $userID ID пользователя
+     * @param string $day дата завершения публикации
+     * @return array
+     */
     public function itemsUserUnpublicateDay($userID, $day)
     {
         return $this->itemsDataByFilter(array(
@@ -2932,13 +3010,15 @@ class BBSModel_ extends Model
         return $this->db->select_one_column('
             SELECT I.id
             FROM ' . TABLE_BBS_ITEMS . ' I
-            WHERE I.user_id = :user AND I.status = :publicated AND I.svc_up_free <= :date
+            WHERE I.user_id = :user
+              AND I.shop_id >= 0
+              AND I.is_publicated = 1
+              AND I.status = :publicated AND I.svc_up_free <= :date
             ', array(
             ':user' => $userID,
             ':publicated' => BBS::STATUS_PUBLICATED,
             ':date' => date('Y-m-d', strtotime('-'.$days.' days')),
         ));
-
     }
 
     /**
@@ -3350,15 +3430,16 @@ class BBSModel_ extends Model
 
     /**
      * Счетчики объявлений по категориям
-     * @param array $filter
+     * @param array $filter фильтр [region_id]
      * @param integer $deliveryCountry включить с доставкой по стране
-     * @return array|mixed
+     * @return array данные о категориях с количеством объявлений в них
      */
     public function catsItemsCounters(array $filter, $deliveryCountry)
     {
-        if(empty($filter)) return array();
+        if (empty($filter)) return array();
+
         $region = 0;
-        if(isset($filter['region_id'])){
+        if (isset($filter['region_id'])) {
             $region = $filter['region_id'];
             unset($filter['region_id']);
         }
@@ -3368,7 +3449,7 @@ class BBSModel_ extends Model
         $filter = $this->prepareFilter($filter, '', array(':region' => $region));
 
         $data = $this->db->select('
-            SELECT C.id, C.keyword, C.landing_url, CL.title, N.items
+            SELECT C.id, C.pid, C.keyword, C.landing_url, CL.title, N.items
             FROM '.TABLE_BBS_CATEGORIES.' C 
                  LEFT JOIN '.TABLE_BBS_ITEMS_COUNTERS.' N ON C.id = N.cat_id AND N.delivery = 0 AND N.region_id = :region
                  , '.TABLE_BBS_CATEGORIES_LANG.' CL
@@ -3376,27 +3457,67 @@ class BBSModel_ extends Model
             ORDER BY C.numleft', $filter['bind']);
 
         # добавим счетчики объявлений с доставкой по всей стране
-        if( ! empty($data) && $deliveryCountry){
+        if ( ! empty($data) && $deliveryCountry) {
             $cats = array();
-            foreach($data as $v){
+            foreach ($data as $v) {
                 $cats[] = $v['id'];
             }
             $counters = $this->itemsCountByFilter(array('cat_id' => $cats, 'region_id' => $deliveryCountry, 'delivery' => 1),
                 array('cat_id', 'items'), false);
-            if(!empty($counters)){
+            if ( ! empty($counters)){
                 $counters = func::array_transparent($counters, 'cat_id', true);
-                foreach($data as &$v){
-                    if(!isset($counters[$v['id']])) continue;
+                foreach ($data as &$v) {
+                    if ( ! isset($counters[$v['id']])) continue;
                     $v['items'] += $counters[$v['id']]['items'];
                 }
                 unset($v);
             }
         }
-        foreach($data as $k => $v){
-            if( ! empty($v['items'])) continue;
+        foreach ($data as $k => $v) {
+            if ( ! empty($v['items'])) continue;
             unset($data[$k]);
         }
         return $data;
+    }
+
+    /**
+     * Получаем счетчики объявлений в указанный категориях
+     * @param array $catsID ID категорий
+     * @param mixed $geo фильтр региона [id, country]
+     * @param array $opts доп. параметры
+     * @param integer $ttl кешировать (секунды)
+     * @return array счетчики объявлений сгруппированные по категории [ID категории=>Кол-во объявлений, ...]
+     */
+    public function catsItemsCountersByID(array $catsID, $geo, array $opts = array(), $ttl = 60)
+    {
+        $counters = array();
+
+        # посчитаем количество объявлений в категориях
+        $temp = $this->itemsCountByFilter(array(
+            'cat_id' => $catsID,
+            'region_id' => $geo['id'],
+            'delivery' => 0,
+        ), array('cat_id', 'items'), false, $ttl);
+        foreach ($temp as $v) {
+            $counters[ $v['cat_id'] ] = $v['items'];
+        }
+        # доставки из регионов
+        if ( ! empty($geo['country'])) {
+            $temp = $this->itemsCountByFilter(array(
+                'cat_id' => $catsID,
+                'region_id' => $geo['country'],
+                'delivery' => 1,
+            ), array('cat_id', 'items'), false, $ttl);
+            foreach ($temp as $v) {
+                if (isset($counters[ $v['cat_id'] ])) {
+                    $counters[ $v['cat_id'] ] += $v['items'];
+                } else {
+                    $counters[ $v['cat_id'] ] = $v['items'];
+                }
+            }
+        }
+
+        return $counters;
     }
 
     # ----------------------------------------------------------------
@@ -3589,9 +3710,10 @@ class BBSModel_ extends Model
 
     public function catsListSitemap($iconVariant)
     {
-        return $this->db->select('SELECT C.id, C.pid, C.icon_' . $iconVariant . ' as icon, CL.title, C.keyword, C.landing_url
-                            FROM ' . TABLE_BBS_CATEGORIES . ' C,
-                                 ' . TABLE_BBS_CATEGORIES_LANG . ' CL
+        return $this->db->select('SELECT C.id, C.pid, C.icon_' . $iconVariant . ' as icon, CL.title, C.keyword, C.landing_url, IFNULL(IC.items, 0) AS items
+                            FROM ' . TABLE_BBS_CATEGORIES . ' C
+                                LEFT JOIN '.TABLE_BBS_ITEMS_COUNTERS.' IC ON C.id = IC.cat_id AND IC.region_id = 0 AND IC.delivery = 0
+                                INNER JOIN ' . TABLE_BBS_CATEGORIES_LANG . ' CL
                             WHERE C.enabled = 1 AND C.pid != 0 AND C.numlevel <= 2
                               AND ' . $this->db->langAnd(false, 'C', 'CL') . '
                             ORDER BY C.numleft ASC', NULL, 60
@@ -3689,7 +3811,7 @@ class BBSModel_ extends Model
             $fields[] = 'lang';
         }
         return $this->db->select_key('SELECT '.join(',', $fields).' FROM '.TABLE_BBS_CATEGORIES_LANG.' 
-            WHERE id = :id AND '.$this->db->prepareIN('lang', $lang), 'lang', array(':id' => $categoryID));
+            WHERE id = :id AND '.$this->db->prepareIN('lang', $lang, false, false, false), 'lang', array(':id' => $categoryID));
     }
 
     public function catDataByFilter($aFilter, $aFields = array(), $bEdit = false)
@@ -3856,7 +3978,7 @@ class BBSModel_ extends Model
     public function catDataCopyToSubs($nCategoryID, array $aSelected = array())
     {
         # настройки
-        $aParams = array(
+        $aParams = bff::filter('bbs.admin.category.form.copy2subs.data', array(
             'seek' => array(
                 'data' => array('seek'),
                 'lang' => array(
@@ -3893,7 +4015,7 @@ class BBSModel_ extends Model
             'list_type' => array(
                 'data' => array('list_type'),
             ),
-        );
+        ));
 
         $aDataFields = array();
         $aLangFields = array();
@@ -4043,7 +4165,8 @@ class BBSModel_ extends Model
               AND I.cat_id = C.id
             ORDER BY I.id
         ', array(':cat'=>$nCategoryID), function($item) use ($prepareUpdate){
-            $this->db->update(TABLE_BBS_ITEMS, $prepareUpdate($item), array('id'=>$item['id']));
+            $this->db->update(TABLE_BBS_ITEMS, $prepareUpdate($item), ['id'=>$item['id']]);
+            $this->itemsIndexesUpdate([$item['id']], 'cat_path');
         });
         return true;
     }
@@ -4718,18 +4841,22 @@ class BBSModel_ extends Model
 
     /**
      * Поиск категории по названию для автокомплитера
-     * @param $q
+     * @param string $q
+     * @param array $filter
+     * @param string $limit
      * @return array|mixed
      */
-    public function catsAutocompleter($q)
+    public function catsAutocompleter($q, $filter = array(), $limit = 15)
     {
         if(empty($q)) return array();
+        $filter[] = $this->db->langAnd(false, 'C', 'CL');
+        $filter[':q'] = array('CL.title LIKE :q ', ':q' => '%'.$q.'%');
+        $filter = $this->prepareFilter($filter);
+
         return $this->db->select('
             SELECT C.id, CL.title
             FROM '.TABLE_BBS_CATEGORIES.' C, '.TABLE_BBS_CATEGORIES_LANG.' CL
-            WHERE '.$this->db->langAnd(false, 'C', 'CL').' AND CL.title LIKE :q
-            LIMIT 15
-        ', array(':q' => '%'.$q.'%'));
+            '.$filter['where'].$this->db->prepareLimit(0, $limit), $filter['bind']);
     }
 
     /**
@@ -4911,7 +5038,6 @@ class BBSModel_ extends Model
 
     public function claimsListing($aFilter, $bCount = false, $sqlLimit = '')
     {
-
         if ($bCount) {
             $aFilter = $this->prepareFilter($aFilter, 'CL');
             return (int)$this->db->tag('bbs-claims-listing-count', array('filter'=>&$aFilter))->one_data('SELECT COUNT(CL.id)
@@ -4956,7 +5082,12 @@ class BBSModel_ extends Model
             $aData['user_id'] = User::id();
             $aData['user_ip'] = Request::remoteAddress();
 
-            return $this->db->insert(TABLE_BBS_ITEMS_CLAIMS, $aData, 'id');
+            $nClaimID = $this->db->insert(TABLE_BBS_ITEMS_CLAIMS, $aData, 'id');
+            if ($nClaimID > 0) {
+                $aData['id'] = $nClaimID;
+                bff::hook('bbs.item.claim.create', $aData);
+            }
+            return $nClaimID;
         }
     }
 
@@ -5414,6 +5545,9 @@ class BBSModel_ extends Model
         if( ! isset($filter['shop_id'])) return array(); # одновременно и для пользователя и магазина нельзя
         $filterMain = $filter;
         $filterShop = ! empty($filter['shop_id']);
+        if ($filterShop && Shops::abonementEnabled()) {
+            return array(); # включена услуга абонемент - лимиты для магазинов не используются
+        }
 
         # если есть фильтр по категории, проверим лимиты для поинта в котором эта категория
         if(isset($filter['cat_id'])){
@@ -5627,7 +5761,7 @@ class BBSModel_ extends Model
 
     /**
      * Сохранение купленного пользователем лимита
-     * @param int $limitID ID купленного лимита или 0
+     * @param int|array $limitID ID купленного лимита или 0
      * @param array $data данные
      * @return bool|int
      */

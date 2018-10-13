@@ -97,10 +97,10 @@ var jBBSItemPromote = (function(){
         $formSubmit.toggleClass('btn-success', (price > 0)).prop({disabled:!o.svc_id});
         var balanceHidden = $psBlock.find('.j-ps-item-balance').toggleClass('hide', price > o.user_balance).hasClass('hide');
         if( balanceHidden && $psValue.val() == 'balance' ) {
-            $form.find('.j-ps-item:not(.hide):first').click();
+            $form.find('.j-ps-item:not(.hide):first').trigger('click');
         }
         if( price === 0 || o.user_balance >= price ) {
-            $form.find('.j-ps-item-balance').click();
+            $form.find('.j-ps-item-balance').trigger('click');
         }
         $psBlock.toggleClass('hide', !(o.svc_id > 0 && price > 0));
     }

@@ -12,7 +12,7 @@
 </p>
 <? if($retry_allowed) { ?>
 <p id="j-u-register-emailed-retry">
-    <?= _t('users', 'Не получили письмо? <a [link_retry]>Отправить еще раз</a>', array('link_retry'=>'href="#" class="ajax"')) ?>
+    <?= _t('users', 'Не получили письмо? <a [link_retry]>Отправить еще раз</a>', array('link_retry'=>'href="javascript:void(0);" class="ajax"')) ?>
 </p>
 <script type="text/javascript">
 <? js::start(); ?>

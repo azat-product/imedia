@@ -29,7 +29,7 @@
                             <td class="row1 field-title right"><?= _t('', 'Пользователь') ?>:</td>
                             <td></td>
                             <td>
-                                <a href="#" onclick="return bff.userinfo(<?= $user_id ?>);" class="userlink desc ajax"><?= $user_email ?></a>
+                                <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $user_id ?>);" class="userlink desc ajax"><?= $user_email ?></a>
                             </td>
                         </tr>
                         <? } ?>

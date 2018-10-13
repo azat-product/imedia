@@ -17,14 +17,29 @@
         <div id="index-categories" class="collapse">
         <?php } ?>
         <div class="index__catlist__item index__catlist__item__sm i<?= $i % 3 ?> ">
-            <a href="#" class="img"><img src="<?= $v['i'] ?>" alt=""/></a>
-            <div class="title"><a href="<?= $v['l'] ?>"><?= $v['t'] ?></a>
+            <?php if ($v['items'] > 0) { ?>
+            <a href="<?= $v['l'] ?>" class="img"><img src="<?= $v['i'] ?>" alt=""/></a>
+            <?php } else { ?>
+            <span class="img hidden-link" data-link="<?= $v['l'] ?>"><img src="<?= $v['i'] ?>" alt=""/></span>
+            <?php } ?>
+            <div class="title">
+                <?php if ($v['items'] > 0) { ?>
+                <a href="<?= $v['l'] ?>"><?= $v['t'] ?></a>
+                <?php } else { ?>
+                <span class="hidden-link" data-link="<?= $v['l'] ?>"><?= $v['t'] ?></span>
+                <?php } ?>
                 <span class="index__catlist__item__count"><?= $v['items'] ?></span>
             </div>
             <?php if ($v['subn']) { ?>
                 <ul class="links__vert">
                     <?php foreach ($v['sub'] as $vv) { ?>
-                        <li><a href="<?= $vv['l'] ?>"><?= $vv['t'] ?></a></li>
+                        <li>
+                            <?php if ($vv['items'] > 0) { ?>
+                            <a href="<?= $vv['l'] ?>"><?= $vv['t'] ?></a>
+                            <?php } else { ?>
+                            <span class="hidden-link" data-link="<?= $vv['l'] ?>"><?= $vv['t'] ?></span>
+                            <?php } ?>
+                        </li>
                     <?php } ?>
                 </ul>
             <?php } ?>

@@ -7,23 +7,23 @@
 <table class="admtbl tbledit">
 <tr class="row1">
     <td style="width:65px;">
-        <a href="#" onclick="return bff.userinfo(<?= $u['id'] ?>);">
+        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $u['id'] ?>);">
             <img id="im_avatar" class="img-polaroid" src="<?= $u['avatar'] ?>" alt="" width="50" />
         </a>
     </td>
     <td style="padding-bottom: 20px;">
-        <a href="#" onclick="return bff.userinfo(<?= $u['id'] ?>);" class="ajax"><?= ( !empty($u['name']) ? $u['name'] : $u['login'] ) ?></a>
+        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $u['id'] ?>);" class="ajax"><?= ( !empty($u['name']) ? $u['name'] : $u['login'] ) ?></a>
         <? if( ! $u['activated'] ) { ?>&nbsp;<span class="disabled">[<?= _t('', 'неактивирован'); ?>]</span><? } ?>
     </td>
     <td class="right">
-        <a href="#" onclick="return bff.userinfo(<?= $i['id'] ?>);" class="ajax"><?= ( !empty($i['name']) ? $i['name'] : $i['login'] ) ?></a>
+        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $i['id'] ?>);" class="ajax"><?= ( !empty($i['name']) ? $i['name'] : $i['login'] ) ?></a>
         <? if( ! $i['activated'] ) { ?>&nbsp;<span class="disabled">[<?= _t('', 'неактивирован'); ?>]</span><? } ?>
         <br />
         <span class="label"><?= tpl::declension($total, _t('internalmail', 'сообщение;сообщения;сообщений')) ?></span>
         <br />
     </td>
     <td style="width:65px;" class="right">
-        <a href="#" onclick="return bff.userinfo(<?= $i['id'] ?>);">
+        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $i['id'] ?>);">
             <img id="im_avatar" class="img-polaroid" src="<?= $i['avatar'] ?>" alt="" width="50" />
         </a>
     </td>

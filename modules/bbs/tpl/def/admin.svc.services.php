@@ -9,6 +9,11 @@
     $pricePrefix = '&nbsp;<span class="desc">'.Site::currencyDefault().'</span>';
     $bSelectCountry = Geo::coveringType(Geo::COVERING_COUNTRIES);
 ?>
+<? if ( ! bff::servicesEnabled(true)) { ?>
+    <div class="alert alert-info" style="margin-bottom: 10px;">
+        <?= _t('svc', 'Доступность платных услуг отключена в <a [setting_link]>системных настройках</a> и не отображается пользователям сайта.', array('setting_link'=>'href="'.Site::settingsSystemLink('site','services.enabled').'"')); ?>
+    </div>
+<? } ?>
 
 <div class="tabsBar">
     <form id="j-services-tabs" action="">
@@ -140,7 +145,7 @@ var jSvcServices = (function(){
                         title = $optionParent.text().trim() + ' / ' + title;
                     }
                     $catsSelected.append(
-                        '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="#" class="j-cat-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[cats][]" class="j-selected-id" value="'+id+'" /></span>'
+                        '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="javascript:void(0);" class="j-cat-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[cats][]" class="j-selected-id" value="'+id+'" /></span>'
                     ).removeClass('hide');
                 }
             }
@@ -175,7 +180,7 @@ var jSvcServices = (function(){
             {
                 if( id > 0 && ! $regionsSelected.find('.j-selected-id[value="'+id+'"]').length ) {
                     $regionsSelected.append(
-                        '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="#" class="j-region-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[regions][]" class="j-selected-id" value="'+id+'" /></span>'
+                        '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="javascript:void(0);" class="j-region-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[regions][]" class="j-selected-id" value="'+id+'" /></span>'
                     ).removeClass('hide');
                 }
             }
@@ -256,7 +261,7 @@ var jSvcServices = (function(){
                     <td class="row1 field-title" width="130"><?= _t('bbs', 'Стоимость'); ?><span class="required-mark">*</span>:</td>
                     <td class="row2">
                         <input type="text" name="price" value="<?= $v['price'] ?>" class="input-mini" pattern="[0-9\.,]*" /><?= $pricePrefix; ?>
-                        <a href="#" class="btn btn-mini j-price-ex-plus" data-svc="<?= $v['keyword'] ?>" style="margin-left: 5px;"><?= _t('bbs', 'добавить региональную стоимость'); ?></a>
+                        <a href="javascript:void(0);" class="btn btn-mini j-price-ex-plus" data-svc="<?= $v['keyword'] ?>" style="margin-left: 5px;"><?= _t('bbs', 'добавить региональную стоимость'); ?></a>
                         <div id="j-price-ex-block-<?= $v['keyword'] ?>" style="margin: 5px 0;"></div>
                     </td>
                 </tr>
@@ -309,7 +314,7 @@ var jSvcServices = (function(){
                                 <div style="margin:5px 0;">
                                     <input type="hidden" name="<?= $iconField ?>_del" class="del-icon" value="0" />
                                     <img src="<?= $oIcon->url($ID, $v[$iconField], $icon['key']) ?>" alt="" /><br />
-                                    <a href="#" class="ajax desc cross but-text" onclick="return jSvcServices.iconDelete(this);"><?= _t('', 'Delete'); ?></a>
+                                    <a href="javascript:void(0);" class="ajax desc cross but-text" onclick="return jSvcServices.iconDelete(this);"><?= _t('', 'Delete'); ?></a>
                                 </div>
                             <? } ?>
                         </td>
@@ -340,7 +345,7 @@ var jSvcServices = (function(){
                     <td class="footer" colspan="2">
                         <div class="left"><input type="submit" class="btn btn-success button submit" value="<?= _te('', 'Save') ?>" /></div>
                         <div class="right desc">
-                            <?= _t('bbs', 'последние изменения:'); ?> <span class="j-last-modified"><?= tpl::date_format2($v['modified'], true); ?>, <a class="bold desc ajax" href="#" onclick="return bff.userinfo(<?= $v['modified_uid'] ?>);"><?= $v['modified_login'] ?></a></span>
+                            <?= _t('bbs', 'последние изменения:'); ?> <span class="j-last-modified"><?= tpl::date_format2($v['modified'], true); ?>, <a class="bold desc ajax" href="javascript:void(0);" onclick="return bff.userinfo(<?= $v['modified_uid'] ?>);"><?= $v['modified_login'] ?></a></span>
                         </div>
                         <div class="clear"></div>
                     </td>

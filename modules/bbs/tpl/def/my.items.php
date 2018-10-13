@@ -38,7 +38,7 @@
         </li>
         <? if(DEVICE_DESKTOP_OR_TABLET) {
             foreach($status as $k=>$v) {
-                ?><li class="u-cabinet__sub-navigation__sort hidden-phone<? if($f['status'] == $k) { ?> active<? } ?> j-status-options"><a href="#" class="j-status-option" data-value="<?= $k ?>"><span><?= $v['title'] ?></span> <i class="label u-cabinet__sub-navigation__sort__label j-counter"><?= $counters[$k] ?></i></a></li><?
+                ?><li class="u-cabinet__sub-navigation__sort hidden-phone<? if($f['status'] == $k) { ?> active<? } ?> j-status-options"><a href="javascript:void(0);" class="j-status-option" data-value="<?= $k ?>"><span><?= $v['title'] ?></span> <i class="label u-cabinet__sub-navigation__sort__label j-counter"><?= $counters[$k] ?></i></a></li><?
             }
         } ?>
         <li class="u-cabinet__sub-navigation__search pull-right">
@@ -55,9 +55,9 @@
         <div class="u-cabinet__sub-navigation__type visible-phone" id="j-my-items-status-arrows">
             <table>
                 <tr>
-                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_left j-left"><a href="#"><i class="fa fa-chevron-left"></i></a></div></td>
+                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_left j-left"><a href="javascript:void(0);"><i class="fa fa-chevron-left"></i></a></div></td>
                     <td class="u-cabinet__sub-navigation__type__title j-title"><?= $status[$f['status']]['title'] ?></td>
-                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_right j-right"><a href="#"><i class="fa fa-chevron-right"></i></a></div></td>
+                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_right j-right"><a href="javascript:void(0);"><i class="fa fa-chevron-right"></i></a></div></td>
                 </tr>
             </table>
         </div>
@@ -73,26 +73,26 @@
         <span class="u-ads_actions__count">
             <span><?= _t('bbs.my', 'Выбрано'); ?>
                 <span class="dropdown">
-                    <a href="#" data-toggle="dropdown" class="ajax ico"><span><b class="j-sel-title"></b></span></a>
+                    <a href="javascript:void(0);" data-toggle="dropdown" class="ajax ico"><span><b class="j-sel-title"></b></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" class="j-mass-select" data-act="all-page"><?= _t('bbs.my', 'выбрать все на странице'); ?></a></li>
-                        <li><a href="#" class="j-mass-select" data-act="all"><?= _t('bbs.my', 'выбрать все'); ?></a></li>
-                        <li><a href="#" class="j-mass-select" data-act="cancel"><?= _t('bbs.my', 'отменить выбор'); ?></a></li>
+                        <li><a href="javascript:void(0);" class="j-mass-select" data-act="all-page"><?= _t('bbs.my', 'выбрать все на странице'); ?></a></li>
+                        <li><a href="javascript:void(0);" class="j-mass-select" data-act="all"><?= _t('bbs.my', 'выбрать все'); ?></a></li>
+                        <li><a href="javascript:void(0);" class="j-mass-select" data-act="cancel"><?= _t('bbs.my', 'отменить выбор'); ?></a></li>
                     </ul>
                 </span>
             </span>:</span>
         <ul class="unstyled j-sel-actions hide" data-status="1">
-            <li><a href="#" class="j-sel-action" data-act="mass-unpublicate"><?= _t('bbs.my', 'Снять с публикации') ?></a></li>
-            <? /* ?><li><a href="#" class="j-sel-action" data-act="mass-promote"><?= _t('bbs.my', 'Рекламировать') ?></a></li><? */ ?>
-            <li><a href="#" class="j-sel-action" data-act="mass-refresh"><?= _t('bbs.my', 'Продлить') ?></a></li>
-            <? if (BBS::svcUpFreePeriod() > 0) { ?><li><a href="#" class="j-sel-action" data-act="mass-up-free"><?= _t('bbs.my', 'Поднять бесплатно') ?></a></li><? } ?>
+            <li><a href="javascript:void(0);" class="j-sel-action" data-act="mass-unpublicate"><?= _t('bbs.my', 'Снять с публикации') ?></a></li>
+            <? /* ?><li><a href="javascript:void(0);" class="j-sel-action" data-act="mass-promote"><?= _t('bbs.my', 'Рекламировать') ?></a></li><? */ ?>
+            <li><a href="javascript:void(0);" class="j-sel-action" data-act="mass-refresh"><?= _t('bbs.my', 'Продлить') ?></a></li>
+            <? if (BBS::svcUpFreePeriod() > 0) { ?><li><a href="javascript:void(0);" class="j-sel-action" data-act="mass-up-free"><?= _t('bbs.my', 'Поднять бесплатно') ?></a></li><? } ?>
         </ul>
         <ul class="unstyled j-sel-actions hide" data-status="2">
-            <li><a href="#" class="j-sel-action" data-act="mass-delete"><?= _t('bbs.my', 'Удалить') ?></a></li>
+            <li><a href="javascript:void(0);" class="j-sel-action" data-act="mass-delete"><?= _t('bbs.my', 'Удалить') ?></a></li>
         </ul>
         <ul class="unstyled j-sel-actions hide" data-status="3">
-            <li><a href="#" class="j-sel-action" data-act="mass-publicate"><?= _t('bbs.my', 'Активировать') ?></a></li>
-            <li><a href="#" class="j-sel-action" data-act="mass-delete"><?= _t('bbs.my', 'Удалить') ?></a></li>
+            <li><a href="javascript:void(0);" class="j-sel-action" data-act="mass-publicate"><?= _t('bbs.my', 'Активировать') ?></a></li>
+            <li><a href="javascript:void(0);" class="j-sel-action" data-act="mass-delete"><?= _t('bbs.my', 'Удалить') ?></a></li>
         </ul>
         <div class="clearfix"></div>
     </div>
@@ -101,16 +101,16 @@
     <div class="u-ads__actions_mobile visible-phone j-my-items-sel-actions-<?= bff::DEVICE_PHONE ?>">
         <span class="u-ads_actions__count"><span class="j-sel-title"></span>:</span>
         <span class="j-sel-actions hide" data-status="1">
-            <a class="btn btn-small j-sel-action" data-act="mass-unpublicate" href="#"><i class="fa fa-times"></i></a>
-            <? /* ?><a class="btn btn-small j-sel-action" data-act="mass-promote" href="#"><i class="fa fa-gift"></i></a><? */ ?>
-            <a class="btn btn-small j-sel-action" data-act="mass-refresh" href="#"><i class="fa fa-refresh"></i></a>
+            <a class="btn btn-small j-sel-action" data-act="mass-unpublicate" href="javascript:void(0);"><i class="fa fa-times"></i></a>
+            <? /* ?><a class="btn btn-small j-sel-action" data-act="mass-promote" href="javascript:void(0);"><i class="fa fa-gift"></i></a><? */ ?>
+            <a class="btn btn-small j-sel-action" data-act="mass-refresh" href="javascript:void(0);"><i class="fa fa-refresh"></i></a>
         </span>
         <span class="j-sel-actions hide" data-status="2">
-            <a class="btn btn-small j-sel-action" data-act="mass-delete" href="#"><i class="fa fa-times"></i></a>
+            <a class="btn btn-small j-sel-action" data-act="mass-delete" href="javascript:void(0);"><i class="fa fa-times"></i></a>
         </span>
         <span class="j-sel-actions hide" data-status="3">
-            <a class="btn btn-small j-sel-action" data-act="mass-publicate" href="#"><i class="fa fa-arrow-up"></i></a>
-            <a class="btn btn-small j-sel-action" data-act="mass-delete" href="#"><i class="fa fa-times"></i></a>
+            <a class="btn btn-small j-sel-action" data-act="mass-publicate" href="javascript:void(0);"><i class="fa fa-arrow-up"></i></a>
+            <a class="btn btn-small j-sel-action" data-act="mass-delete" href="javascript:void(0);"><i class="fa fa-times"></i></a>
         </span>
         <div class="clearfix"></div>
     </div>
@@ -124,7 +124,7 @@
                 <?= _t('bbs.my', 'Вы достигли лимита активных объявлений'); ?>
             </div>
             <div class="span2">
-                <a href="#" class="btn btn-warning btn-block" id="j-limits-payed-info" data-shop="<?= $shop ?>"><?= _t('', 'Детальнее'); ?></a>
+                <a href="javascript:void(0);" class="btn btn-warning btn-block" id="j-limits-payed-info" data-shop="<?= $shop ?>"><?= _t('', 'Детальнее'); ?></a>
             </div>
         </div>
     </div>
@@ -177,13 +177,13 @@
     </div>
     <ul id="j-my-items-pp" class="u-cabinet__list__pagination__howmany nav nav-pills pull-right hidden-phone<?= ( ! $total ? ' hide' : '' ) ?>">
         <li class="dropdown">
-            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="#">
+            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="javascript:void(0);">
                 <span class="j-pp-title"><?= $pgn_pp[$f['pp']]['t'] ?></span>
                 <i class="fa fa-caret-down"></i>
             </a>
             <ul class="dropdown-menu">
                 <? foreach($pgn_pp as $k=>$v): ?>
-                    <li><a href="#" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
+                    <li><a href="javascript:void(0);" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
                 <? endforeach; ?>
             </ul>
         </li>

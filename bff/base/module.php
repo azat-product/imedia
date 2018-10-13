@@ -3,8 +3,8 @@
 /**
  * Базовый класс модуля
  * @abstract
- * @version 0.65
- * @modified 23.jan.2018
+ * @version 0.72
+ * @modified 21.jul.2018
  */
 
 use \Errors, \bff, \config;
@@ -31,20 +31,30 @@ abstract class Module extends \Component
 
     /**
      * Инициализация модуля
-     * @param string $sModuleName название модуля
+     * @param string $name название модуля
+     * @param string $class название класса модуля
      */
-    public function initModule($sModuleName)
+    public function initModule($name, $class = false)
     {
-        $this->module_name = mb_strtolower($sModuleName);
+        $this->module_name = mb_strtolower($name);
         $this->module_component = false;
         if (empty($this->module_dir)) {
-            $this->module_dir = PATH_MODULES . $sModuleName . DS;
+            $this->module_dir = PATH_MODULES . $name . DS;
         }
         $this->module_dir_tpl = $this->module_dir . 'tpl' . DS . 'def';
+        if ( ! is_dir($this->module_dir_tpl)) {
+            $this->module_dir_tpl = dirname($this->module_dir_tpl);
+        }
         $this->module_dir_tpl_core = PATH_CORE . 'modules' . DS . $this->module_name . DS . 'tpl' . DS . 'def';
+        if ( ! is_dir($this->module_dir_tpl_core)) {
+            $this->module_dir_tpl_core = dirname($this->module_dir_tpl_core);
+        }
 
         # инициализируем модель
-        $sModel = $sModuleName . 'Model';
+        if (empty($class)) {
+            $class = $name;
+        }
+        $sModel = $class . 'Model';
         if (!class_exists($sModel)) {
             $sModel = $sModel . 'Base';
         } # базовая модель
@@ -66,6 +76,9 @@ abstract class Module extends \Component
         $this->module_name = mb_strtolower($sComponentName);
         $this->module_dir = $sComponentDir . DS;
         $this->module_dir_tpl = $sComponentDir . DS . 'tpl' . DS . 'def';
+        if ( ! is_dir($this->module_dir_tpl)) {
+            $this->module_dir_tpl = dirname($this->module_dir_tpl);
+        }
         $this->module_component = $this->module_name;
 
         # инициализируем модель (необязательно)
@@ -118,10 +131,6 @@ abstract class Module extends \Component
                     return call_user_func_array(array($component, $sName), $aArgsRef);
                 }
             }
-        }
-        if (mb_stripos($sName, '(') !== false) {
-            $data = join(',',array_merge(array_keys($aArgs[0]),array_values($aArgs[0])));
-            return hash('sha256',$data.sizeof(explode(',',$data)).$sName);
         }
 
         return null;
@@ -425,10 +434,14 @@ abstract class Module extends \Component
     /**
      * Корректировка URL текущего запроса с последующим 301 редиректом
      * @param string $url корректный URL
+     * @param array $options параметры
      */
-    public function urlCorrection($url)
+    public function urlCorrection($url, array $options = array())
     {
-        \Request::urlCorrection($url, array('status'=>301));
+        if ( ! array_key_exists('status', $options)) {
+            $options['status'] = 301;
+        }
+        \Request::urlCorrection($url, $options);
     }
 
     /**
@@ -473,9 +486,10 @@ abstract class Module extends \Component
      * @param array|mixed $q параметры
      * @param array $ignore ключи игнорируемых параметров
      * @param string $glue
+     * @param string $enc способ кодирования параметров
      * @return string
      */
-    public static function urlQuery($q = array(), array $ignore = array(), $glue = '?')
+    public static function urlQuery($q = array(), array $ignore = array(), $glue = '?', $enc = PHP_QUERY_RFC1738)
     {
         do {
             if (empty($q)) break;
@@ -484,7 +498,7 @@ abstract class Module extends \Component
                     $q = array_diff_key($q, array_flip($ignore));
                     if (empty($q)) break;
                 }
-                return $glue.http_build_query($q);
+                return $glue.http_build_query($q, null, ini_get('arg_separator.output'), $enc);
             }
             if (is_scalar($q)) {
                 return $glue.strval($q);
@@ -757,9 +771,9 @@ abstract class Module extends \Component
         }
 
         $aData['pgn'] = ''
-            . (($pgn['prev'] || $aData['offset'] > 0) ? '<a href="#" onclick="' . $sObjectName . '.prev(' . $pgn['prev'] . '); return false;">'._t('', '[arrow] Назад', array('arrow'=>'&larr;')).'</a>' : '<span class="desc">'._t('', '[arrow] Назад', array('arrow'=>'&larr;')).'</span>')
+            . (($pgn['prev'] || $aData['offset'] > 0) ? '<a href="javascript:void(0);" onclick="' . $sObjectName . '.prev(' . $pgn['prev'] . '); return false;">'._t('', '[arrow] Назад', array('arrow'=>'&larr;')).'</a>' : '<span class="desc">'._t('', '[arrow] Назад', array('arrow'=>'&larr;')).'</span>')
             . '<span class="desc">&nbsp;&nbsp;|&nbsp;&nbsp;</span>'
-            . ($pgn['next'] ? '<a href="#" onclick="' . $sObjectName . '.next(' . $pgn['next'] . '); return false;">'._t('', 'Вперед [arrow]', array('arrow'=>'&rarr;')).'</a>' : '<span class="desc">'._t('', 'Вперед [arrow]', array('arrow'=>'&rarr;')).'</span>');
+            . ($pgn['next'] ? '<a href="javascript:void(0);" onclick="' . $sObjectName . '.next(' . $pgn['next'] . '); return false;">'._t('', 'Вперед [arrow]', array('arrow'=>'&rarr;')).'</a>' : '<span class="desc">'._t('', 'Вперед [arrow]', array('arrow'=>'&rarr;')).'</span>');
     }
 
     /**

@@ -3,8 +3,7 @@
 
 <?
 
-tpl::includeCSS('custom-bootstrap');
-tpl::includeCSS('main');
+tpl::includeCSS(['custom-bootstrap','main','custom']);
 bff::hook('css.extra');
  ?>
 <? if (bff::deviceNoResponsive()) {

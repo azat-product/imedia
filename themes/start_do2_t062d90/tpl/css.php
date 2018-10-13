@@ -3,8 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <?php
-tpl::includeCSS('bootstrap');
-tpl::includeCSS('main');
+tpl::includeCSS(['bootstrap','main','custom']);
 bff::hook('css.extra');
 ?>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" media="all" type="text/css" />

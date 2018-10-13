@@ -24,7 +24,7 @@
     <div class="u-cabinet__sub-navigation_desktop hidden-phone">
         <ul class="nav nav-pills">
             <? foreach($folders as $k=>$v) {
-                   ?><li class="u-cabinet__sub-navigation__sort <? if($f['f'] == $k) { ?> active<? } ?> j-folder-options"><a href="#" class="j-folder-option" data-value="<?= $k ?>"><span><?= $v['title'] ?></span></a></li><?
+                   ?><li class="u-cabinet__sub-navigation__sort <? if($f['f'] == $k) { ?> active<? } ?> j-folder-options"><a href="javascript:void(0);" class="j-folder-option" data-value="<?= $k ?>"><span><?= $v['title'] ?></span></a></li><?
                } ?>
             <li class="u-cabinet__sub-navigation__search pull-right">
                 <div class="input-append">
@@ -40,9 +40,9 @@
         <div class="u-cabinet__sub-navigation__type" id="j-my-messages-folder-arrows">
             <table>
                 <tr>
-                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_left j-left"><a href="#"><i class="fa fa-chevron-left"></i></a></div></td>
+                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_left j-left"><a href="javascript:void(0);"><i class="fa fa-chevron-left"></i></a></div></td>
                     <td class="u-cabinet__sub-navigation__type__title j-title"><?= $folders[$f['f']]['title'] ?></td>
-                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_right j-right"><a href="#"><i class="fa fa-chevron-right"></i></a></div></td>
+                    <td><div class="u-cabinet__sub-navigation__type__arrow u-cabinet__sub-navigation__type__arrow_right j-right"><a href="javascript:void(0);"><i class="fa fa-chevron-right"></i></a></div></td>
                 </tr>
             </table>
         </div>
@@ -62,13 +62,13 @@
     </div>
     <ul id="j-my-messages-pp" class="u-cabinet__list__pagination__howmany nav nav-pills pull-right hidden-phone<?= ( ! $total ? ' hide' : '' ) ?>">
         <li class="dropdown">
-            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="#">
+            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="javascript:void(0);">
                 <span class="j-pp-title"><?= $pgn_pp[$f['pp']]['t'] ?></span>
                 <i class="fa fa-caret-down"></i>
             </a>
             <ul class="dropdown-menu">
                 <? foreach($pgn_pp as $k=>$v): ?>
-                    <li><a href="#" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
+                    <li><a href="javascript:void(0);" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
                 <? endforeach; ?>
             </ul>
         </li>

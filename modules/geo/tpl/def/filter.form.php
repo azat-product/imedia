@@ -40,7 +40,7 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET ) { ?>
                             <b id="j-f-region-desktop-country-title"><?= ! empty($country) ? $country['title'] : '' ?></b>
                         </div>
                         <div class="span3">
-                            <a href="#" class="ajax change pull-right j-f-region-desktop-back"><?= _t('filter', 'Изменить страну'); ?></a>
+                            <a href="javascript:void(0);" class="ajax change pull-right j-f-region-desktop-back"><?= _t('filter', 'Изменить страну'); ?></a>
                         </div>
                     </fieldset>
                     <div class="form-inline pull-left<?= $noregions ? ' hide' : '' ?>" action="">
@@ -53,7 +53,7 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET ) { ?>
                             $attr .= 'href="'.Geo::url(array('country' => $country['keyword'])).'" ';
                             $attr .= 'data="{id:'.$country['id'].',pid:0,key:\''.$country['keyword'].'\'}" ';
                         } else {
-                            $attr .= 'href="#"';
+                            $attr .= 'href="javascript:void(0);"';
                         }
                         echo(_t('filter', 'Искать объявления по <a[attr]>всей стране</a>', array('attr' => $attr))); ?>
                     <hr />
@@ -109,14 +109,14 @@ if($device == bff::DEVICE_PHONE) { ?>
     <!--STAR select rerion-->
     <div class="select-ext">
         <div class="select-ext-container" style="width:100%">
-            <a class="select-ext-bnt" href="#" id="j-f-region-phone-link">
+            <a class="select-ext-bnt" href="javascript:void(0);" id="j-f-region-phone-link">
                 <span><?= ( $regionID > 0 ? $regionData['title'] : _t('filter', 'Все регионы') ) ?></span>
                 <i class="fa fa-caret-down"></i>
             </a>
             <div id="j-f-region-phone-popup" class="select-ext-drop hide" style="width:99%;">
                 <div class="select-ext-search">
                     <input type="text" autocomplete="off" style="min-width: 183px;" id="j-f-region-phone-q" />
-                    <a href="#"><i class="fa fa-search"></i></a>
+                    <a href="javascript:void(0);"><i class="fa fa-search"></i></a>
                 </div>
                 <ul class="select-ext-results" id="j-f-region-phone-q-list">
                     <?= $this->filterData('phone-presuggest', ! empty($country['id']) ? $country['id'] : 0) ?>

@@ -15,10 +15,11 @@ class M_Bbs_
         }
 
         # Печать объявлений
-        if (bff::servicesEnabled() && BBS::PRESS_ON && $security->haveAccessToModuleToMethod($sClass, 'items-press')) {
-            $menu->assign($sMenuTitle, _t('bbs', 'Печать в прессе'), $sClass, 'listing_press', true, 5,
-                array('counter' => 'bbs_items_press')
-            );
+        if (bff::servicesEnabled() && BBS::PRESS_ON) {
+            $menu->assign($sMenuTitle, _t('bbs', 'Печать в прессе'), $sClass, 'listing_press', true, 5, array(
+                'counter' => 'bbs_items_press',
+                'access' => 'items-press',
+            ));
         }
 
         # Формы добавления / редактирования

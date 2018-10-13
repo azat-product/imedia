@@ -10,7 +10,7 @@
  */
 
 if ( ! $isRunning) { ?>
-    <div class="alert alert-error" style="margin-bottom: 10px;"><?= _t('sphinx', 'Для работы данной функции вам необходимо подключить поисковую систему Sphinx.') ?></div>
+    <div class="alert alert-info" style="margin-bottom: 10px;"><?= _t('sphinx', 'Для работы данной функции вам необходимо подключить поисковую систему Sphinx.') ?></div>
 <?php } else { ?>
 <div class="well well-small" style="margin-bottom: 10px;"><?= _t('sphinx', 'Изменения данного списка начнут отражаться на результатах поиска в течении суток.') ?></div>
 <?php } ?>
@@ -21,7 +21,7 @@ if ( ! $isRunning) { ?>
         <input type="hidden" name="order" value="<?= HTML::escape($f['order']) ?>" />
 
         <div class="btn-group left">
-            <a class="btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" href="#">
+            <a class="btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);">
                 <?= _t('', '+ добавить') ?>
                 <span class="caret"></span>
             </a>

@@ -5,7 +5,7 @@
 $coveringCity = Geo::coveringType(Geo::COVERING_CITY);
 if ( ! $coveringCity)
 {
-    tpl::includeJS('filter', false, 5);
+    tpl::includeJS('filter', false, 6);
     $regionID = 0;
     $confirmView = false;
     if (Geo::ipLocationConfirm()) {
@@ -33,10 +33,10 @@ if ( ! $coveringCity && Geo::coveringType(Geo::COVERING_COUNTRIES)) {
   </a>
     <?php // Confirm Region
       if ($confirmView) { ?>
-      <div class="dropdown-menu show" id="j-f-region-desktop-confirm">
+      <div class="dropdown-menu show" id="j-f-region-desktop-confirm" style="padding: 10px;">
         <b><?= _t('filter', 'Ваш регион [region]?', array('region' => $regionData['title'])) ?></b>
         <hr />
-        <button type="button" data-id="<?= $regionID ?>" class="btn btn-success j-confirm-yes"><?= _t('filter','Да') ?></button>
+        <button type="button" data-id="<?= $regionID ?>" data-redirect="<?= HTML::escape(bff::urlRegionChange($regionData['keyword'])); ?>" class="btn btn-success j-confirm-yes"><?= _t('filter','Да') ?></button>
         <a href="#" class="btn j-confirm-no" data-filter-text="<?= HTML::escape($titleAll) ?>"><?= _t('filter','Нет, выбрать другой') ?></a>
       </div>      
     <?php } ?>

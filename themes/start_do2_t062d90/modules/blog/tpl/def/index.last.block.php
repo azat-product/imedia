@@ -8,7 +8,7 @@
 ?>
 <div class="index-blog">
     <div class="index__heading">
-        <h2 class="b-index-blog-heading-title"><?= ! empty($title) ? $title : _t('blog', 'Последнее в блоге') ?></h2>
+        <div class="b-index-blog-heading-title"><?= ! empty($title) ? $title : _t('blog', 'Последнее в блоге') ?></div>
     </div>
 
     <div class="index-blog-list">
@@ -24,9 +24,9 @@
                     </div>
                     <? endif; ?>
                     <div class="bl-date"><?= tpl::dateFormat($v['created'], _t('blog','%d.%m.%Y в %H:%M')) ?></div>
-                    <h3 class="bl-list-item-title">
+                    <div class="bl-list-item-title">
                         <a href="<?= $v['link'] ?>"><?= $v['title'] ?></a>
-                    </h3>
+                    </div>
                     <p><?= $v['textshort'] ?></p>
                 </div>
             </div>

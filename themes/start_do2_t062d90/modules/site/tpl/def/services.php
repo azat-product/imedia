@@ -17,10 +17,12 @@
   <h1 class="l-pageHeading-title"><?= (!empty($titleh1) ? $titleh1 : _t('svc', 'Как продать быстрее?')) ?></h1>
 </div>
 
+<?php if ( ! empty($svc_shops)) { ?>
 <ul class="nav nav-pills mrgb15" role="tablist">
   <li class="active"><a href="#tab-ads" aria-controls="tab-ads" role="tab" data-toggle="tab"><?= _t('svc', 'Объявления') ?></a></li>
   <li><a href="#tab-shops" aria-controls="tab-shops" role="tab" data-toggle="tab"><?= _t('svc', 'Магазин') ?></a></li>
 </ul>
+<?php } ?>
 
 <div class="tab-content">
   
@@ -63,6 +65,7 @@
 
   </div><!-- /#tab-ads -->
 
+  <?php if ( ! empty($svc_shops)) { ?>
   <!-- Shops tab -->
   <div role="tabpanel" class="tab-pane" id="tab-shops">
     
@@ -102,6 +105,7 @@
     </div>
 
   </div><!-- /#tab-shops -->
+  <?php } ?>
 
 </div>
 

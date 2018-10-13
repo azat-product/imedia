@@ -9,6 +9,11 @@ abstract class SiteModuleBase extends Module
     static $pagesPath = '';
     static $pagesExtension = '.html';
 
+    const COUNTERS_POS_HEAD        = 1;
+    const COUNTERS_POS_BODY_START  = 2;
+    const COUNTERS_POS_BODY_FINISH = 3;
+    const COUNTERS_POS_FOOTER      = 0;
+
     public function init()
     {
         parent::init();
@@ -108,9 +113,61 @@ abstract class SiteModuleBase extends Module
         return $options;
     }
 
+    /**
+     * Ссылка на системную настройку
+     * @param string $module
+     * @param string|array $opts
+     * @param string $template
+     * @return string
+     */
+    public static function settingsSystemLink($module, $opts = array(), $template = '')
+    {
+        if (is_string($opts)) {
+            $opts = array('sett'=>$opts);
+        }
+        \func::array_defaults($opts, array(
+            'tab'  => 'def',
+            'sett' => '',
+            'e'    => true,
+            'local'=> false,
+            'local-attr'=> array(),
+        ));
+        $hash = '#'.strval($opts['tab']);
+        if ( ! empty($opts['sett'])) {
+            $hash .= ':'.$opts['sett'];
+        }
+        if (!empty($opts['local'])) {
+            \HTML::attributeAdd($opts['local-attr'], 'class', 'j-local-link');
+            return \HTML::attributes(array_merge($opts['local-attr'], array(
+                'href' => \HTML::escape($hash, $opts['e']),
+                'data-module' => strval($module),
+            )));
+        }
+        $link = \tpl::adminLink('settingsSystemManager&tab='.strval($module).$hash, 'site', $opts['e']);
+        if (!empty($template) && is_string($template)) {
+            switch ($template) {
+                case 'disabled': {
+                    $link = _t('site', 'Данная функция отключена в <a [setting_link]>системных настройках</a> и не отображается пользователям сайта.', array('setting_link'=>'href="'.$link.'"'));
+                } break;
+            }
+        }
+        return $link;
+    }
+
     public function getCounters()
     {
         return $this->model->countersView();
+    }
+
+    /**
+     * Получаем данные валюты по её коду
+     * @param string $code трехбуквенный код (ISO 4217), например 'USD', 'RUB', 'UAH'
+     * @param string|mixed $key ключ требуемых данных или false - все данные
+     * @return mixed
+     */
+    public static function currency($code, $key = 'id')
+    {
+        //
     }
 
     /**
@@ -251,7 +308,7 @@ abstract class SiteModuleBase extends Module
     public function preventSpam($key, $timeout = 20, $setError = true)
     {
         $timeout = intval($timeout);
-        if ($timeout <= 0) {
+        if ($timeout <= 0 || BFF_TEST) {
             return false;
         }
 
@@ -361,7 +418,7 @@ abstract class SiteModuleBase extends Module
             case 'validate':
                 # тестирование систем оплат
                 # обработка POST/AJAX запросов
-                if (bff::$class === 'bills' || Request::isPOST() || bff::adminPanel()) {
+                if (bff::$class === 'bills' || bff::$class === 'seo' || Request::isPOST() || bff::adminPanel()) {
                     return true;
                 }
                 if (!empty($_GET[$key]) && bff::input()->get($key, TYPE_NOTAGS) === $secret) {
@@ -415,6 +472,7 @@ abstract class SiteModuleBase extends Module
             config::file('site', true) => 'file', # настройки сайта
             static::$pagesPath         => 'dir+files', # статические страницы
             bff::path('tmp', 'images') => 'dir-only', # временная директория загрузки изображений
+            bff::path('images')        => 'dir-only', # /public_html/files/images/
         );
         $tmp1 = ini_get('upload_tmp_dir');
         if (!empty($tmp1)) {
@@ -511,7 +569,7 @@ abstract class SiteModuleBase extends Module
         if (empty($language)) {
             $language = bff::locale()->getCurrentLanguage();
         }
-        return (string)bff::filter('site.title.'.$language, config::sys('site.title', $default), $position, $language, $default);
+        return (string)bff::filter('site.title', config::sys('site.title', $default), $position, $language, $default);
     }
 
     /**
@@ -532,9 +590,9 @@ abstract class SiteModuleBase extends Module
             $language = bff::locale()->getCurrentLanguage();
         }
         if ($adminPanel) {
-            return (string)bff::filter('site.title.header.admin.' . $language, config::get('title_admin_' . $language, $default, TYPE_STR), $position, $adminPanel, $language, $default);
+            return (string)bff::filter('site.title.header.admin', config::get('title_admin_' . $language, $default, TYPE_STR), $position, $adminPanel, $language, $default);
         } else {
-            return (string)bff::filter('site.title.header.' . $language, config::get('title_' . $language, $default, TYPE_STR), $position, $adminPanel, $language, $default);
+            return (string)bff::filter('site.title.header', config::get('title_' . $language, $default, TYPE_STR), $position, $adminPanel, $language, $default);
         }
     }
 

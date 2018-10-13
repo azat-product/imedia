@@ -15,7 +15,6 @@
 <div class="sr-breakList-content tab-content hidden-xs">
   <?php foreach($cats as $k => $v): ?>
   <div class="tab-pane" id="categories-tab-<?= $k ?>">
-    <strong><?= $v['t'] ?></strong>
     <?php $links = array(); foreach($v['data'] as $vv){ $links[] = '<a href="'.$vv['link'].'">'.$vv['title'].'</a>'; } ?>
     <?= join(', ', $links); ?>
   </div>

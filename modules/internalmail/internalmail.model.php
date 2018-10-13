@@ -925,5 +925,70 @@ class InternalMailModel_ extends Model
     }
 
 
+    /**
+     * Список сообщений по фильтру
+     * @param array $filter
+     * @param array $fields
+     * @param array $opt
+     * @return int|mixed
+     */
+    public function messagesByFilter($filter, $fields, $opt = array())
+    {
+        func::array_defaults($opt, array(
+            'oneArray' => true,
+            'group'     => '',
+            'order'     => '',
+        ));
+
+        $filter = $this->prepareFilter($filter);
+        if (empty($fields)) {
+            return (int)$this->db->one_data('SELECT COUNT(*) FROM ' . TABLE_INTERNALMAIL . $filter['where'], $filter['bind']);
+        } else {
+            if ($opt['oneArray']) {
+                return $this->db->one_array('SELECT ' . join(',', $fields) . ' FROM ' . TABLE_INTERNALMAIL . $filter['where'].' LIMIT 1', $filter['bind']);
+            } else {
+                return $this->db->select('SELECT ' . join(',', $fields) . ' FROM ' . TABLE_INTERNALMAIL . $filter['where']
+                    .( ! empty($opt['group']) ? ' GROUP BY '.$opt['group'] : '')
+                    .( ! empty($opt['order']) ? ' ORDER BY '.$opt['order'] : ''), $filter['bind']);
+            }
+        }
+    }
+
+    /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        if (empty($userID)) return;
+
+        $users = array();
+        $filter = array(
+            'is_new' => 1,
+            'author' => $userID,
+        );
+        $data = $this->messagesByFilter($filter, array('recipient'), array('oneArray' => false, 'group' => 'recipient'));
+        foreach ($data as $v) {
+            if ( ! in_array($v['recipient'], $users)) {
+                $users[] = $v['recipient'];
+            }
+        }
+
+        $this->db->delete(TABLE_INTERNALMAIL, array('author' => $userID));
+        $this->db->delete(TABLE_INTERNALMAIL, array('recipient' => $userID));
+        $this->db->delete(TABLE_INTERNALMAIL_CONTACTS, array('user_id' => $userID));
+        $this->db->delete(TABLE_INTERNALMAIL_CONTACTS, array('interlocutor_id' => $userID));
+        $this->db->delete(TABLE_INTERNALMAIL_FOLDERS, array('user_id' => $userID));
+        $this->db->delete(TABLE_INTERNALMAIL_FOLDERS_USERS, array('user_id' => $userID));
+        $this->db->delete(TABLE_INTERNALMAIL_FOLDERS_USERS, array('interlocutor_id' => $userID));
+
+        if ( ! empty($users)) {
+            foreach($users as $v) {
+                $this->updateNewMessagesCounter($v);
+            }
+        }
+
+    }
 
 }

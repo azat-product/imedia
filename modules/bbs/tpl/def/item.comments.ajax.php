@@ -62,8 +62,8 @@ foreach ($comments as $v):
                 </div>
 
                 <div class="l-commentsList-item-controls j-comment-actions">
-                    <? if($allowAnswer){ ?><a href="#" class="ajax j-comment-add"><?= $lang['answer'] ?></a><? } ?>
-                    <? if($allowDelete){ ?><a href="#" class="ajax ico red j-comment-delete" data-id="<?= $v['id'] ?>"><i class="fa fa-times"></i> <span><?= $lang['delete'] ?></span></a><? } ?>
+                    <? if($allowAnswer){ ?><a href="javascript:void(0);" class="ajax j-comment-add"><?= $lang['answer'] ?></a><? } ?>
+                    <? if($allowDelete){ ?><a href="javascript:void(0);" class="ajax ico red j-comment-delete" data-id="<?= $v['id'] ?>"><i class="fa fa-times"></i> <span><?= $lang['delete'] ?></span></a><? } ?>
                 </div>
 
                 <? if ($allowAnswer): ?>
@@ -75,7 +75,7 @@ foreach ($comments as $v):
                             <textarea rows="3" name="message" class="span12 j-message"></textarea>
                         </div>
                         <button type="submit" class="btn btn-success btn-sm j-submit"><?= $lang['answer'] ?></button>
-                        <a href="#" class="btn btn-default btn-sm j-comment-cancel"><?= $lang['cancel'] ?></a>
+                        <a href="javascript:void(0);" class="btn btn-default btn-sm j-comment-cancel"><?= $lang['cancel'] ?></a>
                     </form>
                 </div>
                 <? endif; ?>
@@ -99,11 +99,11 @@ foreach ($comments as $v):
 if ($i > $perPage): ?>
     <? if ($level > 1): ?>
     <div class="l-commentsList-item-showall j-comments-more-block">
-        <a href="#" class="ajax j-comments-more" data-answers="1"><?= $lang['show_answers'] ?></a>
+        <a href="javascript:void(0);" class="ajax j-comments-more" data-answers="1"><?= $lang['show_answers'] ?></a>
     </div>
     <? else: ?>
     <li class="l-commentsList-item-more j-comments-more-block">
-        <a href="#" class="ajax j-comments-more" data-answers="0"><?= $lang['show_more'] ?></a>
+        <a href="javascript:void(0);" class="ajax j-comments-more" data-answers="0"><?= $lang['show_more'] ?></a>
         <div class="c-spacer10 visible-xs"></div>
     </li>
     <? endif; ?>

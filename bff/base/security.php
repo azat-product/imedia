@@ -3,8 +3,9 @@
 /**
  * Базовый класс работы с сессией + некоторые вспомогательные утилиты
  * @abstract
- * @version 0.4
- * @modified 14.feb.2018
+ * @version 0.42
+ * @modified 20.jul.2018
+ * @copyright Tamaranga
  *
  * config::sys:
  * - session.start.always - стартовать ли сессию всегда(true), либо только после успешной авторизации(false)
@@ -16,6 +17,7 @@ abstract class Security
     protected $sessionData = array();
     protected $sessionKey = 'BFF';
     protected $sessionKeyUser = 'USER';
+    protected $sessionApi = array();
     protected $sessionCookie = array(
         /** @var string cookie-name префикс */
         'prefix'       => 'bffss',
@@ -59,7 +61,7 @@ abstract class Security
         $useragent = strtolower(\Request::userAgent('no user agent'));
         $is_flash = (stripos($useragent, 'flash') !== false);
 
-        if (!\bff::$isBot) { # зачем поисковым ботам сессия, у них ведь и куков нет
+        if (!\bff::isRobot()) { # зачем поисковым ботам сессия, у них ведь и куков нет
             $this->sessionStart((\bff::adminPanel() ? $is_flash : !\config::sys('session.start.always', false)));
         }
 
@@ -821,13 +823,27 @@ abstract class Security
      */
     public function getSESSION($var, $default = false)
     {
+        if (array_key_exists('load', $this->sessionApi)) {
+            return call_user_func_array($this->sessionApi['load'], array($var, $default));
+        }
         return (isset($_SESSION[$this->sessionKey][$var]) ?
             $_SESSION[$this->sessionKey][$var] : $default);
     }
 
     public function setSESSION($var, $value)
     {
+        if (array_key_exists('save', $this->sessionApi)) {
+            call_user_func_array($this->sessionApi['save'], array($var, $value));
+        }
         $_SESSION[$this->sessionKey][$var] = $value;
+    }
+
+    public function setSessionApi(callable $load, callable $save)
+    {
+        $this->sessionApi = array(
+            'load' => $load,
+            'save' => $save,
+        );
     }
 
     public function haveAccessToAdminPanel($nUserID = null)

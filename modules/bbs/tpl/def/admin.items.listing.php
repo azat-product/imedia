@@ -27,7 +27,7 @@
 
 <div class="tabsBar" id="items-status-tabs">
     <? foreach($aTabs as $k=>$v) { ?>
-    <span class="tab<?= $k==$f['status'] ? ' tab-active' : '' ?>"><a href="#" onclick="return jItems.onStatus(<?= $k ?>, this);"<?= (!empty($v['c']) ? $v['c'] : '') ?>><?= $v['t'] ?><? if(! empty($v['counter'])){ ?> (<span class="j-counter"><?= $v['counter'] ?></span>)<? } ?></a></span>
+    <span class="tab<?= $k==$f['status'] ? ' tab-active' : '' ?>"><a href="javascript:void(0);" onclick="return jItems.onStatus(<?= $k ?>, this);"<?= (!empty($v['c']) ? $v['c'] : '') ?>><?= $v['t'] ?><? if(! empty($v['counter'])){ ?> (<span class="j-counter"><?= $v['counter'] ?></span>)<? } ?></a></span>
     <? } ?>
     <span class="progress pull-right" style="display:none; position: absolute; right: 10px; top: 20px;" id="progress-items"></span>
 </div>
@@ -87,7 +87,7 @@
 var jItems = (function()
 {
     var $progress, $list, $listPgn, filters, $moderateList, $tabs;
-    var url = '<?= $this->adminLink('listing'); ?>';
+    var url = '<?= $this->adminLink('listing',null,'js'); ?>';
     var status = intval(<?= $f['status'] ?>), statusMod = 3;
     var cat = intval(<?= $f['cat'] ?>);
     var $checkAll, $checkAllTh, $moderate, $moderateInfo;
@@ -113,10 +113,10 @@ var jItems = (function()
         $list.on('click', '.j-item-import-info', function(){
             var importID = intval($(this).data('import-id'));
             if (importID > 0) {
-                $.fancybox('', {ajax: true, href: '<?= $this->adminLink('ajax&act=import-info&id=') ?>' + importID});
+                $.fancybox('', {ajax: true, href: '<?= $this->adminLink('ajax&act=import-info&id=',null,'js') ?>' + importID});
             }
         });
-        $moderateList.change(function(){
+        $moderateList.on('change',function(){
             updateList();
         });
         
@@ -295,7 +295,7 @@ var jItems = (function()
 
             if(_processing) return false;
             _processing = true;
-            bff.ajax('<?= $this->adminLink('ajax'); ?>'+'&act=items-approve', $c.serialize(), function(resp){
+            bff.ajax('<?= $this->adminLink('ajax',null,'js'); ?>'+'&act=items-approve', $c.serialize(), function(resp){
                 _processing = false;
                 if(resp && resp.success) {
                     bff.success('<?= HTML::escape(_t('bbs', 'Успешно одобрено:'),'js'); ?> '+resp.updated);

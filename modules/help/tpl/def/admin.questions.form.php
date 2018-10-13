@@ -17,7 +17,7 @@
 <input type="hidden" name="cat_id" id="question-cat_id" value="<?= $cat_id ?>" />
 <div class="tabsBar" id="HelpQuestionsFormTabs">
     <? foreach($aTabs as $k=>$v) { ?>
-        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="#" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
+        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="javascript:void(0);" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
     <? } ?>
 </div>
 <div class="j-tab j-tab-info">

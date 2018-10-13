@@ -31,8 +31,14 @@ if ($step == 1)
         } ?>
         <ul class="rel">
             <li class="abs letter"><?= $letter ?></li><?
-        while(list($k,$vv) = each($v)) {
-            ?><li><a title="<?= $vv['title'] ?>" href="<?= $vv['link'] ?>" data="{id:<?= $vv['id'] ?>,pid:<?= $vv['pid'] ?>,key:'<?= $vv['keyword'] ?>'}"><span><?= $vv['title'] ?></span></a></li><?
+        while(list($k,$vv) = each($v)) { ?>
+            <li>
+                <?php if ($vv['items'] > 0) { ?>
+                <a title="<?= $vv['title'] ?>" href="<?= $vv['link'] ?>" data="{id:<?= $vv['id'] ?>,pid:<?= $vv['pid'] ?>,key:'<?= $vv['keyword'] ?>'}"><span><?= $vv['title'] ?></span></a>
+                <?php } else { ?>
+                <span class="hidden-link" title="<?= $vv['title'] ?>" data-link="<?= $vv['link'] ?>" data="{id:<?= $vv['id'] ?>,pid:<?= $vv['pid'] ?>,key:'<?= $vv['keyword'] ?>'}"><span><?= $vv['title'] ?></span></span>
+                <?php } ?>
+            </li><?
             if( ++$i == $break_column && key($v) !== NULL ) { ?></ul><? goto letter1; }
         } ?>
         </ul><?
@@ -51,7 +57,7 @@ else if ($step == 2)
             <b><?= $region['title'] ?></b><br />
             <?= _t('filter', 'Искать объявления по <a [attr]>всему региону</a>', array('attr'=>'href="'.$region['link'].'" class="j-f-region-desktop-st2-region" data="{id:'.$region['id'].',pid:0,type:\'region\',title:\''.HTML::escape($region['title'], 'js').'\'}"')) ?>
         </div>
-        <div class="span3"><a href="#" class="ajax change pull-right j-f-region-desktop-back"><?= _t('filter','Изменить регион') ?></a></div>
+        <div class="span3"><a href="javascript:void(0);" class="ajax change pull-right j-f-region-desktop-back"><?= _t('filter','Изменить регион') ?></a></div>
     </fieldset>
     <hr />
     <? } ?>
@@ -69,8 +75,14 @@ else if ($step == 2)
         }
         ?><ul class="rel">
             <li class="abs letter"><?= $letter ?></li><?
-            while(list($k,$vv) = each($v)) {
-                ?><li><a href="<?= $vv['link'] ?>" class="<? if($vv['main'] > 0) { ?>main <? } ?><? if($vv['active']) { ?>active<? } ?>" data="{id:<?= $vv['id'] ?>,pid:<?= $region['id'] ?>}" title="<?= $vv['title'] ?>"><span><?= $vv['title'] ?></span></a></li><?
+            while(list($k,$vv) = each($v)) { ?>
+                <li>
+                    <?php if ($vv['items'] > 0) { ?>
+                    <a href="<?= $vv['link'] ?>" class="<? if($vv['main'] > 0) { ?> main<? } ?><? if($vv['active']) { ?> active<? } ?>" data="{id:<?= $vv['id'] ?>,pid:<?= $region['id'] ?>,items:<?= $vv['items'] ?>}" title="<?= $vv['title'] ?>"><span><?= $vv['title'] ?></span></a>
+                    <?php } else { ?>
+                    <span data-link="<?= $vv['link'] ?>" class="hidden-link <? if($vv['main'] > 0) { ?> main<? } ?><? if($vv['active']) { ?> active<? } ?>" data="{id:<?= $vv['id'] ?>,pid:<?= $region['id'] ?>,items:<?= $vv['items'] ?>}" title="<?= $vv['title'] ?>"><span><?= $vv['title'] ?></span></span>
+                    <?php } ?>
+                </li><?
                 if( ++$i == $break_column && key($v) !== NULL ) { ?></ul><? goto letter2; }
             } ?>
           </ul><?

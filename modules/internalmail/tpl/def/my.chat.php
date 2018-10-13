@@ -19,7 +19,10 @@
         <table>
             <tr>
                 <td><a href="<?= $url_back ?>" class="ico"><i class="fa fa-chevron-left"></i> <span><?= _t('internalmail', 'Все сообщения') ?></span></a></td>
-                <td class="align-center"><a href="<?= $i['url_profile'] ?>" class="v-author__avatar u-cabinet__sub-navigation__back"><img src="<?= $i['avatar'] ?>" class="img-circle" alt="" /></a> <?= $i['url_title'] ?></td>
+                <td class="align-center">
+                    <a href="<?= $i['url_profile'] ?>" class="v-author__avatar u-cabinet__sub-navigation__back"><img src="<?= $i['avatar'] ?>" class="img-circle" alt="" /></a> <?= $i['url_title'] ?>
+                    <!-- plugin_user_online_do_block -->
+                </td>
                 <td class="align-right">
                     <? if($is_shop) { ?>
                         <a href="<?= $i['url_profile'] ?>" class="ico"><span><?= _t('internalmail', 'Объявления магазина') ?></span> <i class="fa fa-chevron-right"></i></a>
@@ -97,11 +100,11 @@
                     <span class="upload-mask">
                         <input type="file" name="attach" class="j-upload-file" />
                     </span>
-                    <a href="#" onclick="return false;" class="ajax"><?= _t('internalmail', 'Прикрепить файл (до [maxSize])', array('maxSize'=>tpl::filesize($attach->getMaxSize()) )) ?></a>
+                    <a href="javascript:void(0);" onclick="return false;" class="ajax"><?= _t('internalmail', 'Прикрепить файл (до [maxSize])', array('maxSize'=>tpl::filesize($attach->getMaxSize()) )) ?></a>
                 </div>
                 <div class="j-cancel hide">
                     <span class="j-cancel-filename"></span>
-                    <a href="#" class="ajax pseudo-link-ajax j-cancel-link"><?= _t('internalmail', 'Удалить') ?></a>
+                    <a href="javascript:void(0);" class="ajax pseudo-link-ajax j-cancel-link"><?= _t('internalmail', 'Удалить') ?></a>
                 </div>
                 <input type="hidden" name="MAX_FILE_SIZE" value="<?= $attach->getMaxSize() ?>" />
             </div>

@@ -386,7 +386,7 @@ abstract class UsersModuleBase extends Module
 
             $tillDate = ($banData['finished'] ? date('Y-m-d H:i', $banData['finished']) : '');
 
-            $message = sprintf($aMessageLang[($banData['finished'] ? 'BAN_TIME' : 'BAN_PERMISSION')], $tillDate, '<a href="mailto:' . config::sys('mail.support') . '">', '</a>');
+            $message = sprintf($aMessageLang[($banData['finished'] ? 'BAN_TIME' : 'BAN_PERMISSION')], $tillDate, '<a href="mailto:' . config::sysAdmin('mail.admin') . '">', '</a>');
             $message .= ($banData['reason'] ? '<br /><br /> Причина: <strong>' . $banData['reason'] . '</strong>' : '');
             $message .= '<br /><br /><em>' . $aMessageLang['bannedby_' . $banTriggeredBy] . '</em>';
 
@@ -484,6 +484,37 @@ abstract class UsersModuleBase extends Module
         $this->security->impersonalizeSession($aUserData['session_id'], $aSessionData, false, $mAdminPanel);
 
         return true;
+    }
+
+    /**
+     * Коррекция настроек авторизации через соц. сети
+     * @param array $opts
+     * @return mixed
+     */
+    public static function socialConfig($opts = array())
+    {
+        $sysPrefix = 'users.social.config.';
+        $config = \config::file('social');
+        $config['base_url'] = static::url('login.social');
+        $ds = DS;
+        foreach ($config['providers'] as $k=>&$v) {
+            if ( ! empty($opts['path']) && ! file_exists($opts['path'].'hybridauth'.$ds.'hybridauth'.$ds.'Hybrid'.$ds.'Providers'.$ds.$k.'.php')) {
+                if ( ! isset($v['wrapper'])) {
+                    $v['wrapper'] = array(
+                        'class' => 'Hybrid_Providers_'.$k,
+                        'path'  => $opts['path'].'hybridauth'.$ds.'additional-providers'.$ds.'hybridauth-'.mb_strtolower($k).$ds.'Providers'.$ds.$k.'.php',
+                    );
+                }
+            }
+            $v['enabled'] = \config::sysAdmin($sysPrefix.$k.'.enabled', !empty($v['enabled']), TYPE_BOOL);
+            foreach ($v['keys'] as $kk=>$vv) {
+                $v['keys'][$kk] = \config::sysAdmin($sysPrefix.$k.'.keys.'.$kk, $vv, ($kk === 'secret' ? TYPE_PASS : TYPE_STR));
+            }
+            if (isset($v['scope'])) {
+                $v['scope'] = \config::sysAdmin($sysPrefix.$k.'.scope', $v['scope'], TYPE_STR);
+            }
+        } unset($v);
+        return $config;
     }
 
     /**

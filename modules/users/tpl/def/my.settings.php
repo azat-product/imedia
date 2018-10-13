@@ -53,7 +53,7 @@
                 <label class="control-label"><?= _t('users', 'Фотография') ?><br /><small><?= _t('users', 'Профили с личной фотографией пользуются большим доверием') ?></small></label>
                 <div class="controls">
                     <div class="u-cabinet__settings__photo pull-left">
-                        <a class="v-author__avatar" href="#" onclick="return false;">
+                        <a class="v-author__avatar" href="javascript:void(0);" onclick="return false;">
                             <img alt="" class="img-circle" src="<?= $avatar_normal ?>" id="j-my-avatar-img" />
                         </a>
                     </div>
@@ -130,7 +130,7 @@
                     <? foreach($social as $k=>$v) {
 
                         ?>
-                            <a href="#" class="btn u-sc_<?= $v['class'] ?><? if( isset($v['user']) ){ ?> active<? } ?> j-my-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a>
+                            <a href="javascript:void(0);" class="btn u-sc_<?= $v['class'] ?><? if( isset($v['user']) ){ ?> active<? } ?> j-my-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a>
                         <?
 
                     } ?>
@@ -217,8 +217,8 @@
                     <div class="controls j-phone-change-step2 hide">
                         <input type="text" name="code" class="input j-phone-change-code" placeholder="<?= _te('users', 'Введите код из sms') ?>" />
                         <div class="i-control-links">
-                            <a href="#" class="ajax j-phone-change-repeate"><?= _t('users', 'Выслать код повторно') ?></a>
-                            <a href="#" class="ajax j-phone-change-back"><?= _t('users', 'Изменить номер') ?></a>
+                            <a href="javascript:void(0);" class="ajax j-phone-change-repeate"><?= _t('users', 'Выслать код повторно') ?></a>
+                            <a href="javascript:void(0);" class="ajax j-phone-change-back"><?= _t('users', 'Изменить номер') ?></a>
                         </div>
                         <div class="alert alert-warning mrgb0 mrgt10 hide"></div>
                     </div>
@@ -323,7 +323,6 @@ jMySettings.init(<?= func::php2js(array(
             'phone_code_sended' => _t('users', 'Код подтверждения был отправлен на указанный номер телефона'),
             'email_wrong' => _t('users', 'E-mail адрес указан некорректно'),
             'email_diff' => _t('users', 'E-mail адрес не должен совпадать с текущим'),
-            'account_destoyed' => _t('users', 'Ваш аккаунт был успешно удален'),
         ),
         # avatar
         'avatarMaxsize' => $avatar_maxsize,

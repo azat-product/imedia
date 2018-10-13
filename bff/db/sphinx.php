@@ -3,8 +3,8 @@
 /**
  * Класс для работы с поисковой системой Sphinx используя SphinxQL
  * @abstract
- * @version 0.42
- * @modified 4.may.2018
+ * @version 0.45
+ * @modified 29.jun.2018
  */
 
 class Sphinx_ extends \Module
@@ -20,6 +20,9 @@ class Sphinx_ extends \Module
 
     /** @var string разделитель словоформ */
     protected $wordformsSeparator = '>';
+
+    /** @var int минимальный размер слова для индексации */
+    protected $minWordLenght = 3;
 
     /**
      * Конструктор
@@ -46,6 +49,8 @@ class Sphinx_ extends \Module
             $this->errors->set($error);
             \bff::log($error);
         }
+
+        $this->minWordLenght = \config::sysAdmin('sphinx.min.word.length', 3, TYPE_UINT);
     }
 
     /**
@@ -71,12 +76,24 @@ class Sphinx_ extends \Module
     }
 
     /**
+     * Проверка включен ли Sphinx
+     * @return bool
+     */
+    public function isEnabled()
+    {
+        return static::enabled();
+    }
+
+    /**
      * Проверка выполняется ли индексирование
      * @return bool
      */
     public function isRunning()
     {
         if ( ! static::enabled()) {
+            return false;
+        }
+        if (empty($this->pdo)) {
             return false;
         }
         $indexed = $this->db->select_data(static::TABLE, 'indexed', array('counter_id'=>$this->moduleID()));
@@ -185,12 +202,12 @@ class Sphinx_ extends \Module
             'html_remove_elements' => 'style, script, code',
             # *test*
             'enable_star' => '1',
-            # Не ндексируем части слова (инфиксы)
+            # Не индексируем части слова (инфиксы)
             'min_infix_len' => '0',
             # Храним начало слова
             'min_prefix_len' => '3',
             # Минимальный размер слова для индексации
-            'min_word_len' => '3',
+            'min_word_len' => strval($this->minWordLenght),
             # Хранить оригинальное слово в индексе
             'index_exact_words' => '1',
             # running -> ( running | *running* | =running )
@@ -303,7 +320,7 @@ class Sphinx_ extends \Module
             $words = explode(' ', $query);
             $tmp = array();
             foreach ($words as $word) {
-                if (mb_strlen($word) >= 3) {
+                if (mb_strlen($word) >= $this->minWordLenght) {
                     $tmp[] = "($word | $word*)";
                 }
             }

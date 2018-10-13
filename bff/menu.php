@@ -2,8 +2,8 @@
 
 /**
  * Класс меню в admin-панели
- * @version 0.33
- * @modified 23.jan.2018
+ * @version 0.35
+ * @modified 2.jul.2018
  */
 class Menu extends Singleton
 {
@@ -105,7 +105,7 @@ class Menu extends Singleton
      *    3. params => string дополнительные параметры ссылки типа TYPE_MODULE_METHOD
      *    4. access => array(module,method) или 'method' -  проверка прав доступа
      * @param integer $type тип раздела/подраздела ( static::TYPE_ )
-     * @return \CMenu
+     * @return static
      */
     public function assign($mainTitle, $subTitle, $module, $method, $isVisible = true, $priority = 999, array $options = array(), $type = self::TYPE_MODULE_METHOD)
     {
@@ -114,11 +114,11 @@ class Menu extends Singleton
         if (!empty($options['access'])) {
             if (is_string($options['access'])) {
                 if (!\bff::security()->haveAccessToModuleToMethod($module, $options['access'])) {
-                    return;
+                    return $this;
                 }
             } else if (is_array($options['access']) && sizeof($options['access']) == 2) {
                 if (!\bff::security()->haveAccessToModuleToMethod($options['access'][0], $options['access'][1])) {
-                    return;
+                    return $this;
                 }
             }
         }
@@ -168,24 +168,41 @@ class Menu extends Singleton
 
     /**
      * Формирование admin-меню
-     * @param array $aMainTabs список названий основных пунктов меню
+     * @param array $mainTabs список названий основных пунктов меню
      * @param array|bool $aCoreModules список модулей ядра
-     * @param string $sCollectFunctionName название вызываемого метода для формирования пунктов меню
+     * @param array|string $opts доп. параметры:
+     *      string 'collectMethod' - название вызываемого метода для формирования пунктов меню
      * @return array
      */
-    public function buildAdminMenu(array $aMainTabs, $aCoreModules = false, $sCollectFunctionName = 'declareAdminMenu')
+    public function buildAdminMenu(array $mainTabs, $aCoreModules = false, $opts = array())
     {
-        $aMainTabs = \bff::filter('admin.menu.tabs', $aMainTabs);
+        if ( ! is_array($opts)) {
+            $opts = array('collectMethod'=>strval($opts));
+        }
+        \func::array_defaults($opts, array(
+            'collectMethod' => 'declareAdminMenu',
+        ));
+
         $security = \bff::security();
         $menu = $this;
 
-        foreach ($aMainTabs as $title) {
-            $this->items[$title] = array(
-                'title'   => $title,
-                'counter' => false,
-                'sub'     => array()
-            );
+        # основные пункты меню:
+        $mainTabs = \bff::filter('admin.menu.tabs', $mainTabs, $this);
+        foreach ($mainTabs as $tab) {
+            if (is_string($tab)) {
+                $this->items[$tab] = array(
+                    'title'   => $tab,
+                    'counter' => false,
+                    'sub'     => array()
+                );
+            } else if (is_array($tab) && array_key_exists('title', $tab)) {
+                $this->items[$tab['title']] = array_merge(array(
+                    'counter' => false,
+                    'sub'     => array()
+                ), $tab);
+            }
         }
+        \func::sortByPriority($this->items);
 
         # пункты меню
         if (true)
@@ -202,11 +219,11 @@ class Menu extends Singleton
                     }
                 }
                 require_once($file);
-                if (class_exists('M_' . $module) && method_exists('M_' . $module, $sCollectFunctionName)) {
+                if (class_exists('M_' . $module) && method_exists('M_' . $module, $opts['collectMethod'])) {
                     if (!$security->haveAccessToModuleToMethod($module) && !in_array($module, array('site','publications','afisha'))) {
                         continue;
                     }
-                    call_user_func(array('M_' . $module, $sCollectFunctionName), $menu, $security);
+                    call_user_func(array('M_' . $module, $opts['collectMethod']), $menu, $security);
                 }
             }
 

@@ -45,7 +45,14 @@ class Geo_ extends GeoBase
                 $nRegionID = $this->input->post('region_id', TYPE_UINT);
                 $aRegionData = static::regionData($nRegionID);
                 if (!empty($aRegionData)) {
-                    $aResponse['success'] = $this->filterUser($nRegionID);
+                    $aResponse['success'] = static::filterUser($nRegionID, 'ip-location-confirm-finish');
+                    $opts = array();
+                    switch ($aRegionData['numlevel']) {
+                        case static::lvlCity: $opts['city'] = $aRegionData['keyword']; break;
+                        case static::lvlRegion: $opts['region'] = $aRegionData['keyword']; break;
+                        case static::lvlCountry: $opts['country'] = $aRegionData['keyword']; break;
+                    }
+                    $aResponse['redirect'] = Geo::url($opts);
                 }
             }
             break;
@@ -187,10 +194,18 @@ class Geo_ extends GeoBase
             case 'desktop-country-step1': # выбор области/региона (COVERING_COUNTRY)
             {
                 $aData = static::regionList($nParentID ? $nParentID : static::coveringRegion());
+                # Данные о количестве объявлений в городах
+                $aItemsCounters = BBS::model()->itemsCountByFilter(array(
+                    'cat_id' => 0,
+                    'region_id' => array_keys($aData),
+                    'delivery' => 0,
+                ), array('region_id', 'items'), false, 60);
+                $aItemsCounters = func::array_transparent($aItemsCounters, 'region_id', true);
                 $aResult = array();
                 foreach ($aData as $v) {
                     $letter = mb_substr($v['title'], 0, 1);
                     $v['link'] = static::url(array('region' => $v['keyword']));
+                    $v['items'] = ! empty($aItemsCounters[ $v['id'] ]['items']) ? $aItemsCounters[ $v['id'] ]['items'] : 0;
                     $aResult[$letter][] = $v;
                 }
                 $nCols = 3;
@@ -227,9 +242,17 @@ class Geo_ extends GeoBase
                     $aData = static::cityList($nParentID);
                     $aResult = array();
                     if (!empty($aData)) {
+                        # Данные о количестве объявлений в городах
+                        $aItemsCounters = BBS::model()->itemsCountByFilter(array(
+                            'cat_id' => 0,
+                            'region_id' => array_keys($aData),
+                            'delivery' => 0,
+                        ), array('region_id', 'items'), false, 60);
+                        $aItemsCounters = func::array_transparent($aItemsCounters, 'region_id', true);
                         foreach ($aData as $v) {
                             $letter = mb_substr($v['title'], 0, 1);
                             $v['link'] = static::url(array('region' => $aRegion['keyword'], 'city' => $v['keyword']));
+                            $v['items'] = ! empty($aItemsCounters[ $v['id'] ]['items']) ? $aItemsCounters[ $v['id'] ]['items'] : 0;
                             $v['active'] = ($nSelectedID == $v['id']);
                             $aResult[$letter][] = $v;
                         }
@@ -259,18 +282,26 @@ class Geo_ extends GeoBase
                 do {
                     $nSelectedID = 0;
                     $aRegion = static::regionData($nParentID);
-                    if($aRegion['numlevel'] != static::lvlCountry){
+                    if ($aRegion['numlevel'] != static::lvlCountry) {
                         $nSelectedID = $aRegion['id'];
                         $aRegion = static::regionData( ! empty($aRegion['country']) ? $aRegion['country'] : static::defaultCountry());
                     }
                     $aRegion['link'] = static::url(array('country' => $aRegion['keyword']));
 
-                    $aData = static::regionPreSuggest($aRegion['id'], true);
+                    $aData = $this->model->regionsList(static::lvlCity, ['enabled'=>1, 'main'=>['>', 0], 'country'=>$aRegion['id']], 0, 0, 'title ASC', ['ttl'=>600 /* 10 мин*/]);
                     $aResult = array();
-                    if (!empty($aData)) {
+                    if ( ! empty($aData)) {
+                        # Данные о количестве объявлений в городах
+                        $aItemsCounters = BBS::model()->itemsCountByFilter(array(
+                            'cat_id' => 0,
+                            'region_id' => array_keys($aData),
+                            'delivery' => 0,
+                        ), array('region_id', 'items'), false, 60);
+                        $aItemsCounters = func::array_transparent($aItemsCounters, 'region_id', true);
                         foreach ($aData as $v) {
                             $letter = mb_substr($v['title'], 0, 1);
                             $v['link'] = static::url(array('country' => $aRegion['keyword'], 'city' => $v['keyword']));
+                            $v['items'] = ! empty($aItemsCounters[ $v['id'] ]['items']) ? $aItemsCounters[ $v['id'] ]['items'] : 0;
                             $v['active'] = ($nSelectedID == $v['id']);
                             $v['main'] = 0;
                             $aResult[$letter][] = $v;
@@ -400,9 +431,9 @@ class Geo_ extends GeoBase
         }
     }
 
-    public static function regionFilterByIp()
+    public static function regionFilterByIp($ipAddr = false)
     {
-        $data = static::model()->regionDataByIp();
+        $data = static::model()->regionDataByIp($ipAddr);
         if (empty($data)) {
             $data = array('id' => 0);
         } else {
@@ -416,13 +447,29 @@ class Geo_ extends GeoBase
     /**
      * Получаем шаблон карты по ID региона
      * @param int $regionID ID региона
-     * @param array $regions @ref данные о регионах с счетчиками кол-ва объявлениий
+     * @param array $regions данные о регионах со счетчиками кол-ва объявлениий
      * @return string HTML
      */
-    public function regionMap($regionID, & $regions)
+    public function regionMap($regionID, array $regions = array())
     {
-        if (!file_exists(View::templatePath('map.' . $regionID, $this->module_dir_tpl))) {
+        if ( ! file_exists(View::templatePath('map.' . $regionID, $this->module_dir_tpl))) {
             return '';
+        }
+
+        if (empty($regions)) {
+            $regions = $this->model->regionsList(array(static::lvlRegion, static::lvlCity), array(':reg' => '(R.country = ' . $regionID . ' AND R.main > 0) OR R.pid = ' . $regionID));
+            $items = BBS::model()->itemsCountByFilter(array(
+                'cat_id' => 0,
+                'region_id' => array_keys($regions),
+                'delivery' => 0,
+            ), array('region_id', 'items'), false, 60);
+            $items = func::array_transparent($items, 'region_id', true);
+            if (!empty($regions)) {
+                foreach ($regions as &$v) {
+                    $v['items'] = ! empty($items[ $v['id'] ]['items']) ? $items[ $v['id'] ]['items'] : 0;
+                    $v['l'] = BBS::url('items.search', array('region' => $v['keyword']));
+                } unset($v);
+            }
         }
 
         $aData = array('regions'=>array());

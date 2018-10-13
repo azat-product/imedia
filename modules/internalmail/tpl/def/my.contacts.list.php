@@ -27,13 +27,14 @@ foreach($list as &$v)
         <div class="u-mail__list__item__content l-table-cell j-contact" data-contact="<?= $v['c_url'] ?>">
             <div class="u-mail__list__item__title pull-left">
                 <a href="<?= $v['c_url'] ?>"><?= $v['c_name'] ?></a>
+                <!-- plugin_user_online_do_block -->
                 <? if($v['msgs_new']>0){ ?> <span class="label label-success">+<?= $v['msgs_new'] ?></span><? } else { ?><span class="label label-all"><?= $v['msgs_total'] ?></span><? } ?>
                 <? if($v['shop_id'] && $v['shop_id_my']){ ?><i class="fa fa-shopping-cart"></i><? } ?>
             </div>
             <div class="u-mail__list__item__actions pull-right">
                 <? if( InternalMail::foldersEnabled() ) { ?>
-                    <a title="<?= $lng_fav ?>" data-user-id="<?= $v['user_id'] ?>" data-shop-id="<?= $v['shop_id'] ?>" data-folder-id="<?= InternalMail::FOLDER_FAVORITE ?>" class="item_action item-favorite j-f-action<? if( $inFolder($v['folders'], InternalMail::FOLDER_FAVORITE) ) { ?> active<? } ?>" href="#"><span><i class="fa fa-star white"></i></span></a>
-                    <a title="<?= $lng_ignore ?>" data-user-id="<?= $v['user_id'] ?>" data-shop-id="<?= $v['shop_id'] ?>" data-folder-id="<?= InternalMail::FOLDER_IGNORE ?>" class="item_action item-ban j-f-action<? if( $inFolder($v['folders'], InternalMail::FOLDER_IGNORE) ) { ?> active<? } ?>" href="#"><span><i class="fa fa-ban white"></i></span></a>
+                    <a title="<?= $lng_fav ?>" data-user-id="<?= $v['user_id'] ?>" data-shop-id="<?= $v['shop_id'] ?>" data-folder-id="<?= InternalMail::FOLDER_FAVORITE ?>" class="item_action item-favorite j-f-action<? if( $inFolder($v['folders'], InternalMail::FOLDER_FAVORITE) ) { ?> active<? } ?>" href="javascript:void(0);"><span><i class="fa fa-star white"></i></span></a>
+                    <a title="<?= $lng_ignore ?>" data-user-id="<?= $v['user_id'] ?>" data-shop-id="<?= $v['shop_id'] ?>" data-folder-id="<?= InternalMail::FOLDER_IGNORE ?>" class="item_action item-ban j-f-action<? if( $inFolder($v['folders'], InternalMail::FOLDER_IGNORE) ) { ?> active<? } ?>" href="javascript:void(0);"><span><i class="fa fa-ban white"></i></span></a>
                 <? } ?>
             </div>
             <div class="clearfix"></div>

@@ -39,9 +39,7 @@
             </td>
             <td class="row2">
                 <select name="list_type" style="width:100px;">
-                    <option value="<?= BBS::LIST_TYPE_LIST ?>"><?= _t('bbs', 'Список'); ?></option>
-                    <option value="<?= BBS::LIST_TYPE_GALLERY ?>"><?= _t('bbs', 'Галерея'); ?></option>
-                    <option value="<?= BBS::LIST_TYPE_MAP ?>"><?= _t('bbs', 'Карта'); ?></option>
+                    <?= HTML::selectOptions(BBS::itemsSearchListTypes(), 0, false, 'id', 'title'); ?>
                 </select>
             </td>
         </tr>

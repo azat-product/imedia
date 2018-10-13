@@ -3,8 +3,9 @@
 /**
  * Класс для работы с директориями / файлами
  * @abstract
- * @version 0.76
- * @modified 13.feb.2018
+ * @version 0.791
+ * @modified 25.aug.2018
+ * @copyright Tamaranga
  */
 
 abstract class Files_
@@ -45,45 +46,46 @@ abstract class Files_
      * Рекурсивный обход директорий
      * @param string $directory корневая директория
      * @param string $base путь относительно корневой директории
-     * @param boolean $bRecursive рекурсивный обход
-     * @param boolean $bReturnFullPath true - возвращать полный путь, false - только имя файла/директории
-     * @param array $aFileTypes типы файлов
-     * @param array $aExclude список исключений
-     * @return array
+     * @param boolean $recursive рекурсивный обход
+     * @param boolean $fullPath true - возвращать полный путь, false - только имя файла/директории
+     * @param array $fileTypes типы файлов
+     * @param array $exclude список исключений
+     * @return array|boolean
      */
-    public static function getFiles($directory, $base = '', $bRecursive = true, $bReturnFullPath = true, array $aFileTypes = array(), array $aExclude = array())
+    public static function getFiles($directory, $base = '', $recursive = true, $fullPath = true, array $fileTypes = array(), array $exclude = array())
     {
-        if (is_file($directory) || !is_dir($directory)) {
+        if (is_file($directory) || ! is_dir($directory)) {
             return false;
         }
 
         $directory = rtrim($directory, '\\/');
-        if (!is_dir($directory)) {
+        if ( ! is_dir($directory)) {
             return false;
         }
 
         # Открываем директорию
         if ($dir = opendir($directory)) {
             # Формируем список найденных файлов
-            $tmp = Array();
+            $tmp = array();
+            $sep = DIRECTORY_SEPARATOR;
             # Добавляем файлы
-            while ($file = readdir($dir)) {
+            while (($file = readdir($dir)) !== false) {
                 if ($file === '.' || $file === '..') {
                     continue;
                 }
 
-                $isFile = is_file($directory . '/' . $file);
-                if (!static::validatePath($base, $file, $isFile, $aFileTypes, $aExclude)) {
+                $isFile = is_file($directory . $sep . $file);
+                if ( ! static::validatePath($base, $file, $isFile, $fileTypes, $exclude)) {
                     continue;
                 }
 
                 if ($isFile) {
-                    array_push($tmp, ($bReturnFullPath ? $directory . '/' . $file : $file));
+                    array_push($tmp, ($fullPath ? $directory . $sep . $file : $file));
                 } else {
-                    # Если директория > ищем в ней
-                    if ($bRecursive) {
-                        $tmpSub = static::getFiles($directory . '/' . $file, $base . '/' . $file, $bRecursive, $bReturnFullPath, $aFileTypes, $aExclude);
-                        if (!empty($tmpSub)) {
+                    # Если директория -> ищем в ней
+                    if ($recursive) {
+                        $tmpSub = static::getFiles($directory . $sep . $file, $base . $sep . $file, $recursive, $fullPath, $fileTypes, $exclude);
+                        if ( ! empty($tmpSub)) {
                             $tmp = array_merge($tmp, $tmpSub);
                         }
                     }
@@ -348,11 +350,11 @@ abstract class Files_
     /**
      * Загрузка файла по URL
      * @param string $url URL файла
-     * @param string $path полный путь для сохранения файла
+     * @param string|bool $path полный путь для сохранения файла, false - вернуть содержимое
      * @param array|boolean $options
      *      setErrors - фиксировать ошибки
      *      timeout - максимально допустимое время выполнения
-     * @return boolean файл был успешно загружен, false - ошибка загрузки файла
+     * @return boolean|mixed файл был успешно загружен, false - ошибка загрузки файла, содержимое файла
      */
     public static function downloadFile($url, $path, $options = true)
     {
@@ -371,20 +373,23 @@ abstract class Files_
 
             return false;
         }
-        $dir = $path;
-        if (!is_dir($dir)) {
-            $dir = pathinfo($dir, PATHINFO_DIRNAME);
-        }
-        if (!is_writable($dir)) {
-            if ($setErrors) {
-                \bff::errors()->set(_t('system', 'Укажите путь к директории, доступной для записи'));
-            }
 
-            return false;
+        $returnContent = ($path === false);
+        if ( ! $returnContent) {
+            $dir = $path;
+            if (!is_dir($dir)) {
+                $dir = pathinfo($dir, PATHINFO_DIRNAME);
+            }
+            if (!is_writable($dir)) {
+                if ($setErrors) {
+                    \bff::errors()->set(_t('system', 'Укажите путь к директории, доступной для записи'));
+                }
+
+                return false;
+            }
         }
 
         if (extension_loaded('curl')) {
-            $file = fopen($path, 'w+');
             $max_redirects = 5;
 
             $ch = curl_init();
@@ -432,17 +437,32 @@ abstract class Files_
             } else {
                 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
             }
-            curl_setopt($ch, CURLOPT_FILE, $file);
+            if ($returnContent) {
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            } else {
+                $file = fopen($path, 'w+');
+                curl_setopt($ch, CURLOPT_FILE, $file);
+            }
 
             $res = curl_exec($ch);
             if ($res === false) {
                 \bff::log(sprintf('Files::downloadFile curl error (code %s): %s', curl_errno($ch), curl_error($ch)));
             }
+            if (is_array($options) && !empty($options['returnCode'])) {
+                $options['returnCode'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            }
             curl_close($ch);
+            if ($returnContent) {
+                return $res;
+            }
 
             fclose($file);
         } elseif (ini_get('allow_url_fopen')) {
-            $res = file_put_contents($path, fopen($url, 'r'));
+            if ($returnContent) {
+                return file_get_contents($url);
+            } else {
+                $res = file_put_contents($path, fopen($url, 'r'));
+            }
         } else {
             $res = false;
         }

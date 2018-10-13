@@ -16,7 +16,7 @@
         <p class="title"><strong><?= _t('shops','Выберите категорию') ?></strong></p>
         <span class="count f12"><? echo ( $total>=1000 ? number_format($total, 0, '', ' ') : $total), '&nbsp;', tpl::declension($total, $lang_shops, false) ?> - <a href="<?= Shops::url('search') ?>" class="j-all" data="{id:0,pid:0,title:'<?= HTML::escape(_t('shops','Все категории'), 'js') ?>'}"><?= _t('filter','смотреть все магазины') ?> &raquo;</a></span>
     </div>
-    <div class="pull-right"><a class="close" href="#"><i class="fa fa-times"></i></a></div>
+    <div class="pull-right"><a class="close" href="javascript:void(0);"><i class="fa fa-times"></i></a></div>
     <div class="clearfix"></div>
 </div>
 <div class="f-msearch__categories__list">
@@ -38,15 +38,15 @@
         <a href="<?= $parent['link'] ?>" class="img j-parent" data="{id:<?= $parent['id'] ?>,pid:<?= $parent['pid'] ?>,subs:1,title:'<?= HTML::escape($parent['title'], 'js') ?>'}"><img src="<?= $parent['icon'] ?>" alt="<?= $parent['title'] ?>" /></a>
         <div class="subcat">
             <? if( $parent['main'] ) { ?>
-            <a href="#" class="backto block j-back" data="{prev:0}">&laquo; <?= _t('filter','Вернуться к основным категориям') ?></a>
+            <a href="javascript:void(0);" class="backto block j-back" data="{prev:0}">&laquo; <?= _t('filter','Вернуться к основным категориям') ?></a>
             <? } else { ?>
-            <a href="#" class="backto block j-back" data="{prev:<?= $parent['pid'] ?>}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
+            <a href="javascript:void(0);" class="backto block j-back" data="{prev:<?= $parent['pid'] ?>}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
             <? } ?>
             <p class="title"><strong><?= $parent['title'] ?></strong></p>
             <span class="count f11 hidden-phone"><? echo '<a href="'.$parent['link'].'" data="{id:'.$parent['id'].',pid:'.$parent['pid'].',subs:1,title:\''.HTML::escape($parent['title'], 'js').'\'}" class="j-parent">'.number_format($parent['shops'], 0, '.', ' ').'</a>&nbsp;', tpl::declension($parent['shops'], $lang_shops, false) ?></span>
         </div>
     </div>
-    <div class="pull-right"><a class="close" href="#"><i class="fa fa-times"></i></a></div>
+    <div class="pull-right"><a class="close" href="javascript:void(0);"><i class="fa fa-times"></i></a></div>
     <div class="clearfix"></div>
 </div>
 <div class="f-msearch__subcategories__list">

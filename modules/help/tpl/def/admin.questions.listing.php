@@ -9,9 +9,7 @@
 <?= tplAdmin::blockStop(); ?>
 
 <?= tplAdmin::blockStart($lang_questions._t('', 'List'), true, array('id'=>'HelpQuestionsListBlock','class'=>(!empty($act) ? 'hidden' : '')),
-        array('title'=>_t('help','+ добавить вопрос'),'class'=>'ajax','onclick'=>'return jHelpQuestionsFormManager.action(\'add\',0);'),
-        array()
-    ); ?>
+        array('title'=>_t('help','+ добавить вопрос'),'class'=>'ajax','onclick'=>'return jHelpQuestionsFormManager.action(\'add\',0);')); ?>
             <?
                 $aTabs = array(
                     0 => array('t'=>_t('','Все'), 'link'=> $this->adminLink(bff::$event.'&tab=0')),
@@ -152,13 +150,13 @@ var jHelpQuestionsList =
         $listPgn   = $block.find('#HelpQuestionsListPgn');
         filters    = $block.find('#HelpQuestionsListFilters').get(0);
 
-        $list.delegate('a.question-edit', 'click', function(){
+        $list.on('click','a.question-edit', function(){
             var id = intval($(this).data('id'));
             if(id>0) jHelpQuestionsFormManager.action('edit',id);
             return false;
         });
 
-        $list.delegate('a.question-toggle', 'click', function(){
+        $list.on('click','a.question-toggle', function(){
             var id = intval($(this).data('id'));
             var type = $(this).data('type');
             if(id>0) {
@@ -168,13 +166,13 @@ var jHelpQuestionsList =
             return false;
         });
 
-        $list.delegate('a.question-del', 'click', function(){
+        $list.on('click','a.question-del', function(){
             var id = intval($(this).data('id'));
             if(id>0) del(id, this);
             return false;
         });
 
-        $(window).bind('popstate',function(e){
+        $(window).on('popstate',function(e){
             if('state' in window.history && window.history.state === null) return;
             var loc = document.location;
             var actForm = /act=(add|edit)/.exec( loc.search.toString() );

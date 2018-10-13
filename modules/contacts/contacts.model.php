@@ -62,4 +62,15 @@ class ContactsModel_ extends Model
         );
     }
 
+    /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        if (empty($userID)) return;
+        $this->db->delete(TABLE_CONTACTS, array('user_id' => $userID));
+    }
+
 }

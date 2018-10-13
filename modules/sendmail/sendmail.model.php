@@ -23,7 +23,7 @@ class SendmailModel_ extends SendmailModelBase
         # получение общего кол-ва получателей
         $receiversTotal = $this->db->one_data('
             SELECT COUNT(*) FROM ' . TABLE_USERS . '
-            WHERE (enotify & ' . $subscribeType . ') AND enotify > 0 AND blocked = 0 AND activated = 1
+            WHERE (enotify & ' . $subscribeType . ') AND enotify > 0 AND blocked = 0 AND activated = 1 AND fake = 0
         '.($shopOnly ? ' AND shop_id > 0 ' : ''));
 
         $delay = Sendmail::delay();
@@ -43,7 +43,7 @@ class SendmailModel_ extends SendmailModelBase
         $this->db->exec('
             INSERT INTO '.TABLE_MASSEND_RECEIVERS.' (massend_id, user_id)
             SELECT :massend_id, user_id FROM ' . TABLE_USERS . '
-            WHERE (enotify & ' . $subscribeType . ') AND enotify > 0 AND blocked = 0 AND activated = 1 '.
+            WHERE (enotify & ' . $subscribeType . ') AND enotify > 0 AND blocked = 0 AND activated = 1 AND fake = 0 '.
                   ($shopOnly ? ' AND shop_id > 0 ' : '').'
             ORDER BY user_id ASC ', array(':massend_id' => $massendID));
 
@@ -79,6 +79,26 @@ class SendmailModel_ extends SendmailModelBase
     }
 
     /**
+     * @param array $filter
+     * @param array $fields
+     * @param string $sqlLimit
+     * @param string $sqlOrder
+     * @return int|mixed
+     */
+    public function massendListing(array $filter, $fields = array(), $sqlLimit = '', $sqlOrder = '')
+    {
+        $from = ' FROM '.TABLE_MASSEND.' M ';
+        $filter = $this->prepareFilter($filter, 'M');
+
+        if (empty($fields)) {
+            return (int)$this->db->one_data('SELECT COUNT(*) '.$from.$filter['where'], $filter['bind']);
+        }
+        return $this->db->select('SELECT ' . join(',', $fields) . $from . $filter['where'] . '
+                ' . (!empty($sqlOrder) ? ' ORDER BY ' . $sqlOrder : '') . '
+                ' . $sqlLimit, $filter['bind']);
+    }
+
+    /**
      * Прохождение по списку получателей рассылки
      * @param integer $massendID ID рассылки
      * @param callable $callable
@@ -91,7 +111,39 @@ class SendmailModel_ extends SendmailModelBase
         $this->db->select_iterator('
             SELECT R.user_id, U.name, U.surname, U.email, U.login, U.lang
             FROM '.TABLE_MASSEND_RECEIVERS.' R, ' . TABLE_USERS . ' U
-            WHERE R.massend_id = :id AND R.processed = 0 AND R.user_id = U.user_id', array(':id' => $massendID), $callable);
+            WHERE R.massend_id = :id AND R.processed = 0 AND R.user_id = U.user_id AND U.fake = 0', array(':id' => $massendID), $callable);
+    }
+
+    /**
+     * Данные о получателях рассылки по фильтру
+     * @param array $filter
+     * @param array $fields
+     * @param bool $oneArray
+     * @param string $sqlLimit
+     * @param string $sqlOrder
+     * @return int|mixed
+     */
+    public function massendReceiversByFilter(array $filter, $fields = array(), $oneArray = true, $sqlLimit = '', $sqlOrder = '')
+    {
+        $from = ' FROM '.TABLE_MASSEND_RECEIVERS.' R ';
+        $filter = $this->prepareFilter($filter, 'R');
+
+        if (empty($fields)) {
+            return (int)$this->db->one_data('SELECT COUNT(*) '. $from . $filter['where'], $filter['bind']);
+        } else {
+            if ($oneArray) {
+                # вернуть только одну строку
+                $data = $this->db->one_array('SELECT ' . join(',', $fields) . $from . $filter['where'].' LIMIT 1', $filter['bind']);
+            } else {
+                $data = $this->db->select('
+                SELECT ' . join(',', $fields) .
+                    $from.
+                    $filter['where'] . '
+                ' . (!empty($sqlOrder) ? ' ORDER BY ' . $sqlOrder : '') . '
+                ' . $sqlLimit, $filter['bind']);
+            }
+            return $data;
+        }
     }
 
     /**

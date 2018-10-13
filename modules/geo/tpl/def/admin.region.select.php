@@ -8,7 +8,7 @@ if ($covering_type == Geo::COVERING_CITY): ?>
     tpl::includeJS('autocomplete', true); ?>
     <input type="hidden" name="<?= $field_name ?>" class="j-geo-region-select-id" id="j-geo-region-select-id<?= $U ?>" value="<?= $field_value ?>" />
     <input type="text" class="autocomplete j-geo-region-select-ac" id="j-geo-region-select-ac<?= $U ?>" value="<?= HTML::escape($field_title) ?>" placeholder="<?= $placeholder ?>" style="<?= ! empty($width) ? 'width:'.$width : '' ?>" />
-    <? if ($cancel): ?><a href="#" id="j-geo-region-select-ac-cancel<?= $U ?>" class="disabled" style="<? if( ! $field_value){ ?>display:none;<? } ?>margin-left:-22px;"><i class="icon-remove"></i></a><? endif; ?>
+    <? if ($cancel): ?><a href="javascript:void(0);" id="j-geo-region-select-ac-cancel<?= $U ?>" class="disabled" style="<? if( ! $field_value){ ?>display:none;<? } ?>margin-left:-22px;"><i class="icon-remove"></i></a><? endif; ?>
     <script type="text/javascript">
         <? js::start() ?>
         $(function(){

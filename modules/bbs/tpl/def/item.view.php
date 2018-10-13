@@ -45,7 +45,7 @@
                                 <?= _t('bbs', 'Объявление снято с публикации') ?> <br />
                                 <small><?= tpl::date_format2($status_changed) ?></small>
                             </div>
-                            <?php if($owner) { ?><a href="#" class="btn btn-info alert-action j-item-publicate"><i class="fa fa-refresh white"></i> <?= _t('bbs', 'Опубликовать снова') ?></a><? } ?>
+                            <?php if($owner) { ?><a href="javascript:void(0);" class="btn btn-info alert-action j-item-publicate"><i class="fa fa-refresh white"></i> <?= _t('bbs', 'Опубликовать снова') ?></a><? } ?>
                         </div>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                                 <?= _t('bbs', 'Объявление публикуется') ?><br />
                                 <small><?= _t('bbs', 'до [date]', array('date'=>tpl::date_format2($publicated_to))) ?></small>
                             </div>
-                            <a href="#" class="btn btn-info alert-action j-item-refresh"><i class="fa fa-refresh white"></i> <?= _t('bbs', 'Продлить') ?></a>
+                            <a href="javascript:void(0);" class="btn btn-info alert-action j-item-refresh"><i class="fa fa-refresh white"></i> <?= _t('bbs', 'Продлить') ?></a>
                         </div>
                     </div>
                 </div>
@@ -90,9 +90,9 @@
                         <h1 class="v-title">
                             <? if( ! $is_publicated_out ): ?>
                                 <? if($fav): ?>
-                                <a href="#" class="item-fav active j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_out'] ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
+                                <a href="javascript:void(0);" class="item-fav active j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_out'] ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
                                 <? else: ?>
-                                <a href="#" class="item-fav j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_in'] ?>"><span class="item-fav__star"><i class="fa fa-star-o j-i-fav-icon"></i></span></a>
+                                <a href="javascript:void(0);" class="item-fav j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_in'] ?>"><span class="item-fav__star"><i class="fa fa-star-o j-i-fav-icon"></i></span></a>
                                 <? endif; ?>
                             <? endif; ?>
                             <? if($svc_quick){ ?><span class="label label-warning quickly"><?= _t('bbs', 'срочно') ?></span>&nbsp;<? } ?><b itemprop="name"><?= $title ?></b>
@@ -110,9 +110,9 @@
                         <h1 class="v-title">
                             <? if( ! $is_publicated_out ): ?>
                                 <? if($fav): ?>
-                                <a href="#" class="item-fav _mobile active j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_out'] ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
+                                <a href="javascript:void(0);" class="item-fav _mobile active j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_out'] ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
                                 <? else: ?>
-                                <a href="#" class="item-fav _mobile j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_in'] ?>"><span class="item-fav__star"><i class="fa fa-star-o j-i-fav-icon"></i></span></a>
+                                <a href="javascript:void(0);" class="item-fav _mobile j-i-fav" data="{id:<?= $id ?>}" title="<?= $lang['fav_in'] ?>"><span class="item-fav__star"><i class="fa fa-star-o j-i-fav-icon"></i></span></a>
                                 <? endif; ?>
                             <? endif; # ! $is_publicated_out ?>
                             <? if($svc_quick){ ?><span class="label label-warning quickly"><?= _t('bbs', 'срочно') ?></span>&nbsp;<? } ?><b itemprop="name"><?= $title ?></b><? if($price_on) { ?><? if($price) { ?>, <strong class="nowrap"><?= $price ?></strong><? } ?><? if($price_mod) { ?>, <small class="nowrap"><?= $price_mod ?></small><? } ?><? } ?>
@@ -146,7 +146,7 @@
                                     <span class="v-descr_address_val"><?= $city_title ?>, <?
                                         if($district_id && ! empty($district_data['title']) ) { echo _t('view', 'район [district]', array('district'=>$district_data['title'])).', '; } ?><?
                                         if($metro_id && ! empty($metro_data['title']) ) { echo _t('view', 'метро [station]', array('station'=>$metro_data['title'])).', '; } ?><?= $addr_addr ?>,
-                                        <a href="#" class="ajax" onclick="return jView.showMap(event);"><span><?= _t('view', 'показать на карте') ?></span></a>
+                                        <a href="javascript:void(0);" class="ajax" onclick="return jView.showMap(event);"><span><?= _t('view', 'показать на карте') ?></span></a>
                                     </span>
                                 </p>
                                 <? elseif ($cat_addr && $metro_id && ! empty($metro_data['title'])): ?>
@@ -179,7 +179,7 @@
                                             <div class="v-descr_contact_items">
                                                 <div class="v-descr_contact_items__content v-descr_contact_items__content_phone j-c-phones">
                                                     <? foreach($contacts['phones'] as $v): ?>
-                                                        <span><?= $v ?></span><? if( ! $contactsExpand ) { $contactsExpand = true; ?><a href="#" class="ajax j-v-contacts-expand-link"><?= _t('view', 'Показать контакты') ?></a><? } ?> <br />
+                                                        <span><?= $v ?></span><? if( ! $contactsExpand ) { $contactsExpand = true; ?><a href="javascript:void(0);" class="ajax j-v-contacts-expand-link"><?= _t('view', 'Показать контакты') ?></a><? } ?> <br />
                                                     <? endforeach; ?>
                                                 </div>
                                             </div>
@@ -191,7 +191,7 @@
                                                         <div class="v-descr_contact_items__content j-c-<?= $contact['key'] ?>">
                                                             <span><?= tpl::contactMask($contact['value']) ?></span>
                                                             <? if(!$contactsExpand): $contactsExpand = true; ?>
-                                                                <a href="#" class="ajax j-v-contacts-expand-link"><?= _t('view', 'Показать контакты') ?></a>
+                                                                <a href="javascript:void(0);" class="ajax j-v-contacts-expand-link"><?= _t('view', 'Показать контакты') ?></a>
                                                             <? endif; ?>
                                                         </div>
                                                     <? endforeach; ?>
@@ -209,7 +209,7 @@
                                 <? if( ! $is_publicated_out && ! $owner && ! $moderation && DEVICE_PHONE): ?>
                                 <div class="align-center visible-phone mrgb30">
                                     <div class="l-page__spacer l-page__spacer_top"></div>
-                                    <a href="#" class="ajax j-v-contacts-expand-link"><?= _t('view', 'Показать контакты') ?></a>
+                                    <a href="javascript:void(0);" class="ajax j-v-contacts-expand-link"><?= _t('view', 'Показать контакты') ?></a>
                                     <div class="v-author__contact j-v-contacts-expand-block l-table">
                                         <? if( ! empty($contacts['phones']) ): ?>
                                         <div class="v-author__contact_items">
@@ -237,7 +237,7 @@
                                                 </form>
                                             </div>
                                         </div>
-                                        <a href="#" class="ajax j-toggler"><?= _t('view', 'Написать сообщение') ?></a>
+                                        <a href="javascript:void(0);" class="ajax j-toggler"><?= _t('view', 'Написать сообщение') ?></a>
                                     </div>
                                     <div class="l-page__spacer l-page__spacer_top"></div>
                                     <a href="<?= ($is_shop ? $shop['link'] : $user['link']) ?>" class="ico"><span><?= ( $is_shop ? _t('view', 'Все объявления магазина') : _t('view', 'Все объявления автора') ) ?></span> <i class="fa fa-angle-double-right"></i></a>
@@ -287,7 +287,7 @@
                     <? endif; # $price_on  ?>
                     <?= $this->viewPHP($aData, 'item.view.owner') ?>
                     <div class="v-actions rel">
-                        <a href="#" class="ico" id="j-v-send4friend-desktop-link"><i class="fa fa-user"></i> <span><?= _t('view', 'Поделиться с другом') ?></span></a> <br />
+                        <a href="javascript:void(0);" class="ico" id="j-v-send4friend-desktop-link"><i class="fa fa-user"></i> <span><?= _t('view', 'Поделиться с другом') ?></span></a> <br />
                         <div id="j-v-send4friend-desktop-popup" class="v-send4friend-popup dropdown-block dropdown-block-right box-shadow abs hide">
                             <div class="v-send4friend-popup__form">
                                 <form action="" class="form-inline">
@@ -298,7 +298,7 @@
                             </div>
                         </div>
                         <? if( ! $owner) { ?>
-                        <a href="#" class="ico" id="j-v-claim-desktop-link"><i class="fa fa-fire"></i> <span><?= _t('view', 'Пожаловаться') ?></span></a> <br />
+                        <a href="javascript:void(0);" class="ico" id="j-v-claim-desktop-link"><i class="fa fa-fire"></i> <span><?= _t('view', 'Пожаловаться') ?></span></a> <br />
                         <div id="j-v-claim-desktop-popup" class="v-complaint-popup dropdown-block dropdown-block-right box-shadow abs hide">
                             <div class="v-complaint-popup__form">
                                 <?= _t('item-claim', 'Укажите причины, по которым вы считаете это объявление некорректным') ?>:
@@ -339,7 +339,7 @@
                     <div class="v-stat">
                         <?= _t('view', '[views_total] объявления', array('views_total'=>tpl::declension($views_total, _t('view', 'просмотр;просмотра;просмотров')))) ?> <br />
                         <?= _t('view', '[views_today] из них сегодня', array('views_today'=>$views_today)) ?> <br />
-                        <? if($views_total) { ?><a href="#" class="ajax" id="j-v-viewstat-desktop-link"><?= _t('view', 'Посмотреть статистику') ?></a><? } ?>
+                        <? if($views_total) { ?><a href="javascript:void(0);" class="ajax" id="j-v-viewstat-desktop-link"><?= _t('view', 'Посмотреть статистику') ?></a><? } ?>
                         <span class="l-page__spacer l-page__spacer_empty"></span>
                         <div id="j-v-viewstat-desktop-popup-container"></div>
                     </div>
@@ -369,9 +369,9 @@
                 <a href="<?= ( $from == 'my' ? 'javascript:history.back();' : BBS::url('my.items') ) ?>"><i class="fa fa-chevron-left"></i><span><?= _t('view', 'Назад в Мои объявления') ?></span></a>
             </div>
             <div class="pull-right">
-                <a href="#" class="hide j-item-next"><span><?= _t('view', 'Следующее объявление') ?></span><i class="fa fa-chevron-right"></i></a>
+                <a href="javascript:void(0);" class="hide j-item-next"><span><?= _t('view', 'Следующее объявление') ?></span><i class="fa fa-chevron-right"></i></a>
                 <span class="divider hide"></span>
-                <a href="#" class="j-panel-actions-toggler" data-state="hide">
+                <a href="javascript:void(0);" class="j-panel-actions-toggler" data-state="hide">
                     <span class="j-toggler-state"><span><?= _t('view', 'Закрыть') ?></span><i class="fa fa-chevron-down"></i></span>
                     <span class="j-toggler-state hide"><span><?= _t('view', 'Показать') ?></span><i class="fa fa-chevron-up"></i></span>
                 </a>
@@ -383,15 +383,15 @@
         <div class="edit">
             <a href="<?= BBS::url('item.edit', array('id'=>$id,'from'=>'view')) ?>"><i class="fa fa-edit"></i><span><?= _t('view', 'Изменить информацию') ?></span></a>
             <? if( $is_publicated ) { ?>
-            <a href="#" class="j-item-unpublicate"><i class="fa fa-times"></i><span><?= _t('view', 'Снять с публикации') ?></span></a>
+            <a href="javascript:void(0);" class="j-item-unpublicate"><i class="fa fa-times"></i><span><?= _t('view', 'Снять с публикации') ?></span></a>
             <? } ?>
             <? if( ! $is_publicated || $is_soon_left ) { ?>
-                <a href="#" class="j-item-delete"><i class="fa <?= $is_soon_left ? 'fa-trash-o' : 'fa-times' ?>"></i><span><?= _t('view', 'Удалить') ?></span></a>
+                <a href="javascript:void(0);" class="j-item-delete"><i class="fa <?= $is_soon_left ? 'fa-trash-o' : 'fa-times' ?>"></i><span><?= _t('view', 'Удалить') ?></span></a>
             <? } ?>
         </div>
         <div class="buttons">
             <a href="<?= InternalMail::url('item.messages',array('item'=>$id)) ?>" class="btn"><i class="fa fa-envelope"></i> <?= $messages_total ?><span class="hidden-phone"> <?= tpl::declension($messages_total, _t('view', 'Сообщение;Сообщения;Сообщений'), false) ?></span></a>
-            <? if( $is_publicated_out ) { ?><a href="#" class="btn btn-info j-item-publicate"><i class="fa fa-arrow-up white"></i><span class="hidden-phone"> <?= _t('view', 'Активировать') ?></span></a><? } ?>
+            <? if( $is_publicated_out ) { ?><a href="javascript:void(0);" class="btn btn-info j-item-publicate"><i class="fa fa-arrow-up white"></i><span class="hidden-phone"> <?= _t('view', 'Активировать') ?></span></a><? } ?>
             <? if( $is_publicated && bff::servicesEnabled() ) { ?><a href="<?= $promote_url ?>" class="btn btn-success"><?= _t('view', 'Рекламировать') ?></a><? } ?>
         </div>
         <div class="clearfix"></div>

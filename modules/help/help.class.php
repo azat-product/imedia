@@ -188,6 +188,9 @@ class Help_ extends HelpBase
         if (empty($data)) {
             $this->errors->error404();
         }
+        View::setPageData([
+            'help_view_id' => $questionID,
+        ]);
 
         # SEO: Просмотр вопроса
         $this->urlCorrection(static::urlDynamic($data['link']));
@@ -231,5 +234,18 @@ class Help_ extends HelpBase
         $data['content'] = $this->initPublicator()->view($data['content'], $questionID, 'view.content', $this->module_dir_tpl);
 
         return $this->viewPHP($data, 'view');
+    }
+
+    /**
+     * Обрабатываем событие изменения порядка формирования ссылок
+     * @param array $params [changed=>prefix.list]
+     */
+    public function cronChangeUrls(array $params)
+    {
+        if (!bff::cron() || empty($params['changed'])) return;
+
+        if ($params['changed'] === 'prefix.list') {
+            $this->model->questionsUrlRefresh($this->locale->getDefaultLanguage());
+        }
     }
 }

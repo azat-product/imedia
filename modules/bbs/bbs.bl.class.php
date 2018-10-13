@@ -28,7 +28,7 @@ implements IModuleWithSvc
      *  - при изменении, не забыть привести в соответствие столбцы cat_id(1-n) в таблице TABLE_BBS_ITEMS
      *  - минимальное значение = 1
      */
-    const CATS_MAXDEEP = 20;
+    const CATS_MAXDEEP = 4;
 
     # Тип размещения объявления
     const TYPE_OFFER = 0; # Тип размещения: "предлагаю"
@@ -70,7 +70,8 @@ implements IModuleWithSvc
     const CLAIM_OTHER = 1024; # тип жалобы: "Другое"
 
     # Блокировки
-    const BLOCK_OTHER = 1024; # тип блокировки: "Другое"
+    const BLOCK_OTHER   = 1024; # тип блокировки: "Другое"
+    const BLOCK_FOREVER = 2048; # пожизненная блокировка
 
     # Типы отображения списка
     const LIST_TYPE_LIST    = 1; # строчный вид
@@ -332,74 +333,7 @@ implements IModuleWithSvc
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # поиск объявлений (geo)
-            case 'items.search':
-            {
-                # формируем ссылку с учетом указанной области (region), [города (city)]
-                # либо с учетом текущих настроек фильтра по региону
-                if (empty($opts['landing_url'])) {
-                    $url = Geo::url($opts, $dynamic) . 'search/' . (!empty($opts['keyword']) ? $opts['keyword'] . '/' : '');
-                } else {
-                    $url = Geo::url($opts, $dynamic, false) . $opts['landing_url'];
-                }
-                # формируем ссылку на объявление
-                if ( ! empty($opts['item'])) {
-                    $url = rtrim($url, '/').'/'.$opts['item']['keyword'].'-'.(!empty($opts['item']['id']) ? $opts['item']['id'] : '{item-id}').'.html';
-                }
-                break;
-            }
-            # форма добавление объявления
-            case 'item.add':
-                $url .= '/item/add' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # форма редактирования объявления
-            case 'item.edit':
-                $url .= '/item/edit?' . http_build_query($opts);
-                break;
-			# форма добавления копии объявления
-            case 'item.copy':
-                $url .= '/item/copy?' . http_build_query($opts);
-                break;
-            # страница продвижения объявления
-            case 'item.promote':
-                $url .= '/item/promote' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # список моих объявлений
-            case 'my.items':
-                $url .= '/cabinet/items' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # импорт
-            case 'my.import':
-                $url .= '/cabinet/import' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # список избранных объявлений
-            case 'my.favs':
-                $url .= '/cabinet/favs';
-                break;
-            # ссылка активации объявления
-            case 'item.activate':
-                $url .= '/item/activate?' . http_build_query($opts);
-                break;
-            # покупка услуги платного расширения лимитов
-            case 'limits.payed':
-                $url .= '/limits'. (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # купленные услуги платного расширения лимитов
-            case 'my.limits.payed':
-                $url .= '/cabinet/limits';
-                break;
-            # RSS-лента
-            case 'rss':
-                $url .= '/rss/'.static::urlQuery($opts);
-                break;
-            # Прайс-лист Яндекс.Маркет
-            case 'yml':
-                $url .= '/yml/'.static::urlQuery($opts);
-                break;
-        }
-        return bff::filter('bbs.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('bbs-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'bbs']);
     }
 
     /**
@@ -561,8 +495,8 @@ implements IModuleWithSvc
      */
     public static function publisher($type = null)
     {
-        $sys = config::sysAdmin('bbs.publisher', static::PUBLISHER_USER, TYPE_NOTAGS);
-        if ($sys === static::PUBLISHER_SHOP && !bff::moduleExists('shops')) {
+        $sys = config::sysAdmin('bbs.publisher', static::PUBLISHER_USER_OR_SHOP, TYPE_NOTAGS);
+        if (!bff::moduleExists('shops') && ($sys === static::PUBLISHER_SHOP || $sys === static::PUBLISHER_USER_OR_SHOP)) {
             $sys = static::PUBLISHER_USER;
         }
         if (empty($type)) {
@@ -581,6 +515,43 @@ implements IModuleWithSvc
         $enabled = config::sysTheme('bbs.search.filter.vertical', false, TYPE_BOOL);
 
         return $enabled;
+    }
+
+    /**
+     * Варианты списка объявлений
+     * @return array
+     */
+    public static function itemsSearchListTypes()
+    {
+        $types = bff::filter('bbs.search.list.type.list', [
+            static::LIST_TYPE_LIST => [
+                'title' => _t('bbs', 'Список'),
+                't'     => _t('search','Списком'),
+                'i'     => 'fa fa-th-list',
+                'is_map'=> false,
+                'image' => ['sizes' => [BBSItemImages::szSmall, BBSItemImages::szMedium], 'extensions' => ['svg']],
+            ],
+            static::LIST_TYPE_GALLERY => [
+                'title' => _t('bbs', 'Галерея'),
+                't'     => _t('search','Галереей'),
+                'i'     => 'fa fa-th',
+                'is_map'=> false,
+                'image' => ['sizes' => [BBSItemImages::szSmall, BBSItemImages::szMedium], 'extensions' => ['svg']],
+            ],
+            static::LIST_TYPE_MAP => [
+                'title' => _t('bbs', 'Карта'),
+                't'     => _t('search','На карте'),
+                'i'     => 'fa fa-map-marker',
+                'is_map'=> true,
+                'image' => ['sizes' => [BBSItemImages::szSmall, BBSItemImages::szMedium], 'extensions' => ['svg']],
+            ],
+        ]);
+        func::sortByPriority($types, 'priority', true);
+        foreach ($types as $k=>&$v) {
+            $v['id'] = $k;
+            $v['a']  = 0;
+        } unset($v);
+        return $types;
     }
 
     /**
@@ -637,15 +608,20 @@ implements IModuleWithSvc
             4                 => _t('bbs', 'Запрещенный товар/услуга'),
             8                 => _t('bbs', 'Объявление не актуально'),
             static::BLOCK_OTHER => _t('bbs', 'Другая причина'),
+            static::BLOCK_FOREVER => _t('bbs', 'Заблокировано навсегда'),
         ));
         # Перемещаем пункт "Другая причина" в конец списка
         $tmp = array();
         foreach ($list as $k => &$v) {
-            if (!is_array($v)) {
+            if ( ! is_array($v)) {
                 $v = array('title' => $v);
             }
-            if ($k === static::BLOCK_OTHER && !isset($v['priority'])) {
-                $v['priority'] = 1000;
+            if ( ! isset($v['priority'])) {
+                if ($k === static::BLOCK_OTHER) {
+                    $v['priority'] = 1000;
+                } else if ($k === static::BLOCK_FOREVER) {
+                    $v['priority'] = 1001;
+                }
             }
             $tmp[$k] = $v;
         } unset($v);
@@ -665,6 +641,15 @@ implements IModuleWithSvc
     public static function translate()
     {
         return config::sysAdmin('bbs.translate', '', TYPE_NOTAGS) == 'google';
+    }
+
+    /**
+     * Массив соответствия полей для генерации автозаголовков для таблиц категорий и объявлений
+     * @return array
+     */
+    public static function autoTplFields()
+    {
+        return array('tpl_title_list' => 'title_list', 'tpl_title_view' => 'title');
     }
 
     /**
@@ -950,6 +935,7 @@ implements IModuleWithSvc
                     'name' => $key.'['.$v['cat_id'].']['.$v['id'].']',
                     'keys' => array($key, $v['cat_id'], $v['id']),
                     'id'   => $v['id'],
+                    'f'    => $this->dp()->datafield_prefix.$v['data_field'],
                 );
             }
             # добавим дин. св. найденное по ID
@@ -958,6 +944,7 @@ implements IModuleWithSvc
                     'name' => $key.'['.$v['cat_id'].']['.$v['id'].']',
                     'keys' => array($key, $v['cat_id'], $v['id']),
                     'id'   => $v['id'],
+                    'f'    => $this->dp()->datafield_prefix.$v['data_field'],
                 );
             }
         }
@@ -1043,12 +1030,39 @@ implements IModuleWithSvc
             return isset($catCache[$id][$lang]['title']) ? $catCache[$id][$lang]['title'] : '';
         };
 
+        # Получение парент категорий с кешированием
+        static $pathCache;
+        $catPath = function($id) use(&$pathCache, $lang) {
+            if ( ! isset($pathCache[$id][$lang])) {
+                $data = $this->model->catParentsData($id, array('id', 'title', 'numlevel'), true, true, $lang);
+                if ( ! empty($data)) {
+                    $pathCache[$id][$lang] = array();
+                    foreach($data as $v) {
+                        $pathCache[$id][$lang][ $v['numlevel'] ] = $v['title'];
+                    }
+                }
+            }
+            return isset($pathCache[$id][$lang]) ? $pathCache[$id][$lang] : array();
+        };
+
+        # Получение прикрепленных дин. свойств по значению с кешированием
+        static $dpChildren;
+        $dpChild = function($parent, $value) use(&$dpChildren) {
+            if ( ! isset($dpChildren[$parent][$value])) {
+                $res = $this->dp()->getByParentIDValuePairs(array(array('parent_id' => $parent, 'parent_value'=>$value)));
+                if (isset($res[$parent][$value])) {
+                    $dpChildren[$parent][$value] = $res[$parent][$value];
+                }
+            }
+            return isset($dpChildren[$parent][$value]) ? $dpChildren[$parent][$value] : array();
+        };
+
         $result = '';
         if (empty($format)) return '';
         $prepare = $this->dpPrepareTpl($categoryID, $format, $dp, $lang); # данные для заполнения
         $view = explode('|', $format);                                    # разделитель полей в шаблоне
         foreach ($view as $v) {
-            preg_match_all('/\{([\w:\.]+)\}/', $v, $m);
+            preg_match_all('/\{([\w:\-\.]+)\}/', $v, $m);
             if ( ! empty($m[1])) {
                 foreach ($m[1] as $kk => $vv) {
                     # обработаем макросы offer и seek
@@ -1066,36 +1080,77 @@ implements IModuleWithSvc
                                 break;
                         }
                     }
+                    # прикрепленное дин св.
+                    $dpsub = false;
+                    $pos = mb_strpos($vv, '.sub');
+                    if ($pos !== false) {
+                        $dpsub = true;
+                        $vv = mb_substr($vv, 0, $pos);
+                    }
                     $val = '';
                     # заполняем для дин. свойств
                     if (isset($prepare[$vv])) {
                         $keys = $prepare[$vv]['keys'];
                         $id = $prepare[$vv]['id'];
-                        $val = $extractValue($data, $keys);
-                        if (empty($val)) {
-                            continue 2;
+                        if (isset($data[ $prepare[$vv]['f'] ])) {
+                            $val = $data[ $prepare[$vv]['f'] ];
+                        } else {
+                            $val = $extractValue($data, $keys);
                         }
-                        if (!empty($data['cat_type']) && empty($dp[$id]['in_seek'])) {
-                            continue 2;
-                        }
-                        if (!empty($dp[$id]['multi'])) {
-                            if (is_array($val)) {
-                                $aval = $val;
-                                $val = '';
-                                $ares = array();
-                                foreach($dp[$id]['multi'] as $ml) {
-                                    if (in_array($ml['value'], $aval)) {
-                                        $ares[] = $ml['name'];
-                                    }
-                                }
-                                if ( ! empty($ares)) {
-                                    $val = join(' ', $ares);
-                                }
+                        if ($dpsub) {
+                            # для прикрепленного
+                            if (empty($dp[$id]['parent']) || empty($dp[$id]['multi'])) continue 2;
+                            $child = $dpChild($id, $val); # данные о выбранном прикрепленном дин. св.
+
+                            if (empty($child['id']) || empty($child['multi'])) continue 2;
+                            $val = '';
+
+                            if (isset($data[ $child['data_field'] ])) {
+                                $childVal = $data[ $child['data_field'] ];
                             } else {
-                                foreach($dp[$id]['multi'] as $ml) {
-                                    if($ml['value'] == $val){
-                                        $val = $ml['name'];
-                                        break;
+                                # заменим id исходного на id выбранного прикрепленного
+                                $childKeys = $keys;
+                                foreach($childKeys as & $vvv) {
+                                    if ($vvv == $id) {
+                                        $vvv = $child['id'];
+                                    }
+                                } unset($vvv);
+                                $childVal = $extractValue($data, $childKeys); # значение выбранного прикрепленного дин. св.
+                            }
+                            foreach($child['multi'] as $ml) {
+                                if($ml['value'] == $childVal){
+                                    $val = $ml['name'];
+                                    break;
+                                }
+                            }
+                            if (empty($val))
+                                continue 2;
+                        } else {
+                            if (empty($val)) {
+                                continue 2;
+                            }
+                            if (!empty($data['cat_type']) && empty($dp[$id]['in_seek'])) {
+                                continue 2;
+                            }
+                            if (!empty($dp[$id]['multi'])) {
+                                if (is_array($val)) {
+                                    $aval = $val;
+                                    $val = '';
+                                    $ares = array();
+                                    foreach($dp[$id]['multi'] as $ml) {
+                                        if (in_array($ml['value'], $aval)) {
+                                            $ares[] = $ml['name'];
+                                        }
+                                    }
+                                    if ( ! empty($ares)) {
+                                        $val = join(' ', $ares);
+                                    }
+                                } else {
+                                    foreach($dp[$id]['multi'] as $ml) {
+                                        if($ml['value'] == $val){
+                                            $val = $ml['name'];
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -1127,6 +1182,22 @@ implements IModuleWithSvc
                             case 'geo.district':
                                 if (empty($data['district_id'])) continue 3;
                                 $val = $district($data['district_id']);
+                                break;
+                            default:
+                                if (mb_substr($vv, 0, 9) == 'category-') {
+                                    $n = mb_substr($vv, 9);
+                                    $path = $catPath($categoryID);
+                                    if (empty($path)) break;
+                                    if ($n == 'parent') {
+                                        end($path);
+                                        $val = prev($path);
+                                    } else {
+                                        $n = intval($n);
+                                        if (isset($path[$n])) {
+                                            $val = $path[$n];
+                                        }
+                                    }
+                                }
                                 break;
                         }
                     }
@@ -1228,7 +1299,7 @@ implements IModuleWithSvc
      */
     public static function itemsImagesLimit($max = true)
     {
-        return config::sysAdmin('bbs.items.images.limit.'.($max ? 'max' : 'min'), ($max ? 12 : 8), TYPE_UINT);
+        return config::sysAdmin('bbs.items.images.limit.'.($max ? 'max' : 'min'), ($max ? 20 : 4), TYPE_UINT);
     }
 
     /**
@@ -1389,29 +1460,36 @@ implements IModuleWithSvc
     protected function itemsListPrepare(array &$aItems, $nListType, $nNumStart = 1)
     {
         # формируем URL изображений
-        $aImageSize = array(
-            self::LIST_TYPE_LIST    => array('sz' => BBSItemImages::szSmall, 'field' => 'img_s'),
-            self::LIST_TYPE_GALLERY => array('sz' => BBSItemImages::szMedium, 'field' => 'img_m'),
-            self::LIST_TYPE_MAP     => array('sz' => BBSItemImages::szSmall, 'field' => 'img_s'),
-        );
-        if (!isset($aImageSize[$nListType])) {
-            $nListType = key($aImageSize);
+        $aListTypes = static::itemsSearchListTypes();
+        if ( ! isset($aListTypes[$nListType])) {
+            reset($aListTypes);
+            $nListType = key($aListTypes);
         }
-        $aImageSize = $aImageSize[$nListType];
-        $sImageDefault = $this->itemImages()->urlDefault($aImageSize['sz']);
+        $aImage = $aListTypes[$nListType]['image'];
+        $oImages = $this->itemImages();
+        $urlDefaults = [];
+        foreach ($aImage['sizes'] as $size) {
+            $urlDefaults['img_'.$size] = $oImages->urlDefault($size);
+            foreach ($aImage['extensions'] as $sizeExt) {
+                $urlDefaults['img_'.$size.':'.$sizeExt] = $oImages->urlDefault($size.':'.$sizeExt);
+            }
+        }
 
         $i = $nNumStart;
-        foreach ($aItems as &$v) {
+        foreach ($aItems as &$item) {
             # порядковый номер (для карты)
-            $v['num'] = $i++;
+            $item['num'] = $i++;
             # подставляем заглушку для изображения
-            if (!$v['imgs']) {
-                $v[$aImageSize['field']] = $sImageDefault;
+            if ( ! $item['imgs']) {
+                foreach ($urlDefaults as $defField=>$defUrl) {
+                    $item[$defField] = $defUrl;
+                }
             }
             # форматируем дату публикации
-            $v['publicated'] = tpl::datePublicated($v['publicated']);
+            $item['publicated'] = tpl::datePublicated($item['publicated'], 'Y-m-d H:i:s', true, '<br />'); # первичная публикация
+            $item['publicated_last'] = tpl::datePublicated($item['publicated_last'], 'Y-m-d H:i:s', true, '<br />'); # последнее поднятие
         }
-        unset($v);
+        unset($item);
     }
 
     /**
@@ -2008,7 +2086,7 @@ implements IModuleWithSvc
         $aData['cat_id_virtual'] = ($catID != $aData['cat_id'] ? $aData['cat_id'] : null);
         $aData['cat_id'] = $catID;
 
-        $autoTplFields = array('tpl_title_list' => 'title_list', 'tpl_title_view' => 'title');
+        $autoTplFields = static::autoTplFields();
 
         if (Request::isPOST()) {
             do {
@@ -2341,35 +2419,130 @@ implements IModuleWithSvc
      * Метод обрабатывающий ситуацию с блокировкой/разблокировкой пользователя
      * @param integer $nUserID ID пользователя
      * @param boolean $bBlocked true - заблокирован, false - разблокирован
+     * @param array $opts доп. параметры
      */
-    public function onUserBlocked($nUserID, $bBlocked)
+    public function onUserBlocked($nUserID, $bBlocked, array $opts = array())
     {
+        func::array_defaults($opts, array(
+            'shop_id' => array('>=', 0),
+            'context' => ($bBlocked ? 'user-blocked' : 'user-unblocked'),
+            'blocked_reason' => _t('bbs', 'Аккаунт пользователя заблокирован'),
+        ));
+        if (is_numeric($opts['shop_id'])) {
+            $shopBlocked = true;
+        }
         if ($bBlocked) {
-            # при блокировке пользователя -> блокируем все его объявления
+            # при блокировке:
+            # - скрываем из списка на модерации уже заблокированные
+            $this->model->itemsUpdateByFilter(array(
+                'is_moderating' => 0,
+                # помечаем как заблокированные до блокировки аккаунта
+                'status_prev'   => self::STATUS_BLOCKED,
+            ), array(
+                'user_id' => $nUserID,
+                'shop_id' => $opts['shop_id'],
+                'is_publicated' => 0,
+                'status'  => self::STATUS_BLOCKED,
+            ), array('context'=>$opts['context']));
+            # - блокируем все публикуемые/снятые с публикации
             $this->model->itemsUpdateByFilter(array(
                 'blocked_num = blocked_num + 1',
                 'status_prev = status',
                 'status'         => self::STATUS_BLOCKED,
                 'is_publicated'  => 0,
-                'blocked_reason' => _t('bbs', 'Аккаунт пользователя заблокирован'),
+                'is_moderating'  => 0, # скрываем из списка на модерации
+                'blocked_reason' => $opts['blocked_reason'],
             ), array(
                 'user_id' => $nUserID,
+                'shop_id' => $opts['shop_id'],
                 'status'  => array(self::STATUS_PUBLICATED, self::STATUS_PUBLICATED_OUT),
-            ), array('context'=>'user-blocked'));
-            # при блокировке пользователя -> отменяем все его импорты объявлений
-            $this->itemsImport()->cancelUserImport($nUserID);
+            ), array('context'=>$opts['context']));
+            # - отменяем все импорты объявлений пользователя
+            if ( ! isset($shopBlocked)) {
+                $this->itemsImport()->cancelUserImport($nUserID, array('reason' => _t('bbs.import', 'Блокировка пользователя')));
+            }
         } else {
-            # при разблокировке -> разблокируем
-            $this->model->itemsUpdateByFilter(array(
-                'status = (CASE status_prev WHEN ' . self::STATUS_BLOCKED . ' THEN ' . self::STATUS_PUBLICATED_OUT . ' ELSE status_prev END)',
-                'status_prev' => self::STATUS_BLOCKED,
+            # при разблокировке:
+            # - разблокируем (кроме заблокированных до блокировки аккаунта)
+            $changed = $this->model->itemsUpdateByFilter(array(
+                'status = status_prev',
                 //'blocked_reason' => '', # оставляем последнюю причину блокировки
             ), array(
                 'user_id'       => $nUserID,
+                'shop_id'       => $opts['shop_id'],
                 'is_publicated' => 0,
                 'status'        => self::STATUS_BLOCKED,
-                'status_prev != '.self::STATUS_BLOCKED, # все кроме ранее заблокированных
-            ), array('context'=>'user-unblocked'));
+                'status_prev'   => array(self::STATUS_PUBLICATED, self::STATUS_PUBLICATED_OUT),
+            ), array('context'=>$opts['context']));
+            if ($changed > 0) {
+                # - публикуем опубликованные до блокировки аккаунта
+                $filter = array(
+                    'user_id'       => $nUserID,
+                    'shop_id'       => $opts['shop_id'],
+                    'is_publicated' => 0,
+                    'status'        => self::STATUS_PUBLICATED,
+                    'deleted'       => 0,
+                );
+                $update = array(
+                    'is_publicated' => 1,
+                );
+                if (static::premoderation()) {
+                    $filter['moderated'] = 1;
+                }
+                $this->model->itemsUpdateByFilter($update, $filter, array(
+                    'context' => $opts['context'],
+                ));
+            }
+            # - возвращаем в список на модерации
+            $this->model->itemsUpdateByFilter(array(
+                'is_moderating' => 1,
+            ), array(
+                'user_id' => $nUserID,
+                'shop_id' => $opts['shop_id'],
+                'is_publicated' => array('>=', 0),
+                'status'  => array(self::STATUS_BLOCKED, self::STATUS_PUBLICATED, self::STATUS_PUBLICATED_OUT),
+                'moderated' => array('!=', 1),
+            ), array(
+                'context' => $opts['context'],
+            ));
+        }
+        # обновляем счетчик "на модерации"
+        $this->moderationCounterUpdate();
+    }
+
+    /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        # Объявления пользователя - помечаем как удаленные
+        $this->model->itemsDeleteByUser($userID);
+        # Комментарии к объявлениям (своим/других пользователей)
+        $comments = $this->itemComments();
+        $owner = BBSItemComments::commentDeletedByCommentOwner;
+        if (isset($options['initiator']) && $options['initiator'] == 'admin') {
+            $owner = BBSItemComments::commentDeletedByModerator;
+        }
+        $comments->commentsDeleteByUser($userID, $owner, array(
+            'markDeleted' => true,
+        ));
+        # Избранные объявления
+        $this->model->itemsFavDelete($userID);
+        # Жалобы на объявления (не удаляем)
+        # Импорт объявлений (отменяем)
+        $this->itemsImport()->cancelUserImport($userID, array('reason'=>_t('users', 'Удаление пользователя')));
+        # Платные лимиты (активные)
+        $limitsPayed = $this->model->limitsPayedUserByFilter(array('user_id' => $userID, 'active' => 1), array('id'), false);
+        if ( ! empty($limitsPayed)) {
+            $limitsID = array();
+            foreach ($limitsPayed as $v) {
+                $limitsID[] = $v['id'];
+            }
+            $this->model->limitsPayedUserSave($limitsID, array(
+                'active' => 0,
+            ));
         }
     }
 
@@ -2381,37 +2554,12 @@ implements IModuleWithSvc
      */
     public function onShopBlocked($nShopID, $bBlocked, $nUserID)
     {
-        if ($bBlocked) {
-            # при блокировке магазина -> блокируем все объявления от этого магазина
-            $this->model->itemsUpdateByFilter(array(
-                'blocked_num = blocked_num + 1',
-                'status_prev = status',
-                'status'         => self::STATUS_BLOCKED,
-                'is_publicated'  => 0,
-                'blocked_reason' => _t('bbs', 'Аккаунт магазина заблокирован'),
-            ), array(
-                'user_id' => $nUserID,
-                'shop_id' => $nShopID,
-                'status'  => array(self::STATUS_PUBLICATED, self::STATUS_PUBLICATED_OUT),
-            ), array(
-                'context' => 'shop-blocked',
-            ));
-        } else {
-            # при разблокировке -> разблокируем
-            $this->model->itemsUpdateByFilter(array(
-                'status = (CASE status_prev WHEN ' . self::STATUS_BLOCKED . ' THEN ' . self::STATUS_PUBLICATED_OUT . ' ELSE status_prev END)',
-                'status_prev' => self::STATUS_BLOCKED,
-                //'blocked_reason' => '', # оставляем последнюю причину блокировки
-            ), array(
-                'user_id' => $nUserID,
-                'shop_id' => $nShopID,
-                'is_publicated' => 0,
-                'status'  => self::STATUS_BLOCKED,
-                'status_prev != '.self::STATUS_BLOCKED, # все кроме ранее заблокированных
-            ), array(
-                'context' => 'shop-unblocked',
-            ));
-        }
+        # Блокируем объявления магазина
+        $this->onUserBlocked($nUserID, $bBlocked, array(
+            'shop_id' => $nShopID,
+            'context' => ($bBlocked ? 'shop-blocked' : 'shop-unblocked'),
+            'blocked_reason' => _t('bbs', 'Аккаунт магазина заблокирован'),
+        ));
     }
 
     /**
@@ -3210,7 +3358,7 @@ implements IModuleWithSvc
         $filterLevel = static::catsFilterLevel();
         if ($catData['numlevel'] < $filterLevel) return array();
 
-        # получаем основные категории
+        # основные категории
         $cats = $this->model->catParentsData($catData, array('id','pid','numlevel','keyword','landing_url','subs_filter_title as subs_title','subs',));
         foreach ($cats as $k=>&$v) {
             if ($v['numlevel'] < $filterLevel || ! $v['subs']) {
@@ -3220,15 +3368,25 @@ implements IModuleWithSvc
             $v['subs'] = array();
         } unset($v);
         if (empty($cats)) return array();
-        $catsID = array_keys($cats);
+        $catsID = $catsID_All = array_keys($cats);
 
-        # получаем подкатегории
+        # подкатегории
         $subcats = $this->model->catsDataByFilter(array('pid'=>$catsID,'enabled'=>1), array('id','pid','title','keyword','landing_url'));
         foreach ($subcats as &$v) {
             $v['link'] = static::url('items.search', array('keyword'=>$v['keyword'],'landing_url'=>$v['landing_url'])); unset($v['keyword']);
             $v['active'] = (in_array($v['id'], $catsID) || $v['id'] == $catData['id']);
             $cats[$v['pid']]['subs'][$v['id']] = $v;
+            $catsID_All[] = $v['id'];
         } unset($v, $subcats);
+
+        # количество объявлений в категориях
+        $items = $this->model->catsItemsCountersByID($catsID_All, Geo::filter());
+        foreach ($cats as $k => & $v) {
+            $v['items'] = (array_key_exists($k, $items) ? $items[$k] : 0);
+            foreach ($v['subs'] as $kk => & $vv) {
+                $vv['items'] = (array_key_exists($kk, $items) ? $items[$kk] : 0);
+            } unset($vv);
+        } unset($v);
 
         return $cats;
     }

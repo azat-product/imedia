@@ -16,6 +16,8 @@ $footerText = Site::footerText();
 $counters = Site::i()->getCounters();
 
 ?>
+
+
 <!-- BEGIN footer -->
 <?php if (DEVICE_DESKTOP_OR_TABLET) { ?>
   <div class="l-footer">

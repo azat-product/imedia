@@ -134,12 +134,10 @@ abstract class SEOModuleBase extends Module
 
         # формируем полную ссылку
         if (strpos($url, '{site') !== false) {
-            $scheme = (config::sys('https.canonical', false) ? 'https' : false);
+            $scheme = (config::sysAdmin('https.canonical', false) ? 'https' : false);
             if (sizeof($languages) > 1) {
                 foreach ($languages as $lng) {
-                    if ($lng != LNG) {
-                        $this->_metaData['link-alternate-' . $lng] = '<link rel="alternate" hreflang="' . $lng . '" href="' . static::urlDynamic($url, array(), $lng, $scheme) . '" />';
-                    }
+                    $this->_metaData['link-alternate-' . $lng] = '<link rel="alternate" hreflang="' . $lng . '" href="' . static::urlDynamic($url, array(), $lng, $scheme) . '" />';
                 }
             }
             $canonical = static::urlDynamic($url, array(), LNG, $scheme);
@@ -167,6 +165,39 @@ abstract class SEOModuleBase extends Module
         }
 
         return $canonical;
+    }
+
+    /**
+     * Проверка URL текущего запроса на обязательное наличие/отсутствие завершающего слеша
+     * @param bool $required true - URL должен обязательно завершаться слешем,
+     *                       false - URL должен обязательно быть без завершающего слеша
+     * @param int $redirectStatus статус редиректа
+     */
+    public function urlCorrectionEndSlash($required = true, $redirectStatus = 301)
+    {
+        $url = parse_url(Request::uri());
+        if ( ! empty($url['path'])) {
+            $path = $url['path'];
+            $last = mb_substr($path, -1);
+            if ($required) {
+                # URL должен обязательно завершаться слешем
+                if ($last !== '/') {
+                    $path .= '/';
+                } else {
+                    # исправляем множественные завершающие слешы
+                    $path = rtrim($path, '/').'/';
+                }
+            } else {
+                # URL должен обязательно быть без завершающего слеша
+                if ($last === '/') {
+                    $path = rtrim($path, '/');
+                }
+            }
+            if ($path !== $url['path']) {
+                $url = SITEURL.$path.( isset($url['query']) ? '?'.$url['query'] : '' );
+                $this->redirect($url, $redirectStatus);
+            }
+        }
     }
 
     /**
@@ -229,7 +260,7 @@ abstract class SEOModuleBase extends Module
     public function metaSet($type, $data)
     {
         $data = trim(strval($data));
-        $limit = config::sys('seo.meta.limit.'.$type, 0, TYPE_UINT);
+        $limit = config::sysAdmin('seo.meta.limit.'.$type, 0, TYPE_UINT);
 
         switch ($type) {
             case 'mtitle':
@@ -244,7 +275,7 @@ abstract class SEOModuleBase extends Module
             break;
             case 'mdescription':
             {
-                $this->_metaData[$type] = '<meta name="description" lang="' . LNG . '" content="' . mb_substr(htmlspecialchars($data, ENT_QUOTES, 'UTF-8', false), 0, ($limit > 0 ? $limit : 200)) . '" />';
+                $this->_metaData[$type] = '<meta name="description" lang="' . LNG . '" content="' . mb_substr(htmlspecialchars($data, ENT_QUOTES, 'UTF-8', false), 0, ($limit > 0 ? $limit : 300)) . '" />';
             }
             break;
         }
@@ -388,7 +419,7 @@ abstract class SEOModuleBase extends Module
                             $landingURL = '/'.$landingURL;
                         }
                     }
-                    $landingURL = Request::scheme().'://{sitehost}'.(!empty($extra) ? '/'.join('/', $extra) : '').$landingURL;
+                    $landingURL = Request::scheme().'://'.strtr(Request::host(), array(SITEHOST=>'{sitehost}')).(!empty($extra) ? '/'.join('/', $extra) : '').$landingURL;
                     $page['is_relative'] = 0;
                 } else {
                     if (mb_stripos($landingURL, '//') === 0) {
@@ -423,7 +454,7 @@ abstract class SEOModuleBase extends Module
      */
     public static function landingPagesEnabled()
     {
-        return config::sys('seo.landing.pages.enabled', false, TYPE_BOOL);
+        return config::sysAdmin('seo.landing.pages.enabled', false, TYPE_BOOL);
     }
 
     /**
@@ -446,7 +477,7 @@ abstract class SEOModuleBase extends Module
      */
     public static function redirectsEnabled()
     {
-        return config::sys('seo.redirects', false, TYPE_BOOL);
+        return config::sysAdmin('seo.redirects', false, TYPE_BOOL);
     }
 
     /**

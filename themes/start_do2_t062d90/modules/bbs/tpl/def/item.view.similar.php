@@ -9,7 +9,7 @@ if (empty($similar)) return '';
 
 ?>
 <div class="l-blockHeading">
-  <h2 class="l-blockHeading-title"><?= _t('view', 'Другие похожие объявления') ?></h2>
+  <div class="l-blockHeading-title"><?= _t('view', 'Другие похожие объявления') ?></div>
 </div>
 
 <?php

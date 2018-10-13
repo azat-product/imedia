@@ -33,24 +33,25 @@
                     <a href="<?= Site::urlBase() ?>"><i class="icon-home"></i></a>
                 </div>
                 <div class="clearfix"></div>
-                <form method="post" action="" class="form-horizontal">
+                <form method="post" action="" class="form-horizontal" id="j-users-admin-login-form">
                     <input type="hidden" name="s" value="users" />
                     <input type="hidden" name="ev" value="login" />
-                    <input type="hidden" name="hh" value="" />
+                    <input type="hidden" name="ref" value="<?= HTML::escape(Request::referer()) ?>" class="j-ref" />
                     <fieldset>
                         <div title="<?= _te('', 'логин') ?>" class="input-prepend left" style="margin-left: 20px;">
                             <span class="add-on"><i class="icon-user"></i></span>
-                            <input type="text" placeholder="<?= _te('', 'логин') ?>" name="login" id="login" tabindex="1" class="input-large span10" />
+                            <input type="text" placeholder="<?= _te('', 'логин') ?>" name="login" id="login" tabindex="1" class="input-large span10 j-login" />
                         </div>
                         <div title="<?= _te('', 'пароль') ?>" class="input-prepend right" style="margin-right: 16px;">
                             <span class="add-on"><i class="icon-lock"></i></span>
-                            <input type="password" placeholder="<?= _te('', 'пароль') ?>" name="password" tabindex="2" class="input-large span10" />
+                            <input type="password" placeholder="<?= _te('', 'пароль') ?>" name="password" tabindex="2" class="input-large span10 j-password" />
                         </div>
+                        <div class="clearfix"></div>
                         <?php bff::hook('users.admin.login.form', array('errors'=>$errors)); ?>
                         <div class="clearfix"></div>
                         <div class="progress left" style="display:none;" id="progress-login"></div>
                         <div class="btn-group button-login right">
-                            <button class="btn btn-round btn-small" type="submit" onclick="document.getElementById('progress-login').style.display='inline-block';" tabindex="3"><img src="<?= bff::url('/img/admin/login.png') ?>" alt="" />&nbsp;&nbsp;<?= _te('', 'Вход') ?></button>
+                            <button class="btn btn-round btn-small j-submit" type="submit" onclick="document.getElementById('progress-login').style.display='inline-block';" tabindex="3"><img src="<?= bff::url('/img/admin/login.png') ?>" alt="" />&nbsp;&nbsp;<?= _te('', 'Вход') ?></button>
                         </div>
                         <div class="clearfix"></div>
                     </fieldset>

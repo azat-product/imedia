@@ -22,11 +22,11 @@ tpl::includeJS('bbs.my.import', false, 6);
                     <div class="i-formpage__catselect__done j-cat-select-link-selected hide">
                         <img class="abs j-icon" alt="" src="" />
                         <div class="i-formpage__catselect__done_cat">
-                            <a href="#" class="j-cat-select-link j-title"></a>
+                            <a href="javascript:void(0);" class="j-cat-select-link j-title"></a>
                         </div>
                     </div>
                     <div class="i-formpage__catselect__close j-cat-select-link-empty">
-                        <a href="#" class="ajax ajax-ico j-cat-select-link"><span><?= _t('bbs.import', 'Выберите категорию') ?></span> <i class="fa fa-chevron-down"></i></a>
+                        <a href="javascript:void(0);" class="ajax ajax-ico j-cat-select-link"><span><?= _t('bbs.import', 'Выберите категорию') ?></span> <i class="fa fa-chevron-down"></i></a>
                     </div>
                     <div class="i-formpage__catselect__popup dropdown-block box-shadow abs hide j-cat-select-popup">
                         <div class="i-formpage__catselect__popup__content">
@@ -79,11 +79,11 @@ tpl::includeJS('bbs.my.import', false, 6);
                         <span class="upload-mask">
                             <input type="file" name="file" class="j-upload-file" />
                         </span>
-                        <a href="#" onclick="return false;" class="ajax"><?= _t('', 'Выбрать файл, до 10мб') ?></a>
+                        <a href="javascript:void(0);" onclick="return false;" class="ajax"><?= _t('', 'Выбрать файл, до 10мб') ?></a>
                     </div>
                     <div class="j-cancel hide">
                         <span class="j-cancel-filename"></span>
-                        <a href="#" class="ajax pseudo-link-ajax ajax-ico j-cancel-link"><i class="fa fa-times"></i> <?= _t('', 'отмена') ?></a>
+                        <a href="javascript:void(0);" class="ajax pseudo-link-ajax ajax-ico j-cancel-link"><i class="fa fa-times"></i> <?= _t('', 'отмена') ?></a>
                     </div>
                 </div>
             </div>
@@ -163,13 +163,13 @@ tpl::includeJS('bbs.my.import', false, 6);
     </div>
     <ul id="j-my-import-history-pp" class="u-cabinet__list__pagination__howmany nav nav-pills pull-right hidden-phone">
         <li class="dropdown">
-            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="#">
+            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="javascript:void(0);">
                 <span class="j-pp-title"><?= $pgn_pp[$f['pp']]['t'] ?></span>
                 <i class="fa fa-caret-down"></i>
             </a>
             <ul class="dropdown-menu">
                 <? foreach($pgn_pp as $k=>$v): ?>
-                    <li><a href="#" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
+                    <li><a href="javascript:void(0);" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
                 <? endforeach; ?>
             </ul>
         </li>

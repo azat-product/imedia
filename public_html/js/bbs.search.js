@@ -3,8 +3,8 @@
  */
 var jBBSSearch = (function(){
     var inited = false, $form, $list, $pgn,
-        listTypes = {list:1,gallery:2,map:3},
-        url = document.location.pathname, o = {lang:{},ajax:true,isVertical:false, isMapVertical:false, filterDropdownMargin:15};
+        url = document.location.pathname,
+        o = {lang:{},ajax:true,isVertical:false, isMapVertical:false, filterDropdownMargin:15};
 
     function init()
     {
@@ -55,8 +55,8 @@ var jBBSSearch = (function(){
 
         // history
         if(o.ajax) {
-            var queryInitial = prepareQuery();
-            $(window).bind('popstate',function(e){
+            var queryInitial = prepareQuery($form);
+            $(window).on('popstate',function(e){
                 var loc = history.location || document.location;
                 var query = loc.search.substr(1);
                 if( query.length == 0 ) query = queryInitial;
@@ -121,6 +121,9 @@ var jBBSSearch = (function(){
         var v = $form.get(0).elements['lt'];
         if( typeData ) {
             v.value = typeData.id;
+            for (var i in o.listtype) {
+                o.listtype[i]['filtered'] = (i == typeData.id);
+            }
             o.ajax = false; // reload page on list type changes
             //onPage(1, false);
             onSubmit();
@@ -129,7 +132,8 @@ var jBBSSearch = (function(){
         if( ! o.listtype.hasOwnProperty(v.value) ) {
             for(var i in o.listtype) { v.value = i; break; }
         }
-        return {id:v.value,title:o.listtype[v.value].t};
+        typeData = o.listtype[v.value];
+        return {id:v.value,title:typeData.t,is_map:typeData.is_map,filtered:typeData.filtered};
     }
 
     function onPage(pageId, update)
@@ -148,16 +152,16 @@ var jBBSSearch = (function(){
     {
         ex = $.extend({popstate:false, scroll:false, fade:true, resetPage:false}, ex||{});
         if (ex.resetPage) onPage(1, false);
-        var query = prepareQuery();
+        var query = prepareQuery($form, true);
         if(o.ajax) {
-            var ajaxQuery = query;
+            var ajaxQuery = prepareQuery($form);
             if(o.isMapVertical){ ajaxQuery = ajaxQuery + '&mapVertical=1'; }
             bff.ajax(url, ajaxQuery, function(data){
                 if(data && data.success) {
                     if( ex.scroll) $.scrollTo($list, {offset: -150, duration:500, axis: 'y'});
                     $pgn.html(data.pgn);
                     var list = $list.find('.j-list-'+app.device());
-                    if( onListType().id == listTypes.map ) {
+                    if( onListType().is_map ) {
                         list.find('.j-maplist').html(data.list);
                         o.items = data.items;
                         desktop_tablet.itemsToMap(o.items);
@@ -165,7 +169,8 @@ var jBBSSearch = (function(){
                     } else {
                         list.html(data.list);
                     }
-                    if( ! ex.popstate) history.pushState(null, null, url+'?'+query);
+                    list.find('.j-tooltip').tooltip();
+                    if( ! ex.popstate) history.pushState(null, null, url+(query.length > 0 ? '?'+query : ''));
                 }
             }, function(p){
                 if(ex.fade) $list.toggleClass('disabled');
@@ -175,15 +180,37 @@ var jBBSSearch = (function(){
         }
     }
 
-    function prepareQuery()
+    function prepareQuery($f, minify)
     {
-        var query = [];
         if (o.isVertical) {
-            desktop_tablet_vertical.prepareSubmit($form);
+            desktop_tablet_vertical.prepareSubmit($f);
         }
-        $.each($form.serializeArray(), function(i, field) {
-            if(field.value && field.value!=0 && field.value!='') query.push( field.name+'='+encodeURIComponent(field.value) );
+        var params = {};
+        $.each($f.serializeArray(), function(i, f) {
+            if (f.value && f.value !== 0 && f.value !== '0' && f.value !== '') {
+                if (minify === true && f.name === 'c') { return; }
+                params[f.name] = f.value;
+            }
         });
+        // remove defaults:
+        if (minify === true) {
+            var defaults = {
+                'sort':'new',
+                'lt': function(){
+                    return (params["lt"] !== undefined && !o.listtype[params["lt"]].filtered);
+                },
+                'page':'1',
+                'p[c]': function(){
+                    return (params["p[f]"] === undefined && params["p[t]"] === undefined);
+                }
+            };
+            for (var k in defaults) { if (params[k] === defaults[k] ||
+                (typeof defaults[k] === "function" && defaults[k]() === true)
+                ) { delete params[k]; }
+            }
+        }
+        var query = [];
+        for (var p in params) { query.push(p + '=' + encodeURIComponent(params[p])); }
         return query.join('&');
     }
 
@@ -213,12 +240,15 @@ var jBBSSearch = (function(){
                         $p.find('.j-reset').prop({checked:false,disabled:false});
                         updateBlockButton(b);
                     }).on('click', '.j-catLink', function(e){
-                        e.preventDefault();
-                        _this.hide();
-                        bff.redirect($(this).attr('href')+'?'+prepareQuery());
+                        var query = prepareQuery($form, true);
+                        if (query.length > 0) {
+                            e.preventDefault();
+                            _this.hide();
+                            bff.redirect($(this).attr('href') + '?' + query);
+                        }
                     });
                     if(b.type == 'price') {
-                        $p.find('.j-curr-select').change(function(){
+                        $p.find('.j-curr-select').on('change',function(){
                             $p.find('.j-curr').val(' '+this.options[this.selectedIndex].text);
                             updateBlockButton(b);
                         });
@@ -251,7 +281,7 @@ var jBBSSearch = (function(){
             });
 
             // map
-            if( onListType().id == listTypes.map ) {
+            if( onListType().is_map ) {
                 mapInit();
             }
         }
@@ -636,7 +666,7 @@ var jBBSSearch = (function(){
                 }
 
                 // items: list
-                $mapItems = $list.find('.j-maplist .j-maplist-item').bind('click', function (e) {
+                $mapItems = $list.find('.j-maplist .j-maplist-item').on('click', function (e) {
                     var $item = $(this);
                     var itemIndex = $item.data('index');
                     if (!o.items.hasOwnProperty(itemIndex) || $(e.target).is('a') || $(e.target).parents('a').length) return;
@@ -894,7 +924,7 @@ var jBBSSearch = (function(){
         function prepareSubmit($form)
         {
             $form.find('.j-vertical').remove();
-            $.each($filter.find(':input'), function() {
+            $.each($filter.find(':input'), function(){
                 var $el = $(this);
                 var name = $el.attr('name');
                 if( ! name) return;
@@ -976,7 +1006,7 @@ var jBBSSearch = (function(){
             }});
 
             // map
-            if( onListType().id == listTypes.map ) {
+            if( onListType().is_map ) {
                 mapInit();
             }
         }
@@ -1193,7 +1223,8 @@ var jBBSSearch = (function(){
             $(function(){
                 init();
             });
-        }
+        },
+        prepareQuery: prepareQuery
     };
 }());
 
@@ -1209,6 +1240,9 @@ $(function(){
         function doFilter(type, $link)
         {
             var f = $link.metadata(); f['type'] = type; f['link'] = $link.attr('href');
+            if ($link.hasClass('hidden-link')) {
+                f['link'] = $link.data('link');
+            }
             _this.getLink().children('.title').text(f.title);
             bff.redirect(f['link']);
         }

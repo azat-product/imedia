@@ -18,9 +18,10 @@ if($shop_id && $shop) { ?>
     </a><? } ?>
     <div class="v-author__info">
         <a href="<?= $shop['link'] ?>" title="<?= $shop['title'] ?>"><span><?= $shop['title'] ?></span></a>
+        <!-- plugin_user_online_do_block -->
         <div class="v-author_shop__descr">
             <? if(($descr_limit = 100) && mb_strlen($shop['descr']) > $descr_limit) { ?>
-                <div><?= tpl::truncate($shop['descr'], $descr_limit ,'', true) ?><a href="#" class="ajax v-author_shop__descr_expand" id="j-view-owner-shop-descr-ex">...</a></div>
+                <div><?= tpl::truncate($shop['descr'], $descr_limit ,'', true) ?><a href="javascript:void(0);" class="ajax v-author_shop__descr_expand" id="j-view-owner-shop-descr-ex">...</a></div>
                 <div class="hide"><?= mb_substr($shop['descr'], $descr_limit); ?></div>
                 <script type="text/javascript">
                     <? js::start() ?>
@@ -45,7 +46,7 @@ if($shop_id && $shop) { ?>
             }
         ?>
         <div class="v-author_shop__address rel">
-            <? if($addr_map){ ?><a href="#" class="ico ajax" id="j-view-owner-shop-map-toggler"><i class="fa fa-map-marker"></i> <span><?= _t('view', 'Показать на карте') ?></span></a><? } ?>
+            <? if($addr_map){ ?><a href="javascript:void(0);" class="ico ajax" id="j-view-owner-shop-map-toggler"><i class="fa fa-map-marker"></i> <span><?= _t('view', 'Показать на карте') ?></span></a><? } ?>
             <span class="v-author_shop__address_info"><?= $shop['region_title'].', '.$shop['addr_addr'] ?></span>
             <? if($addr_map){ ?>
             <div id="j-view-owner-shop-map-popup" class="v-map-popup v-map-popup_shop dropdown-block dropdown-block-right box-shadow hide abs">
@@ -87,6 +88,7 @@ if($shop_id && $shop) { ?>
     </a>
     <div class="v-author__info">
         <span><?= $name ?></span><br />
+        <!-- plugin_user_online_do_block -->
         <? if($owner_type == BBS::OWNER_PRIVATE) { ?><small><?= _t('view', 'частное лицо') ?></small><br /><? } ?>
         <? if($user['created']!=='0000-00-00 00:00:00') { ?><small><?= _t('view', 'на сайте с [date]', array('date'=>tpl::date_format2($user['created']))) ?></small><br /><? } ?>
         <a href="<?= $user['link'] ?>"><?= _t('view', 'Все объявления автора') ?></a>
@@ -95,7 +97,7 @@ if($shop_id && $shop) { ?>
 <? } ?>
     <div class="v-author__contact">
         <? if($contacts['has'] || ! empty($shop['social'])) { ?>
-        <div class="v-author__contact__title"><span><?= _t('view', 'Контакты:') ?></span> <a href="#" class="ajax j-v-contacts-expand-link"><?= _t('view', 'показать контакты') ?></a></div>
+        <div class="v-author__contact__title"><span><?= _t('view', 'Контакты:') ?></span> <a href="javascript:void(0);" class="ajax j-v-contacts-expand-link"><?= _t('view', 'показать контакты') ?></a></div>
         <div class="j-v-contacts-expand-block">
             <? if( ! empty($contacts['phones']) ): ?>
             <div class="v-author__contact_items">

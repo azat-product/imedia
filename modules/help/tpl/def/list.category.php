@@ -18,7 +18,7 @@
             <div class="faq-list txt-content">
 
                 <div class="faq-category faq-category-inside">
-                    <h2><?= $title ?></h2>
+                    <h1><?= $title ?></h1>
                     <? if($subcats) { ?>
                         <ul>
                             <? foreach($subcats_list as &$v) { ?>
@@ -29,7 +29,7 @@
                         <ul>
                             <? foreach($questions_list as &$v) { ?>
                                 <? if ( ! empty($v['textshort'])) { ?>
-                                    <li><a href="#" class="ajax j-help-cat-question-ex"><?= $v['title'] ?></a>
+                                    <li><a href="javascript:void(0);" class="ajax j-help-cat-question-ex"><?= $v['title'] ?></a>
                                         <div class="hide faq-question-short">
                                             <div><?= $v['textshort'] ?></div>
                                             <? if(!$v['content_no']){ ?><a href="<?= $v['link'] ?>"><span><?= $lang_more ?></span> <i class="fa fa-angle-right c-link-icon"></i></a><? } ?>
@@ -52,7 +52,7 @@
 <script type="text/javascript">
 <? js::start() ?>
 $(function(){
-    $('.j-help-cat-question-ex').on('click touchstart', function(e){
+    $('.j-help-cat-question-ex').on('click', function(e){
         nothing(e);
         $(this).next().slideToggle()
     });

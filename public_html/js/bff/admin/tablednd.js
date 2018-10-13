@@ -75,6 +75,7 @@
  *                         draggable
  *                         Improved the serialize method to use a default (and settable) regular expression.
  *                         Added tableDnDupate() and tableDnDSerialize() to be called when you are outside the table
+ * Version 0.51: 2018-07-18 Added removeDraggable(), removeTables(), tableDnDRemove()
  */
 jQuery.tableDnD = {
     /** Keep hold of the current table being dragged */
@@ -176,6 +177,23 @@ jQuery.tableDnD = {
 		}
 	},
 
+    removeDraggable: function(table) {
+		if (table.tableDnDConfig.dragHandle) {
+			var cells = jQuery(table.tableDnDConfig.dragHandle, table);
+            cells.each(function() {
+                jQuery(this).unbind("mousedown");
+			})
+		} else {
+	        var rows = jQuery("tr", table);
+	        rows.each(function() {
+				var row = jQuery(this);
+				if (! row.hasClass("nodrag")) {
+                    row.unbind("mousedown").css("cursor", "auto");
+				}
+			});
+		}
+	},
+
 	updateTables: function() {
 		this.each(function() {
 			// this is now bound to each matching table
@@ -184,6 +202,14 @@ jQuery.tableDnD = {
 			}
 		})
 	},
+
+    removeTables: function() {
+        this.each(function() {
+            if (this.tableDnDConfig) {
+                jQuery.tableDnD.removeDraggable(this);
+            }
+        })
+    },
 
     /** Get the mouse coordinates from the event (allowing for browser differences) */
     mouseCoords: function(ev){
@@ -427,6 +453,7 @@ jQuery.fn.extend(
 	{
 		tableDnD : jQuery.tableDnD.build,
 		tableDnDUpdate : jQuery.tableDnD.updateTables,
-		tableDnDSerialize: jQuery.tableDnD.serializeTables
+		tableDnDSerialize: jQuery.tableDnD.serializeTables,
+		tableDnDRemove : jQuery.tableDnD.removeTables
 	}
 );

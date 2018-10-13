@@ -182,7 +182,8 @@ class InternalMail_ extends InternalMailBase
                     'blocked_reason',
                     'activated',
                     'activate_key',
-                    'im_noreply'
+                    'im_noreply',
+                    'fake',
                 )
             );
             if (!Request::isPOST()) {
@@ -259,6 +260,10 @@ class InternalMail_ extends InternalMailBase
         }
 
         $userID = User::id();
+        View::setPageData([
+            'internalmail_chat_interlocutor_id' => $interlocutorData['user_id'],
+            'internalmail_chat_interlocutor_data' => $interlocutorData,
+        ]);
         $this->security->setTokenPrefix('my-chat-' . $chatKey);
 
         $action = $this->input->getpost('act', TYPE_STR);
@@ -314,15 +319,17 @@ class InternalMail_ extends InternalMailBase
                             );
                             if ( ! isset($interlocutorData['lang'])) {
                                 $user = Users::model()->userDataEnotify($interlocutorData['user_id']);
-                                $interlocutorData['lang'] = $user['lang'];
+                                $interlocutorData['lang'] = isset($user['lang']) ? $user['lang'] : LNG;
                             }
-                            bff::sendMailTemplate(array(
-                                    'author'        => User::data('login'),
-                                    'link_activate' => $activateData['link'],
-                                    'message'       => tpl::truncate(strip_tags($message), 250),
-                                    'user_id'       => $interlocutorID,
-                                ), 'internalmail_new_message_newuser', $interlocutorData['email'], false, '', '', $interlocutorData['lang']
-                            );
+                            if (empty($interlocutorData['fake'])) {
+                                bff::sendMailTemplate(array(
+                                        'author'        => User::data('login'),
+                                        'link_activate' => $activateData['link'],
+                                        'message'       => tpl::truncate(strip_tags($message), 250),
+                                        'user_id'       => $interlocutorID,
+                                    ), 'internalmail_new_message_newuser', $interlocutorData['email'], false, '', '', $interlocutorData['lang']
+                                );
+                            }
 
                             # продлеваем период действия ссылки активации
                             Users::model()->userSave($interlocutorID, array(

@@ -124,13 +124,13 @@ var jShopStatus = (function(){
                     <div><?= _t('shops', 'Причина блокировки:'); ?></div>
                     <div class="clear"></div>
                     <div class="j-s-blocked">
-                        <span class="j-s-blocked-text"><?= (!empty($blocked_reason) ? $blocked_reason :'?') ?></span> - <a href="#" onclick="jShopStatus.changeBlocked(1,0); return false;" class="ajax desc"><?= _t('', 'изменить'); ?></a>
+                        <span class="j-s-blocked-text"><?= (!empty($blocked_reason) ? $blocked_reason :'?') ?></span> - <a href="javascript:void(0);" onclick="jShopStatus.changeBlocked(1,0); return false;" class="ajax desc"><?= _t('', 'изменить'); ?></a>
                     </div>
                     <div class="j-s-blocking" style="display: none;">
                         <textarea name="blocked_reason" class="autogrow j-s-blocked-reason" style="height:60px; min-height:60px;"><?= $blocked_reason; ?></textarea>
-                        <a onclick="return jShopStatus.changeBlocked(3, 1);" class="btn btn-mini btn-success" href="#"><?= (!$blocked ? _t('shops', 'продолжить'):_t('shops', 'изменить причину')) ?></a>
-                        <? if($blocked) { ?><a onclick="return jShopStatus.changeBlocked(4);" class="btn btn-success btn-mini" href="#"><?= _t('shops', 'разблокировать'); ?></a><? } ?>
-                        <a onclick="return jShopStatus.changeBlocked(2);" class="btn btn-mini" href="#"><?= _t('', 'Cancel'); ?></a>
+                        <a onclick="return jShopStatus.changeBlocked(3, 1);" class="btn btn-mini btn-success" href="javascript:void(0);"><?= (!$blocked ? _t('shops', 'продолжить'):_t('shops', 'изменить причину')) ?></a>
+                        <? if($blocked) { ?><a onclick="return jShopStatus.changeBlocked(4);" class="btn btn-success btn-mini" href="javascript:void(0);"><?= _t('shops', 'разблокировать'); ?></a><? } ?>
+                        <a onclick="return jShopStatus.changeBlocked(2);" class="btn btn-mini" href="javascript:void(0);"><?= _t('', 'Cancel'); ?></a>
                     </div>
                 </div>
             </td>

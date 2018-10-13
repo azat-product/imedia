@@ -17,7 +17,7 @@
             <div class="faq-list txt-content">
                 <div class="faq-category">
                     <? if ( ! empty($questions)) { ?>
-                    <h2><?= _t('help', 'Результаты поиска по запросу "[query]":', array('query'=>HTML::escape($f['q']))) ?></h2>
+                    <h1><?= _t('help', 'Результаты поиска по запросу "[query]":', array('query'=>HTML::escape($f['q']))) ?></h1>
                     <ul class="faq-search-results">
                         <? foreach($questions as &$v) { ?>
                         <li><div class="faq-num"><?= $num++ ?>.</div>
@@ -30,7 +30,7 @@
                         <? } unset($v); ?>
                     </ul>
                     <? } else { ?>
-                    <h2><?= _t('help', 'По запросу "[query]" ничего не найдено', array('query'=>HTML::escape($f['q']))) ?></h2>
+                    <h1><?= _t('help', 'По запросу "[query]" ничего не найдено', array('query'=>HTML::escape($f['q']))) ?></h1>
                     <? } ?>
                 </div>
                 <div class="mrgl20"><?= $pgn ?></div>

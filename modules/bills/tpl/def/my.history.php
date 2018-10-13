@@ -69,13 +69,13 @@
     </div>
     <ul id="j-my-history-pp" class="u-cabinet__list__pagination__howmany nav nav-pills pull-right hidden-phone">
         <li class="dropdown">
-            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="#">
+            <a class="dropdown-toggle j-pp-dropdown" data-toggle="dropdown" href="javascript:void(0);">
                 <span class="j-pp-title"><?= $pgn_pp[$f['pp']]['t'] ?></span>
                 <i class="fa fa-caret-down"></i>
             </a>
             <ul class="dropdown-menu">
                 <? foreach($pgn_pp as $k=>$v): ?>
-                    <li><a href="#" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
+                    <li><a href="javascript:void(0);" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
                 <? endforeach; ?>
             </ul>
         </li>

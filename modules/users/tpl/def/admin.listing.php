@@ -11,6 +11,7 @@
         2 => array('t'=>_t('users', 'Неактивированные')),
         3 => array('t'=>_t('users', 'Заблокированные')),
         4 => array('t'=>_t('users', 'Подписавшиеся')),
+        5 => array('t'=>_t('users', 'Сгенерированные')),
     ));
     $statusNotActivated = ($f['status'] == 2);
 ?>
@@ -42,7 +43,7 @@ $(function(){
     });
 
     var $list = $('#j-list');
-    $('#j-check-all').change(function(){
+    $('#j-check-all').on('change',function(){
         $list.find('.j-user-check').prop('checked', $(this).is(':checked'));
         showMassPanel();
     });
@@ -58,14 +59,14 @@ $(function(){
         $info.html('<?= _t('', 'Выбрано'); ?> <strong>' + $ch.length + '</strong> ' + bff.declension($ch.length,['<?= _t('users', 'пользователь'); ?>','<?= _t('users', 'пользователя'); ?>','<?= _t('users', 'пользователей'); ?>'], false));
         $mass.toggleClass('hide', ! $ch.length);
     }
-    $mass.find('.j-remove-checked').click(function(){
+    $mass.find('.j-remove-checked').on('click',function(){
         var $ch = $list.find('.j-user-check:checked');
-        if(confirm('<?= _t('', 'Delete'); ?> ' + $ch.length + ' ' + bff.declension($ch.length,['<?= _t('users', 'пользователь'); ?>','<?= _t('users', 'пользователя'); ?>','<?= _t('users', 'пользователей'); ?>'], false) + '?')){
+        if (bff.confirm('<?= _te('users', 'Удалить выбранных пользователей?'); ?>')) {
             deleteUnactivated('checked');
         }
     });
-    $mass.find('.j-remove-all').click(function(){
-        if(confirm('<?= _t('users', 'Удалить всех пользователей?'); ?>')){
+    $mass.find('.j-remove-all').on('click',function(){
+        if (bff.confirm('<?= _te('users', 'Удалить всех пользователей?'); ?>')) {
             deleteUnactivated('all');
         }
     });
@@ -76,14 +77,6 @@ $(function(){
         bff.ajax(url+'delete-unactivated', $ch.serialize()+'&mode='+mode+'&id=1' , function(resp){
             if (resp && resp.success) {
                 bff.success(resp.msg);
-                if (resp.hasOwnProperty('deleted')) {
-                    $list.find('.j-user-check').each(function(){
-                        var $el = $(this);
-                        if (resp.deleted.indexOf($el.val()) >= 0) {
-                            $el.closest('tr').remove();
-                        }
-                    });
-                }
                 showMassPanel();
             }
         });
@@ -94,7 +87,7 @@ $(function(){
 
 <div class="tabsBar" id="items-status-tabs">
     <? foreach($aTabs as $k=>$v) { ?>
-    <span class="tab<?= $k==$f['status'] ? ' tab-active' : '' ?>"><a href="#" data-id="<?= $k ?>" class="j-users-listing-filter-status-tab"><?= $v['t'] ?></a></span>
+    <span class="tab<?= $k==$f['status'] ? ' tab-active' : '' ?>"><a href="javascript:void(0);" data-id="<?= $k ?>" class="j-users-listing-filter-status-tab"><?= $v['t'] ?></a></span>
     <? } ?>
 </div>
 
@@ -169,13 +162,17 @@ $(function(){
 <? foreach($users as $k=>$v) { $id = $v['user_id']; ?>
 <tr class="row<?= $k%2 ?>">
     <? if($statusNotActivated): ?><td><label class="checkbox inline"><input type="checkbox" name="i[]" value="<?= $id ?>" class="check j-user-check" /></label></td><? endif; ?>
-    <td><?= $id ?></td>
-    <td class="left"><a href="#" onclick="return bff.userinfo(<?= $id ?>);" class="nolink<?= ! $v['activated'] ? ' disabled' : '' ?>"><?= $v['email'] ?></a></td>
+    <td class="small">
+        <?= $id ?>
+    </td>
+    <td class="left">
+        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $id ?>);" class="nolink<?= ! $v['activated'] ? ' disabled' : '' ?><?= $v['fake'] ? ' fake-user' : '' ?>"><?= $v['email'] ?></a>
+    </td>
     <td class="left"><span class="<?= ! $v['activated'] ? 'disabled' : '' ?>"><?= tpl::truncate($v['name'], 20) ?></span></td>
-    <? if($shops_on) { ?><td class="left"><? if($v['shop_id'] > 0) { ?><a href="<?= Shops::urlDynamic($v['shop']['link']) ?>" target="_blank" class="but linkout"></a><a href="#" onclick="return bff.shopInfo(<?= $v['shop_id'] ?>);"><?= tpl::truncate($v['shop']['title'], 40) ?></a><? } else { ?><span class="desc" style="padding-left: 20px;">-</span><? } ?></td><? } ?>
+    <? if($shops_on) { ?><td class="left"><? if($v['shop_id'] > 0) { ?><a href="<?= Shops::urlDynamic($v['shop']['link']) ?>" target="_blank" class="but linkout"></a><a href="javascript:void(0);" onclick="return bff.shopInfo(<?= $v['shop_id'] ?>);"><?= tpl::truncate($v['shop']['title'], 40) ?></a><? } else { ?><span class="desc" style="padding-left: 20px;">-</span><? } ?></td><? } ?>
     <td><?= ( $v['last_login'] != '0000-00-00 00:00:00' ? tpl::date_format3($v['last_login'], 'd.m.Y H:i') : '&mdash;') ?></td>
     <td>
-        <a class="but <? if( ! $v['blocked'] ) { ?>un<? } ?>block" href="#" onclick="return bff.userinfo(<?= $id ?>);" id="u<?= $id ?>"></a>
+        <a class="but <? if( ! $v['blocked'] ) { ?>un<? } ?>block" href="javascript:void(0);" onclick="return bff.userinfo(<?= $id ?>);" id="u<?= $id ?>"></a>
         <a class="but edit" href="<?= $this->adminLink('user_edit&members=1&tuid='.$v['tuid'].'&rec='.$id) ?>"></a>
     </td>
 </tr>

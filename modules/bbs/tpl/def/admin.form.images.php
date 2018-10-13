@@ -27,8 +27,8 @@
         <a href="<?= $img->getURL($v, BBSItemImages::szView, false); ?>" rel="wimg-group" class="thumbnail">
             <img src="<?= $img->getURL($v, BBSItemImages::szSmall, false); ?>" alt="" />
         </a>
-        <a class="but cross" style="position:absolute;right:2px;top:7px;" href="#" onclick="if(confirm('<?= _t('bbs', 'Удалить изображение?'); ?>')) return jItemImages.del('<?= $imageID; ?>', '<?= $fn ?>'); return false;"></a>
-        <? if($rotate): ?><a class="but refresh" style="position:absolute;left:7px;top:7px;" href="#" onclick="return jItemImages.rotate('<?= $imageID; ?>', '<?= $fn ?>');"></a><? endif; ?>
+        <a class="but cross" style="position:absolute;right:2px;top:7px;" href="javascript:void(0);" onclick="if(confirm('<?= _t('bbs', 'Удалить изображение?'); ?>')) return jItemImages.del('<?= $imageID; ?>', '<?= $fn ?>'); return false;"></a>
+        <? if($rotate): ?><a class="but refresh" style="position:absolute;left:7px;top:7px;" href="javascript:void(0);" onclick="return jItemImages.rotate('<?= $imageID; ?>', '<?= $fn ?>');"></a><? endif; ?>
     </li>
 <? } } if(empty($images) && false) { ?><li style="margin:15px; font-weight: bold; width:100%; text-align: center;"><?= _t('bbs', 'нет фотографий'); ?></li><? } ?>
 </ul>
@@ -87,7 +87,7 @@ var jItemImages = (function(){
 
         <? if( ! $edit) { ?>
         var lostProcessed = false;
-        $(window).bind('beforeunload', function(){
+        $(window).on('beforeunload', function(){
             if(!lostProcessed && id===0) {
                 var $fn = $img.find('input.imgfn');
                 if($fn.length > 0) {
@@ -123,9 +123,9 @@ var jItemImages = (function(){
         var html = '<li class="wimg wimg'+imageID+' relative left">'+
                 '<input type="hidden" class="imgfn" name="img['+imageID+']" rel="'+imageID+'" value="'+(data.filename)+'" />'+
                 '<a href="'+(data['<?= BBSItemImages::szView ?>'])+'" class="thumbnail" rel="wimg-group"><img src="'+(data['<?= BBSItemImages::szSmall ?>'])+'" /></a>'+
-                '<a class="but cross" style="position: absolute;right:2px;top:7px;" href="#" onclick="if(confirm(\'<?= _t('bbs', 'Удалить изображение?'); ?>\')) return jItemImages.del('+imageID+', \''+(data.filename)+'\'); return false;"></a>';
+                '<a class="but cross" style="position: absolute;right:2px;top:7px;" href="javascript:void(0);" onclick="if(confirm(\'<?= _t('bbs', 'Удалить изображение?'); ?>\')) return jItemImages.del('+imageID+', \''+(data.filename)+'\'); return false;"></a>';
         if(intval(data.rotate)){
-            html = html+'<a class="but refresh" style="position:absolute;left:7px;top:7px;" href="#" onclick="return jItemImages.rotate('+imageID+', \''+(data.filename)+'\');"></a>';
+            html = html+'<a class="but refresh" style="position:absolute;left:7px;top:7px;" href="javascript:void(0);" onclick="return jItemImages.rotate('+imageID+', \''+(data.filename)+'\');"></a>';
         }
         html = html+'</li>';
         $img.append(html);

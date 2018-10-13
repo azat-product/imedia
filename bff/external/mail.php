@@ -1,14 +1,41 @@
 <?php namespace bff\external;
 
-require_once modification(PATH_CORE . 'external/phpmailer/class.phpmailer.php');
+if ( ! class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+    require_once modification(PATH_CORE . 'external' . DS . 'phpmailer' . DS . 'src' . DS . 'Exception.php');
+    require_once modification(PATH_CORE . 'external' . DS . 'phpmailer' . DS . 'src' . DS . 'PHPMailer.php');
+    require_once modification(PATH_CORE . 'external' . DS . 'phpmailer' . DS . 'src' . DS . 'SMTP.php');
+}
 
-class Mail extends \PHPMailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+class Mail extends PHPMailer
 {
-    function __construct($exceptions = false)
+    public function __construct($exceptions = null)
     {
-        //parent::__construct($exceptions);
+        parent::__construct($exceptions);
 
+        # Mail settings:
         $config = \config::sys(array(), array(), 'mail', true);
+        $config['noreply']  = \config::sysAdmin('mail.noreply', 'noreply@'.SITEHOST, TYPE_NOTAGS);
+        $config['admin']    = \config::sysAdmin('mail.admin', 'admin@'.SITEHOST, TYPE_NOTAGS);
+        $config['fromname'] = \config::sysAdmin('mail.fromname', SITEHOST, TYPE_NOTAGS);
+        $config['method']   = \config::sysAdmin('mail.method', 'mail', TYPE_NOTAGS);
+        $smtp = array_merge(array(
+            'host' => 'localhost',
+            'port' => 25,
+            'user' => '',
+            'pass' => '',
+            'secure' => '',
+            'debug' => false,
+        ), ( ! empty($config['smtp']) ? $config['smtp'] : array()));
+        $smtp['host'] = \config::sysAdmin('mail.smtp.host', $smtp['host'], TYPE_NOTAGS);
+        $smtp['port'] = \config::sysAdmin('mail.smtp.port', $smtp['port'], TYPE_UINT);
+        $smtp['user'] = \config::sysAdmin('mail.smtp.user', $smtp['user'], TYPE_NOTAGS);
+        $smtp['pass'] = \config::sysAdmin('mail.smtp.pass', $smtp['pass'], TYPE_PASS);
+        $smtp['secure'] = \config::sysAdmin('mail.smtp.secure', $smtp['secure'], TYPE_NOTAGS);
+        $config['smtp'] = $smtp;
+
         $config = \bff::filter('mail.config', $config);
 
         $this->From = $config['noreply'];
@@ -18,63 +45,65 @@ class Mail extends \PHPMailer
         $this->Host = '';
         $this->Hostname = SITEHOST;
 
+        # HTML message
         $this->isHTML(true);
 
+        # Default method: mail
         $this->isMail();
+
+        # Errors: EN => RU
+        if (\bff::locale()->getCurrentLanguage() === 'ru') {
+            $this->setLanguage('ru');
+        }
 
         switch ($config['method']) {
             case 'sendmail':
             {
                 $this->isSendmail();
-            }
-            break;
+            } break;
             case 'smtp':
             {
-                if (empty($config['smtp'])) {
-                    break;
-                }
-
-                require_once modification(PATH_CORE . 'external' . DS . 'phpmailer' . DS . 'class.smtp.php');
                 $this->isSMTP();
                 $this->SMTPKeepAlive = true;
-                $config = array_merge(array(
-                        'host' => 'localhost',
-                        'port' => 25,
-                        'user' => '',
-                        'pass' => '',
-                        'secure' => '',
-                        'debug' => false,
-                    ), $config['smtp']
-                );
+                $this->SMTPAutoTLS = false;
 
-                if ( ! empty($config['secure'])) {
-                    $this->SMTPSecure = strval($config['secure']);
+                if ( ! empty($smtp['secure'])) {
+                    $this->SMTPSecure = strval($smtp['secure']);
                 }
 
-                $this->Host = $config['host'] . ':' . intval($config['port']);
-                $this->SMTPAuth = !empty($config['user']);
+                $this->Host = $smtp['host'] . ':' . intval($smtp['port']);
+                $this->SMTPAuth = !empty($smtp['user']);
                 if ($this->SMTPAuth) {
-                    $this->Username = $config['user'];
-                    $this->Password = $config['pass'];
+                    $this->Username = $smtp['user'];
+                    $this->Password = $smtp['pass'];
                 }
-                if (!empty($config['debug'])) {
+                if ( ! empty($smtp['debug'])) {
                     $this->SMTPDebug = 2;
-                    $this->Debugoutput = (is_string($config['debug']) ? $config['debug'] : 'error_log');
+                    $this->Debugoutput = (is_string($smtp['debug']) ? $smtp['debug'] : 'error_log');
                 }
-
-            }
-            break;
+            } break;
         }
     }
 
-    function send()
+    /**
+     * Отправка сообщения
+     * @return boolean
+     */
+    public function send()
     {
+        # Send
         $timeStart = microtime(true);
-        $result = parent::send();
+        try {
+            $result = parent::send();
+        } catch (Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode(), $e);
+        }
         $timeFinish = microtime(true) - $timeStart;
+
+        # Hooks
         if (\bff::hooksAdded('mail.sended')) {
             \bff::hook('mail.sended', array(
-                'to' => array_keys($this->all_recipients),
+                'to' => array_keys($this->getAllRecipientAddresses()),
                 'subject' => $this->Subject,
                 'body' => $this->Body,
                 'from' => $this->From,
@@ -83,6 +112,8 @@ class Mail extends \PHPMailer
                 'time' => $timeFinish,
             ), $this);
         }
+
+        # Result
         return $result;
     }
 }

@@ -2,8 +2,8 @@
 
 /**
  * Плагинизация: хуки модуля Shops
- * @version 0.1
- * @modified 11.jul.2017
+ * @version 0.11
+ * @modified 25.jun.2018
  */
 
 class ShopsHooks
@@ -18,18 +18,6 @@ class ShopsHooks
     public static function url(callable $callback, $priority = NULL)
     {
         return bff::hooks()->moduleUrl('shops', $callback, $priority);
-    }
-
-    /**
-     * Фильтр списка роутов модуля
-     * @see \Shops::route()
-     * @param callable $callback
-     * @param int|null $priority приоритет вызова
-     * @return \Hook
-     */
-    public static function routes(callable $callback, $priority = NULL)
-    {
-        return bff::hooks()->moduleRoutes('shops', $callback, $priority);
     }
 
     /**

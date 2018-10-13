@@ -14,26 +14,26 @@
     <a class="dropdown-menu-close close" href="#"><i class="fa fa-times"></i></a>
     <div class="dropdown-menu-heading-title"><?= _t('filter','Выберите категорию') ?></div>
     <?php if (DEVICE_DESKTOP) { ?>
-    <span><?= number_format($total, 0, '.', ' ') ?> <?= tpl::declension($total, _t('filter','объявление;объявления;объявлений'), false) ?> - <a href="<?= BBS::url('items.search') ?>" data="{id:0,pid:0,title:'<?= HTML::escape(_t('filter','Все категории'), 'js') ?>'}"><?= _t('filter','смотреть все объявления') ?> &raquo;</a></span>
+    <span><?= number_format($total, 0, '.', ' ') ?> <?= tpl::declension($total, _t('filter','объявление;объявления;объявлений'), false) ?> - <span class="hidden-link" data-link="<?= BBS::url('items.search') ?>" data="{id:0,pid:0,title:'<?= HTML::escape(_t('filter','Все категории'), 'js') ?>'}"><?= _t('filter','смотреть все объявления') ?> &raquo;</span></span>
     <?php } ?>
   </div>
   <div class="l-categories-wrap">
     <ul class="l-categories-items">
       <?php if (DEVICE_PHONE) { ?>
       <li>
-        <a href="<?= BBS::url('items.search') ?>" data="{id:0,pid:0,title:'<?= HTML::escape(_t('filter','Все категории'), 'js') ?>'}">
+        <a class="hidden-link" data-link="<?= BBS::url('items.search') ?>" data="{id:0,pid:0,title:'<?= HTML::escape(_t('filter','Все категории'), 'js') ?>'}">
           <?= _t('filter','смотреть все объявления') ?>
         </a>
       </li>
       <?php } ?>
       <?php foreach($cats as $v){ ?>
       <li>
-        <a href="<?= $v['l'] ?>" class="j-main" data="{id:<?= $v['id'] ?>,subs:<?= $v['subs'] ?>,title:'<?= HTML::escape($v['t'], 'js') ?>'}">
+        <span class="j-main hidden-link" data-link="<?= $v['l'] ?>" data="{id:<?= $v['id'] ?>,subs:<?= $v['subs'] ?>,title:'<?= HTML::escape($v['t'], 'js') ?>'}">
           <span class="l-categories-items-i-img">
             <img src="<?= $v['i'] ?>" alt="<?= $v['t'] ?>" />
           </span>
           <span class="l-categories-items-i-name"><?= $v['t'] ?></span>
-        </a>
+        </span>
       </li>
       <?php } ?>
     </ul>
@@ -46,7 +46,7 @@
     <div class="dropdown-menu-heading-container">
       <?php if (DEVICE_DESKTOP) { ?>
       <div class="dropdown-menu-heading-container-img">
-        <a href="<?= $parent['link'] ?>" class="img j-parent" data="{id:<?= $parent['id'] ?>,pid:<?= $parent['pid'] ?>,subs:1,title:'<?= HTML::escape($parent['title'], 'js') ?>'}"><img src="<?= $parent['icon'] ?>" alt="<?= $parent['title'] ?>" /></a>
+        <span data-link="<?= $parent['link'] ?>" class="img hidden-link j-parent" data="{id:<?= $parent['id'] ?>,pid:<?= $parent['pid'] ?>,subs:1,title:'<?= HTML::escape($parent['title'], 'js') ?>'}"><img src="<?= $parent['icon'] ?>" alt="<?= $parent['title'] ?>" /></span>
       </div>
       <?php } ?>
       <div class="dropdown-menu-heading-container-content">
@@ -60,7 +60,13 @@
           <?php } ?>
         </span>
         <div class="dropdown-menu-heading-title"><?= $parent['title'] ?></div>
-        <span><?php echo '<a href="'.$parent['link'].'" data="{id:'.$parent['id'].',pid:'.$parent['pid'].',subs:1,title:\''.HTML::escape($parent['title'], 'js').'\'}" class="j-f-cat-desktop-step2-parent">'.number_format($parent['items'], 0, '.', ' ').'</a>&nbsp;', tpl::declension($parent['items'], _t('filter','объявление;объявления;объявлений'), false) ?></span>
+        <span>
+            <?php if ($parent['items'] > 0) { ?>
+            <a href="<?= $parent['link'] ?>" class="j-f-cat-desktop-step2-parent"><?= number_format($parent['items'], 0, '.', ' ') ?></a>&nbsp;<?= tpl::declension($parent['items'], _t('filter','объявление;объявления;объявлений'), false) ?>
+            <?php } else { ?>
+            <span data-link="<?= $parent['link'] ?>" class="hidden-link j-f-cat-desktop-step2-parent"><?= number_format($parent['items'], 0, '.', ' ') ?></span>&nbsp;<?= tpl::declension($parent['items'], _t('filter','объявление;объявления;объявлений'), false) ?>
+            <?php } ?>
+        </span>
       </div>
     </div>
   </div>

@@ -212,7 +212,7 @@ $.extend(Datepicker.prototype, {
 			else {
 				input.after(trigger);
 			}
-			trigger.click(this.showFor);
+			trigger.on('click',this.showFor);
 		}
 		input.addClass(this.markerClassName).keydown(this._doKeyDown).keypress(this._doKeyPress);
 		input[0]._calId = inst._id;

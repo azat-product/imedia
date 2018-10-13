@@ -2,9 +2,6 @@
     $f = HTML::escape($f, 'html', array('page','status','order','q'));
     tplAdmin::adminPageSettings(array(
         'link'=>array('title'=>_t('shops', '+ добавить магазин'), 'href'=>$this->adminLink('add')),
-        'fordev'=>array(
-            'links-rebuild' => array('title'=>_t('shops', 'обновление ссылок магазинов'), 'onclick'=>"return bff.confirm('sure', {r:'".$this->adminLink(bff::$event.'&act=dev-shops-links-rebuild')."'})", 'icon'=>'icon-check'),
-        ),
     ));
     $aTabs = bff::filter('shops.admin.shop.list.tabs', array(
         0 => array('t'=>_t('shops', 'Активные')),
@@ -17,7 +14,7 @@
 
 <div class="tabsBar" id="shops-status-tabs">
     <? foreach($aTabs as $k=>$v) { ?>
-    <span class="tab<?= $k==$f['status'] ? ' tab-active' : '' ?>"><a href="#" onclick="return jShops.onStatus(<?= $k ?>, this);"<?= (!empty($v['c']) ? $v['c'] : '') ?>><?= $v['t'] ?><? if(! empty($v['counter'])){ ?> (<span class="j-counter"><?= $v['counter'] ?></span>)<? } ?></a></span>
+    <span class="tab<?= $k==$f['status'] ? ' tab-active' : '' ?>"><a href="javascript:void(0);" onclick="return jShops.onStatus(<?= $k ?>, this);"<?= (!empty($v['c']) ? $v['c'] : '') ?>><?= $v['t'] ?><? if(! empty($v['counter'])){ ?> (<span class="j-counter"><?= $v['counter'] ?></span>)<? } ?></a></span>
     <? } ?>
 </div>
 

@@ -45,4 +45,10 @@ class Bills_ extends BillsBase
     {
         return true;
     }
+
+    public function settingsSystem(array &$options = array())
+    {
+        $aData = array('options'=>&$options);
+        return $this->viewPHP($aData, 'admin.settings.sys');
+    }
 }

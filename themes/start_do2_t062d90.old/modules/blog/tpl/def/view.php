@@ -8,8 +8,9 @@
  * @var $content string содержание (HTML)
  * @var $tags array теги
  * @var $share_code string код шаринга в соц. сетях
- * @var $next array ссылка на следущий пост
+ * @var $next array ссылка на следующий пост
  */
+ $bannerRight = Banners::view('blog_view_right');
 ?>
 
 <?php if (DEVICE_DESKTOP_OR_TABLET) {
@@ -19,9 +20,9 @@
 <div class="l-mainLayout">
 
   <!-- Content -->
-  <div class="l-mainLayout-content<?php if (DEVICE_DESKTOP && ($bannerRight = Banners::view('blog_view_right'))) { ?> has-sidebar<?php } ?>">
+  <div class="l-mainLayout-content<?php if (DEVICE_DESKTOP && $bannerRight) { ?> has-sidebar<?php } ?>">
     <div class="l-pageHeading">
-      <div class="bl-date"><?= tpl::dateFormat($created, '%d.%m.%Y в %H:%M') ?></div>
+      <div class="bl-date"><?= tpl::dateFormat($created, _t('blog','%d.%m.%Y в %H:%M')) ?></div>
       <h1 class="l-pageHeading-title"><?= $title ?></h1>
     </div>
 
@@ -45,7 +46,7 @@
     <?php } ?>
   </div><!-- /.l-mainLayout-content -->
 
-  <?php if ($bannerRight) { ?>
+  <?php if (DEVICE_DESKTOP && $bannerRight) { ?>
     <!-- Sidebar -->
     <div class="l-mainLayout-sidebar">
       <div class="l-banner-v">

@@ -6,7 +6,7 @@ class BBS_ extends BBSBase
     {
         parent::init();
 
-        if (bff::$class == $this->module_name && Request::isGET()) {
+        if (bff::router()->isCurrentController('bbs', ['method'=>'GET'])) {
             bff::setActiveMenu('//index');
         }
     }
@@ -87,6 +87,7 @@ class BBS_ extends BBSBase
             'orderBy' => $sOrder,
             'limit'   => $limit,
         ));
+        $this->itemsListPrepare($aData['items'], static::LIST_TYPE_GALLERY);
         if (empty($aData['items'])) {
             if ($dataOnly) return array();
             return '';
@@ -107,8 +108,7 @@ class BBS_ extends BBSBase
     public function catsList($sType = '', $mDevice = '', $nParentID = 0)
     {
         $showAll = false;
-        
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $sType = $this->input->getpost('act', TYPE_STR);
             $mDevice = $this->input->post('device', TYPE_STR);
             $nParentID = $this->input->post('parent', TYPE_UINT);
@@ -122,6 +122,7 @@ class BBS_ extends BBSBase
         switch ($sType) {
             case 'index': # список категории на главной
             {
+                $indexShowEmptyCats = config::sysAdmin('bbs.index.subcats.empty', true, TYPE_BOOL);
                 if ($mDevice == bff::DEVICE_DESKTOP) # desktop+tablet
                 {
                     /** @var integer $nSubSlice - максимально допустимое видимое кол-во подкатегорий */
@@ -133,6 +134,7 @@ class BBS_ extends BBSBase
                             $v['l'] = static::url('items.search', array('keyword'=>$v['k'], 'landing_url'=>$v['lpu']));
                             $v['i'] = $oIcon->url($v['id'], $v['i'], $ICON_BIG);
                             foreach ($v['sub'] as $kk => $vv) {
+                                if ( ! $vv['items'] && ! $indexShowEmptyCats) { unset($v['sub'][$kk]); continue; }
                                 $v['sub'][$kk]['l'] = static::url('items.search', array('keyword'=>$vv['k'], 'landing_url'=>$vv['lpu']));
                             }
                             $v['subn'] = sizeof($v['sub']); # всего подкатегорий
@@ -185,7 +187,7 @@ class BBS_ extends BBSBase
                                 }
                                 $aData = array('cats' => $aData, 'parent' => $aParent, 'step' => 2);
                                 $aData = $this->viewPHP($aData, 'index.cats.phone');
-                                if (Request::isAJAX()) {
+                                if ($this->isAJAX()) {
                                     $this->ajaxResponseForm(array('html' => $aData));
                                 } else {
                                     return $aData;
@@ -238,7 +240,9 @@ class BBS_ extends BBSBase
                     }
                     $aData = $this->model->catsList($sType, $mDevice, $nParentID, $ICON_BIG);
                     if (!empty($aData)) {
-                        foreach ($aData as &$v) {
+                        $searchShowEmptyCats = config::sysAdmin('bbs.search.filter.cats.empty', false, TYPE_BOOL);
+                        foreach ($aData as $k=>&$v) {
+                            if ( ! $v['items'] &&  ! $searchShowEmptyCats && $v['pid'] > self::CATS_ROOTID) { unset($aData[$k]); }
                             $v['l'] = static::url('items.search', array('keyword'=>$v['k'], 'landing_url'=>$v['lpu']));
                             $v['i'] = $oIcon->url($v['id'], $v['i'], $ICON_BIG);
                             $v['active'] = ($v['id'] == $nSelectedID);
@@ -265,7 +269,7 @@ class BBS_ extends BBSBase
                             }
                             $aData = array('cats' => $aData, 'parent' => $aParent, 'step' => 2);
                             $aData = $this->viewPHP($aData, 'search.cats.desktop');
-                            if (Request::isAJAX()) {
+                            if ($this->isAJAX()) {
                                 $this->ajaxResponseForm(array('html' => $aData));
                             } else {
                                 return $aData;
@@ -343,7 +347,7 @@ class BBS_ extends BBSBase
                             }
                             $aData = array('cats' => $aData, 'parent' => $aParent, 'step' => 2);
                             $aData = $this->viewPHP($aData, 'search.cats.phone');
-                            if (Request::isAJAX()) {
+                            if ($this->isAJAX()) {
                                 $this->ajaxResponseForm(array('html' => $aData));
                             } else {
                                 return $aData;
@@ -416,7 +420,7 @@ class BBS_ extends BBSBase
                             }
                             $aData = array('cats' => $aCats, 'parent' => $aParent, 'step' => 2, 'showAll' => $showAll);
                             $aData = $this->viewPHP($aData, 'item.form.cat.desktop');
-                            if (Request::isAJAX()) {
+                            if ($this->isAJAX()) {
                                 $this->ajaxResponseForm(array(
                                         'html' => $aData,
                                         'cats' => $aCats,
@@ -488,7 +492,7 @@ class BBS_ extends BBSBase
                             }
                             $aData = array('cats' => $aCats, 'parent' => $aParent, 'step' => 2, 'showAll' => $showAll);
                             $aData = $this->viewPHP($aData, 'item.form.cat.phone');
-                            if (Request::isAJAX()) {
+                            if ($this->isAJAX()) {
                                 $this->ajaxResponseForm(array(
                                         'html' => $aData,
                                         'cats' => $aCats,
@@ -534,6 +538,11 @@ class BBS_ extends BBSBase
         $f = $this->searchFormData();
         extract($f, EXTR_REFS | EXTR_PREFIX_ALL, 'f');
 
+        # SEO: проверка на обязательный завершающий слеш
+        if ($this->isGET() && config::sysAdmin('bbs.search.url.endslash.required', true)) {
+            $this->seo()->urlCorrectionEndSlash(true);
+        }
+
         # SEO данные
         $seoKey = '';
         $seoNoIndex = false;
@@ -571,7 +580,7 @@ class BBS_ extends BBSBase
             'enabled',
             'subs_filter_title',
         );
-        if (!Request::isAJAX()) {
+        if (!$this->isAJAX()) {
             $catKey = $this->input->get('cat', TYPE_STR);
             $catKey = trim($catKey, ' /\\');
             if (!empty($catKey)) {
@@ -684,7 +693,7 @@ class BBS_ extends BBSBase
         if (!$catID) {
             $f_c = $f_ct = 0;
             $catData = array('id' => 0, 'addr' => 0, 'seek' => false, 'price' => false, 'keyword' => '', 'landing_url' => '');
-            if (!Request::isAJAX()) {
+            if (!$this->isAJAX()) {
                 $catData['crumbs'] = $this->categoryCrumbs(0, __FUNCTION__);
             }
         }
@@ -717,7 +726,7 @@ class BBS_ extends BBSBase
         }
         if ($f_lt == self::LIST_TYPE_MAP) {
             # на карту выводим только с корректно указанными координатами
-            $sql['addr_lat'] = array('!=', 0);
+            $sql['addr_lat'] = array('!=', 0); # Sphinx:  2.2.11 +
             $seoResetCounter++;
         }
 
@@ -824,17 +833,16 @@ class BBS_ extends BBSBase
         }
 
         $nNumStart = ($f_page <= 1 ? 1 : (($f_page - 1) * $nPerpage) + 1);
-        if (Request::isAJAX()) { # ajax ответ
+        if ($this->isAJAX()) { # ajax ответ
             if ($this->input->post('mapVertical', TYPE_UINT)) {
                 config::set('bbs-map-vertical', true);
             }
             $this->ajaxResponseForm(array(
-                    'list'  => $this->searchList(bff::device(), $f_lt, $aData['items'], array('numStart' => $nNumStart, 'showBanners' => true, 'filter' => &$f)),
-                    'items' => &$aData['items'],
-                    'pgn'   => $aData['pgn'],
-                    'total' => $nTotal,
-                )
-            );
+                'list'  => $this->searchList(false, $f_lt, $aData['items'], array('numStart' => $nNumStart, 'showBanners' => true, 'filter' => &$f)),
+                'items' => &$aData['items'],
+                'pgn'   => $aData['pgn'],
+                'total' => $nTotal,
+            ));
         }
 
         # SEO
@@ -875,15 +883,16 @@ class BBS_ extends BBSBase
         $aData['f'] = & $f;
 
         # Типы списка:
-        $listTypes = array(
-            static::LIST_TYPE_LIST    => array('t'=>_t('search','Списком'), 'i'=>'fa fa-th-list','a'=>0),
-            static::LIST_TYPE_GALLERY => array('t'=>_t('search','Галереей'),'i'=>'fa fa-th','a'=>0),
-            static::LIST_TYPE_MAP     => array('t'=>_t('search','На карте'),'i'=>'fa fa-map-marker','a'=>0),
-        );
-        if( ! $catData['addr'] ) unset($listTypes[static::LIST_TYPE_MAP]);
-        if( ! isset($listTypes[$f_lt]) ) $f_lt = key($listTypes);
+        $listTypes = static::itemsSearchListTypes();
+        if( ! $catData['addr'] && isset($listTypes[static::LIST_TYPE_MAP]) ) {
+            unset($listTypes[static::LIST_TYPE_MAP]);
+        }
+        if( ! isset($listTypes[$f_lt]) ) { reset($listTypes); $f_lt = key($listTypes); }
         $listTypes[$f_lt]['a'] = true;
-        $aData['listTypes'] = &$listTypes;
+        $aData['listTypes'] = array_map(function($type){ unset($type['image']);
+            $type['filtered'] = ($this->input->getpost('lt') == $type['id']);
+            return $type;
+        }, $listTypes);
         $aData['isMap'] = ($f_lt == static::LIST_TYPE_MAP);
 
         # Типы сортировки:
@@ -926,9 +935,10 @@ class BBS_ extends BBSBase
         $aData['filterVertical'] = $filterVertical;
 
         # дополнительные блоки:
-        $aData['catsBlock'] = $this->searchCategoriesBlock($catID);
-        $aData['premiumBlock'] =  $this->searchPremiumBlock(array('id'=>$catID, 'search'=>true));
-        $aData['relinkBlock'] = $this->searchRelinkBlock($catData);
+
+        $aData['catsBlock']    = (config::sysAdmin('bbs.search.categories.block', true, TYPE_BOOL) ? $this->searchCategoriesBlock($catID) : '');
+        $aData['premiumBlock'] = $this->searchPremiumBlock(array('id'=>$catID, 'search'=>true));
+        $aData['relinkBlock']  = (config::sysAdmin('bbs.search.relink.block', true, TYPE_BOOL) ? $this->searchRelinkBlock($catData) : '');
 
         # RSS-ссылка:
         if (static::rssEnabled() && !empty($catData['id'])) {
@@ -1101,7 +1111,35 @@ class BBS_ extends BBSBase
         $aData = $extra;
         $aData['items'] = &$aItems;
         $aData['list_type'] = $nListType;
+        $aData['mapBlock'] = ! $this->isAJAX();
+        $aData['mapVertical'] = config::get('bbs-map-vertical', false);
         return $this->viewPHP($aData, $aTemplates[$mDeviceID]);
+    }
+
+    /**
+     * Блок объявления в списке
+     * @param array $itemData @ref данные об объявлении
+     * @param int $listType тип списка self::LIST_TYPE_
+     * @param array $opts доп. параметры
+     * @return string HTML
+     */
+    public function searchListItemBlock(&$itemData, $listType = self::LIST_TYPE_LIST, array $opts = [])
+    {
+        switch ($listType) {
+            case self::LIST_TYPE_GALLERY: {
+                $template = 'search.item.gallery';
+            } break;
+            default:
+                $template = 'search.item.list';
+        }
+
+        $opts = array_merge(array(
+            'attr'     => [],
+            'template' => $template,
+        ), $opts);
+
+        $data = array('item'=>&$itemData, 'opts'=>&$opts);
+        return $this->viewPHP($data, $opts['template']);
     }
 
     /**
@@ -1149,14 +1187,11 @@ class BBS_ extends BBSBase
     /**
     * Блок перелинковки под списком объявлений
     * @param array $catData данные о категории
+     * @param array $opts доп. параметры
     * @return string HTML
     */
-    public function searchRelinkBlock($catData)
+    public function searchRelinkBlock($catData, array $opts = array())
     {
-        if (!config::sysAdmin('bbs.search.relink.block', true, TYPE_BOOL)) {
-            return '';
-        }
-
         $data = array();
         $geo = Geo::filter(); # выбраный регион
         $coveringType = Geo::coveringType(); # тип покрытия
@@ -1170,29 +1205,48 @@ class BBS_ extends BBSBase
         if ( ! empty($catData['crumbs'])) {
             foreach ($catData['crumbs'] as $v) {
                 if ($catData['id'] == $v['id'] && empty($catData['subs'])) continue;
-                $cats[ $v['id'] ] = array('t' => $v['title'].$geoTitle);
+                $cats[ $v['id'] ] = array('t' => $v['title']); /* .$geoTitle */
             }
         }
+        $catIDs = array();
         foreach ($cats as $k => & $v) {
             $v['data'] = $this->model->catsDataByFilter(array('pid' => $k, 'enabled' => 1),
                 array('id', 'pid', 'keyword', 'landing_url', 'title'), 60);
             foreach ($v['data'] as & $vv) {
                 $vv['link'] = static::url('items.search', array('keyword' => $vv['keyword'], 'landing_url' => $vv['landing_url']));
-                $vv['title'] .= $geoTitle;
+                //$vv['title'] .= $geoTitle;
+                $catIDs[] = $vv['id'];
             } unset($vv);
         } unset($v);
+
+        # посчитаем количество объявлений в категориях
+        $catsItems = $this->model->catsItemsCountersByID($catIDs, $geo);
+        # удалим категории в которых нет объявлений
+        foreach ($cats as $k => & $v) {
+            foreach ($v['data'] as $kk => & $vv) {
+                if (empty($catsItems[ $vv['id'] ])) {
+                    unset($v['data'][$kk]);
+                }
+            } unset($vv);
+        } unset($v);
+
         $data['cats'] = & $cats;
 
         # регионы
-        $addReg = '?region=';
+        $addReg = false;
         $linkParam = array('keyword' => $catData['keyword'], 'landing_url' => $catData['landing_url']);
         if ($geo['id']) {
             # есть фильтр по региону
             if ($geo['numlevel'] < Geo::lvlCity) {
                 # выбрана страна или регион, выведем регионы или города
-                $data['regs'] = $this->model->regionsItemsCounters(array(
-                    'cat_id' => $catData['id'],
-                    'pid' => $geo['id']));
+                $regionsFilter = ['cat_id' => $catData['id'], 'pid' => $geo['id'], 'numlevel' => $geo['numlevel'] + 1];
+                if ($geo['numlevel'] == Geo::lvlCountry && ! empty($geo['filter_noregions'])) {
+                    # пропускаем области и отображаем основные города страны
+                    $regionsFilter['country'] = $geo['id']; unset($regionsFilter['pid']);
+                    $regionsFilter['numlevel'] = Geo::lvlCity;
+                    $regionsFilter['main'] = ['>', 0];
+                }
+                $data['regs'] = $this->model->regionsItemsCounters($regionsFilter);
                 $paramName = '';
                 switch ($geo['numlevel']) {
                     case Geo::lvlCountry:
@@ -1244,15 +1298,20 @@ class BBS_ extends BBSBase
 
                 $link = $linkParam;
                 $link[$paramName] = $r['keyword'];
-                $crumb[] = array(
-                    'id' => $r['id'],
+                $crumb[$r['numlevel']] = array(
+                    'id'    => $r['id'],
                     'title' => ! empty($r['declension']) ? $r['declension'] : $r['title'],
-                    'link'    => static::url('items.search', $link).($addReg ? $addReg.$r['id'] : ''),
+                    'link'  => static::url('items.search', $link).($addReg ? $addReg.$r['id'] : ''),
+                    'region'=> $r,
                 );
 
                 $r = $r['pid'] ? Geo::regionData($r['pid']) : false;
             } while( ! empty($r));
-            $data['crumb'] = array_reverse($crumb);
+            # пропускаем области, если необходимо
+            if (!empty($crumb[Geo::lvlCountry]['region']['filter_noregions']) && isset($crumb[Geo::lvlRegion])) {
+                unset($crumb[Geo::lvlRegion]);
+            }
+            $data['crumb'] = array_reverse($crumb, true);
         } else {
             # нет фильтра по региону, выбираем регионы в зависимости от настроек покрытия
             switch ($coveringType) {
@@ -1305,14 +1364,11 @@ class BBS_ extends BBSBase
     /**
      * Блок категорий со счетчиками под фильтром
      * @param array $catID ID категории, подкатегории которой будут выводиться в блоке
+     * @param array $opts доп. параметры
      * @return string HTML
      */
-    public function searchCategoriesBlock($catID = 0)
+    public function searchCategoriesBlock($catID = 0, array $opts = array())
     {
-        if (!config::sysAdmin('bbs.search.categories.block', true, TYPE_BOOL)) {
-            return '';
-        }
-
         $data = array();
         $geo = Geo::filter();
         $country = 0;
@@ -1402,6 +1458,7 @@ class BBS_ extends BBSBase
         ));
         if (empty($data['items'])) return '';
 
+        $this->itemsListPrepare($data['items'], self::LIST_TYPE_GALLERY);
         return $this->viewPHP($data, 'search.premium.block');
     }
 
@@ -1415,7 +1472,7 @@ class BBS_ extends BBSBase
         $nItemID = $this->input->getpost('id', TYPE_UINT);
         $nUserID = User::id();
 
-        if (Request::isPOST()) {
+        if ($this->isPOST()) {
             $aResponse = array();
             switch ($this->input->getpost('act', TYPE_STR)) {
                 case 'contact-form': # Отправка сообщения из формы "Свяжитесь с автором"
@@ -1730,7 +1787,7 @@ class BBS_ extends BBSBase
         # - не владелец
         # - не переход из админ панели
         # - не перешли с этой же страницы
-        if (!$aData['owner'] && $aData['from'] != 'adm') {
+        if (!$aData['owner'] && $aData['from'] != 'adm' && !Request::isRefresh()) {
             $sReferer = Request::referer();
             if (empty($sReferer) || mb_strpos($sReferer, '-' . $nItemID . '.html') === false) {
                 if ($this->model->itemViewsIncrement($nItemID, 'item', $aData['views_today'])) {
@@ -1810,6 +1867,10 @@ class BBS_ extends BBSBase
         # Баннеры
         Banners::i()->viewQuery($aData['title']);
 
+        View::setPageData([
+            'bbs_view_id' => $nItemID,
+            'bbs_view_data' => &$aData,
+        ]);
         return $this->viewPHP($aData, 'item.view');
     }
 
@@ -1834,7 +1895,7 @@ class BBS_ extends BBSBase
 
         $this->validateItemData($aData, 0);
 
-        if (Request::isPOST()) {
+        if ($this->isPOST()) {
             $aResponse = array('id' => 0);
             $bNeedActivation = false;
             $users = Users::i();
@@ -1985,6 +2046,11 @@ class BBS_ extends BBSBase
                     break;
                 }
 
+                # не чаще чем раз в {X} секунд с одного IP (для одного пользователя)
+                if (Site::i()->preventSpam('bbs-add', 20)) {
+                    break;
+                }
+
                 # антиспам фильтр: проверка дубликатов
                 if ($this->spamDuplicatesFound($nUserID, $aData)) {
                     $this->errors->set(_t('bbs', 'Вы уже публиковали аналогичное объявление. Воспользуйтесь функцией поднятия объявления'));
@@ -2090,9 +2156,6 @@ class BBS_ extends BBSBase
                     $this->moderationCounterUpdate(1);
                 }
 
-                # не чаще чем раз в {X} секунд с одного IP (для одного пользователя)
-                Site::i()->preventSpam('bbs-add', 20);
-
                 # требуется активация:
                 if ($bNeedActivation) {
                     if ($registerPhone) {
@@ -2187,12 +2250,12 @@ class BBS_ extends BBSBase
         $nUserID = User::id();
         $nShopID = User::shopID();
         $nItemID = $this->input->getpost('id', TYPE_UINT);
-        if (!empty($_GET['success']) && Request::isGET()) {
+        if (!empty($_GET['success']) && $this->isGET()) {
             # Результат редактирования
             return $this->itemStatus('edit', $nItemID);
         }
 
-        if (Request::isPOST()) {
+        if ($this->isPOST()) {
             $aResponse = array();
             do {
                 if (!$nItemID ||
@@ -2206,7 +2269,7 @@ class BBS_ extends BBSBase
                         'user_id',
                         'city_id',
                         'cat_id',
-                        'status',
+                        'status', 'blocked_id',
                         'publicated_order',
                         'video',
                         'imgcnt',
@@ -2235,6 +2298,11 @@ class BBS_ extends BBSBase
                             )
                         )
                     );
+                    break;
+                }
+                if ($aItemData['status'] == self::STATUS_BLOCKED && $aItemData['blocked_id'] == static::BLOCK_FOREVER) {
+                    # объявление заблокировано навсегда
+                    $this->errors->set(_t('item-form', 'Объявление было заблокировано модератором без возможности редактирования и повторной публикации, вам доступно только его удаление.'));
                     break;
                 }
 
@@ -2371,7 +2439,7 @@ class BBS_ extends BBSBase
      */
     public function copy()
     {
-		if (Request::isPOST()) {
+		if ($this->isPOST()) {
 			$this->add();
 		}
 
@@ -2550,6 +2618,11 @@ class BBS_ extends BBSBase
             'image_rotate' => _te('item-form', 'Повернуть фото'),
         );
 
+        View::setPageData(array(
+            'bbs_form_id' => $nItemID,
+            'bbs_form_data' => &$aData,
+        ));
+
         return $this->viewPHP($aData, 'item.form');
     }
 
@@ -2659,7 +2732,7 @@ class BBS_ extends BBSBase
                             $aData['new_user'] = true;
                         }
                     }
-                    if ($registerPhone && Request::isAJAX())
+                    if ($registerPhone && $this->isAJAX())
                     {
                         $userData = $users->model->userData($nItemUserID, array(
                             'email', 'name', 'activated', 'activate_key', 'password', 'password_salt',
@@ -2937,7 +3010,7 @@ class BBS_ extends BBSBase
             }
         }
 
-        if (Request::isPOST()) {
+        if ($this->isPOST()) {
             $ps = $this->input->getpost('ps', TYPE_STR);
             if (!$ps || !array_key_exists($ps, $aPaySystems)) {
                 $ps = key($aPaySystems);
@@ -2967,8 +3040,6 @@ class BBS_ extends BBSBase
                 }
                 $aSvcSettings = array();
                 $nSvcPrice = $aSvc[$nSvcID]['price'];
-                # конвертируем сумму в валюту для оплаты по курсу
-                $pay = Bills::getPayAmount($nSvcPrice, $ps);
 
                 # сохраним настройки для услуги автоподнятие
                 if ($nSvcID == static::SERVICE_UP && static::svcUpAutoEnabled()) {
@@ -2984,6 +3055,10 @@ class BBS_ extends BBSBase
                     $aSvcSettings['period'] = $days;
                     $nSvcPrice = $aSvc[$nSvcID]['price'] * $days;
                 }
+
+                # конвертируем сумму в валюту для оплаты по курсу
+                $pay = Bills::getPayAmount($nSvcPrice, $ps);
+                bff::hook('bbs.promote.submit', $nSvcPrice, $ps, $pay);
 
                 if ($ps == 'balance' && $nUserBalance >= $nSvcPrice) {
                     # активируем услугу (списываем со счета пользователя)
@@ -3026,7 +3101,7 @@ class BBS_ extends BBSBase
             return $this->showForbidden($sTitle, _t('bbs', 'Объявление не найдено, либо ссылка указана некорректно'));
         }
         # Проверка доступности возможности продвижения
-        if (!static::itemViewPromoteAvailable($this->isItemOwner($nItemID,$aItem['user_id']))) {
+        if ($sFrom !== 'new' && !static::itemViewPromoteAvailable($this->isItemOwner($nItemID,$aItem['user_id']))) {
             return $this->showForbidden($sTitle, _t('bbs', 'Объявление не найдено, либо ссылка указана некорректно'));
         }
         # проверяем статус ОБ
@@ -3442,7 +3517,7 @@ class BBS_ extends BBSBase
                 $import->importTemplate($aSettings);
                 break;
             case 'import':
-                if (Request::isPOST())
+                if ($this->isPOST())
                 {
                     $aResponse = array();
                     $aSettings = array(
@@ -3559,7 +3634,7 @@ class BBS_ extends BBSBase
         $aData['status'] = $import->getStatusList();
         $aData['list'] = $this->viewPHP($aData, 'my.import.list');
         
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
                     'pgn'   => $aData['pgn'],
                     'list'  => $aData['list'],
@@ -3610,7 +3685,7 @@ class BBS_ extends BBSBase
         $messages = array();
 
         $sAction = $this->input->postget('act', TYPE_STR);
-        if (Request::isGET() && ! Request::isAJAX())
+        if ($this->isGET() && ! $this->isAJAX())
         {
             switch ($sAction) {
                 case 'email-publicate': # массовая публикация по ссылке из E-mail уведомления bbs_item_unpublicated_soon_group
@@ -3904,36 +3979,73 @@ class BBS_ extends BBSBase
             }
         }
 
-        $statusList = bff::filter('bbs.items.my.status.list', array(
-            1 => array(
-                'title' => _t('bbs.my', 'Активные'), 'left' => false, 'right' => 2,
-                'filter' => function(&$filter) {
-                    $filter['is_publicated'] = 1;
-                    $filter['status'] = self::STATUS_PUBLICATED;
-                    return $filter;
-                }
-            ),
-            2 => array(
-                'title' => _t('bbs.my', 'На проверке'), 'left' => 1, 'right' => 3,
-                'filter' => function(&$filter) {
-                    $filter['is_publicated'] = 0;
-                    if (static::premoderation()) {
-                        $filter['status'] = array('!=', self::STATUS_DELETED);
-                    } else {
-                        $filter['status'] = self::STATUS_BLOCKED;
+        if (static::premoderation()) {
+            $statusList = bff::filter('bbs.items.my.status.list', array(
+                1 => array(
+                    'title' => _t('bbs.my', 'Активные'), 'left' => false, 'right' => 2,
+                    'filter' => function(&$filter) {
+                        $filter['is_publicated'] = 1;
+                        $filter['status'] = self::STATUS_PUBLICATED;
+                        $filter['is_moderating'] = 0;
+                        return $filter;
                     }
-                    return $filter;
-                }
-            ),
-            3 => array(
-                'title' => _t('bbs.my', 'Неактивные'), 'left' => 2, 'right' => false,
-                'filter' => function(&$filter) {
-                    $filter['is_publicated'] = 0;
-                    $filter['status'] = self::STATUS_PUBLICATED_OUT;
-                    return $filter;
-                }
-            ),
-        ));
+                ),
+                2 => array(
+                    'title' => _t('bbs.my', 'На проверке'), 'left' => 1, 'right' => 3,
+                    'filter' => function(&$filter) {
+                        $filter['is_publicated'] = 0;
+                        $filter['status'] = ['!=', self::STATUS_DELETED];
+                        $filter['is_moderating'] = 1;
+                        return $filter;
+                    }
+                ),
+                3 => array(
+                    'title' => _t('bbs.my', 'Неактивные'), 'left' => 2, 'right' => 4,
+                    'filter' => function(&$filter) {
+                        $filter['is_publicated'] = 0;
+                        $filter['status'] = self::STATUS_PUBLICATED_OUT;
+                        $filter['is_moderating'] = 0;
+                        return $filter;
+                    }
+                ),
+                4 => array(
+                    'title' => _t('bbs.my', 'Заблокированные'), 'left' => 3, 'right' => false,
+                    'filter' => function(&$filter) {
+                        $filter['is_publicated'] = 0;
+                        $filter['status'] = self::STATUS_BLOCKED;
+                        $filter['is_moderating'] = 0;
+                        return $filter;
+                    }
+                ),
+            ));
+        } else {
+            $statusList = bff::filter('bbs.items.my.status.list', array(
+                1 => array(
+                    'title' => _t('bbs.my', 'Активные'), 'left' => false, 'right' => 2,
+                    'filter' => function(&$filter) {
+                        $filter['is_publicated'] = 1;
+                        $filter['status'] = self::STATUS_PUBLICATED;
+                        return $filter;
+                    }
+                ),
+                2 => array(
+                    'title' => _t('bbs.my', 'На проверке'), 'left' => 1, 'right' => 3,
+                    'filter' => function(&$filter) {
+                        $filter['is_publicated'] = 0;
+                        $filter['status'] = self::STATUS_BLOCKED;
+                        return $filter;
+                    }
+                ),
+                3 => array(
+                    'title' => _t('bbs.my', 'Неактивные'), 'left' => 2, 'right' => false,
+                    'filter' => function(&$filter) {
+                        $filter['is_publicated'] = 0;
+                        $filter['status'] = self::STATUS_PUBLICATED_OUT;
+                        return $filter;
+                    }
+                ),
+            ));
+        }
 
         if (!array_key_exists($f_status, $statusList)) {
             $f_status = key($statusList);
@@ -3972,6 +4084,28 @@ class BBS_ extends BBSBase
         # формируем список
         $aData['device'] = bff::device();
         $aData['img_default'] = $this->itemImages()->urlDefault(BBSItemImages::szSmall);
+        $svcDD = static::SERVICE_MARK | static::SERVICE_FIX | static::SERVICE_PREMIUM | static::SERVICE_QUICK;
+
+        # формируем данные об активных услугах объявлений
+        foreach($aData['items'] as & $v){
+            $v['svc_dd'] = $v['svc'] & $svcDD;
+        } unset($v);
+        $aData['svc'] = $this->model->svcData();
+        $aData['svc_to_date'] = function($svc, $item) {
+            $date = '';
+            switch($svc) {
+                case static::SERVICE_MARK:      $date = tpl::dateFormat($item['svc_marked_to']);    break;
+                case static::SERVICE_FIX:       $date = tpl::dateFormat($item['svc_fixed_to']);     break;
+                case static::SERVICE_PREMIUM:   $date = tpl::dateFormat($item['svc_premium_to']);   break;
+                case static::SERVICE_QUICK:     $date = tpl::dateFormat($item['svc_quick_to']);     break;
+            }
+            if (empty($date)) return '';
+            return _t('bbs', 'до [date]',['date' => $date]);
+        };
+        $aData['svc_url'] = function($svc, $item) {
+            return BBS::url('item.promote', ['id'=>$item['id'], 'svc'=>$svc, 'from'=>'cabinet']);
+        };
+        
         $aData['list'] = $this->viewPHP($aData, 'my.items.list'); unset($aData['items']);
 
         # список категорий (фильтр)
@@ -3984,7 +4118,7 @@ class BBS_ extends BBSBase
         $aData['cat_active'] = (isset($aCats[$f_c]) ? $aCats[$f_c] : $aCats[0]);
         $aData['cats'] = $this->viewPHP($aData, 'my.items.cats');
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
                 'pgn'   => $aData['pgn'],
                 'list'  => $aData['list'],
@@ -4109,10 +4243,10 @@ class BBS_ extends BBSBase
             $aData['pgn'] = $oPgn->view(array(), tpl::PGN_COMPACT);
         }
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
-                'list' => $this->searchList($aData['device'], $f_lt, $aData['items']),
-                'pgn'  => $aData['pgn']
+                'list' => $this->searchList(false, $f_lt, $aData['items']),
+                'pgn'  => $aData['pgn'],
             ));
         }
 
@@ -4264,10 +4398,10 @@ class BBS_ extends BBSBase
             $data['pgn'] = $pgn->view();
         }
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
-                'list' => $this->searchList($data['device'], $f['lt'], $data['items']),
-                'pgn'  => $data['pgn']
+                'list' => $this->searchList(false, $f['lt'], $data['items']),
+                'pgn'  => $data['pgn'],
             ));
         }
 
@@ -4343,9 +4477,9 @@ class BBS_ extends BBSBase
             $data['pgn'] = $pgn->view();
         }
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
-                'list' => $this->searchList($data['device'], $f['lt'], $data['items']),
+                'list' => $this->searchList(false, $f['lt'], $data['items']),
                 'pgn'  => $data['pgn']
             ));
         }
@@ -4467,7 +4601,7 @@ class BBS_ extends BBSBase
         $userBalance = $this->security->getUserBalance();
         $paySystems = Bills::getPaySystems($userID > 0, true);
 
-        if (Request::isPOST()) {
+        if ($this->isPOST()) {
             # сколько покупаем объявлений (штук)
             $items = $this->input->getpost('items', TYPE_UINT);
             # платежная система
@@ -4782,7 +4916,12 @@ class BBS_ extends BBSBase
                     break;
                 }
 
-                switch ($this->input->getpost('status', TYPE_STR)) {
+                $action = $this->input->getpost('status', TYPE_STR);
+                if ( ! $this->errors->no('bbs.ajax.item-status', ['action'=>$action, 'id'=>$nItemID, 'data'=>$aData])) {
+                    break;
+                }
+
+                switch ($action) {
                     case 'unpublicate':
                     { # снятие с публикации
 
@@ -5579,12 +5718,13 @@ class BBS_ extends BBSBase
      */
     public function itemsLinksRebuild()
     {
-        if (!bff::cron())
+        if ( ! bff::cron()) {
             return;
+        }
+
         $this->model->itemsLinksRebuild();
         if( ! $this->errors->no()){
-            $errors = $this->errors->get();
-            bff::log($errors);
+            bff::log($this->errors->get(true, false));
         }
     }
 
@@ -5624,6 +5764,9 @@ class BBS_ extends BBSBase
         $category = $this->input->get('cat', TYPE_UINT);
         $region = $this->input->get('region', TYPE_UINT);
         $lng = LNG;
+
+        # SEO: проверка на обязательный завершающий слеш
+        $this->seo()->urlCorrectionEndSlash(true);
 
         if ( ! static::rssEnabled() || ! $category) {
             $this->errors->error404();
@@ -5760,7 +5903,7 @@ class BBS_ extends BBSBase
         $nUserID = User::id();
         $oComments = $this->itemComments();
 
-        if (Request::isAJAX())
+        if ($this->isAJAX())
         {
             $aResponse = array();
             switch ($this->input->getpost('act', TYPE_STR)) {
@@ -5817,6 +5960,7 @@ class BBS_ extends BBSBase
                                 'itemStatus' => $aItemData['status'],
                             ), (!$nParent ? 1 : 2));
                         }
+                        bff::hook('bbs.comments.add', $nItemID, ['premoderation'=>$aResponse['premod'], 'comment_id'=>$nCommentID]);
                     }
                 }   break;
                 case 'delete': # комментарии: удаление
@@ -5921,4 +6065,5 @@ class BBS_ extends BBSBase
         }
         return $this->viewPHP($data, 'item.comments.ajax');
     }
+
 }

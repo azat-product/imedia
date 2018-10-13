@@ -36,9 +36,7 @@
     }
 ?>
 
-<?php if(DEVICE_DESKTOP_OR_TABLET) {
-  echo tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb');
-} ?>
+<?= tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb'); ?>
 
 <?= $catsBlock ?>
 
@@ -139,7 +137,7 @@
     <div class="l-mainLayout-sidebar">
       <?php if ($filterVertical) { ?>
         <div class="l-pageHeading">
-          <h2 class="l-pageHeading-title"><?= _t('filter','Фильтр') ?></h2>
+          <div class="l-pageHeading-title"><?= _t('filter','Фильтр') ?></div>
         </div>
         <div class="l-filterAside" id="j-filter-vertical-desktop">
           <?= $filterVerticalBlock; ?>

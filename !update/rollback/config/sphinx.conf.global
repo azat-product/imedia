@@ -1,0 +1,35 @@
+#!/bin/bash
+files=(
+"/path_to_example1.com/config/sphinx.conf"
+"/path_to_example2.com/config/sphinx.conf"
+)
+for i in "${files[@]}"; do
+if [ -f "$i" ]; then cat "$i"; fi
+done
+
+cat <<EOF
+
+indexer
+{
+    # Лимит памяти, который может использавать демон-индексатор
+    mem_limit               = 64M
+}
+
+searchd
+{
+    # Адрес, на котором будет прослушиваться порт
+    listen                  = 127.0.0.1:9306:mysql41
+    log                     = /var/log/sphinx/searchd.log
+    query_log               = /var/log/sphinx/query.log
+    read_timeout            = 5
+    max_children            = 30
+    pid_file                = /var/run/sphinx/searchd.pid
+    max_matches             = 100000
+    seamless_rotate         = 1
+    preopen_indexes         = 1
+    unlink_old              = 1
+    workers                 = threads # for RT to work
+    binlog_path             = /var/lib/sphinx
+}
+
+EOF

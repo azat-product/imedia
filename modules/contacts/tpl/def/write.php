@@ -21,7 +21,7 @@
                 <h1><?= config::get('contacts_form_title_'.LNG, _t('contacts', 'Контакты')) ?></h1>
                 <?= config::get('contacts_form_text_'.LNG) ?>
                 <form id="j-contacts-form" action="" class="contacts-form mrgt40 form-horizontal">
-                    <h2 class="mrgb20"><?= config::get('contacts_form_title2_'.LNG) ?></h2>
+                    <div class="l-content__title mrgb20"><?= config::get('contacts_form_title2_'.LNG) ?></div>
                     <div class="control-group">
                         <label for="j-contacts-form-name" class="control-label"><?= _t('contacts', 'Ваше имя') ?><span class="required-mark">*</span></label>
                         <div class="controls">
@@ -53,7 +53,7 @@
                     <? if( ! User::id() && $captcha_on ) { ?>
                         <?php if (Site::captchaCustom('contacts-write')) { ?>
                             <div class="control-group">
-                                <?php bff::hook('captcha.custom.view', 'contacts-write', __FILE__); ?>
+                                <?php bff::hook('captcha.custom.view', 'contacts-write', __FILE__, ['wrap'=>'<div class="controls">{form}</div>']); ?>
                             </div>
                         <?php } else { ?>
                             <div class="control-group">

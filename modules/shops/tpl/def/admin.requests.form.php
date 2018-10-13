@@ -14,7 +14,7 @@
     <td class="row1" width="5"></td>
     <td class="row2">
         <? if($shop_id && ! empty($shop)) { ?>
-            <a href="#" class="nolink" onclick="return bff.shopInfo(<?= $shop_id ?>);"><?= $shop['title'] ?></a>
+            <a href="javascript:void(0);" class="nolink" onclick="return bff.shopInfo(<?= $shop_id ?>);"><?= $shop['title'] ?></a>
             <a href="<?= $shop['link'] ?>" class="linkout but" target="_blank"></a>
         <? } else { ?>
         <span>?</span>
@@ -27,7 +27,7 @@
     <td class="row1"></td>
     <td class="row2">
         <? if ( ! empty($user) ) { ?>
-            <a href="#"  class="ajax<?= ($user['blocked'] ? ' text-error':'') ?>" onclick="return bff.userinfo(<?= $user['user_id'] ?>);"><?= $user['email'] ?></a>
+            <a href="javascript:void(0);"  class="ajax<?= ($user['blocked'] ? ' text-error':'') ?>" onclick="return bff.userinfo(<?= $user['user_id'] ?>);"><?= $user['email'] ?></a>
         <? } else { ?>
             <span>?</span>
         <? } ?>

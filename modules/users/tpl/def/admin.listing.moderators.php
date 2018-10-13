@@ -50,7 +50,7 @@ foreach($users as $k=>$v) { $id = $v['user_id']; ?>
         <? } ?>
     </td>
     <td>
-        <a class="but <? if( ! $v['blocked'] ) { ?>un<? } ?>block" href="#" onclick="return bff.userinfo(<?= $id ?>);" id="u<?= $id ?>"></a>
+        <a class="but <? if( ! $v['blocked'] ) { ?>un<? } ?>block" href="javascript:void(0);" onclick="return bff.userinfo(<?= $id ?>);" id="u<?= $id ?>"></a>
         <a class="but edit" href="<?= $this->adminLink('user_edit&tuid='.$v['tuid'].'&rec='.$id) ?>"></a>
     </td>
 </tr>

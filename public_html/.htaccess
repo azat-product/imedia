@@ -1,3 +1,5 @@
+<IfModule mod_rewrite.c>
+
 RewriteEngine on
 
 # catch errors
@@ -11,7 +13,7 @@ ErrorDocument 504   /index.php?bff=errors&errno=504
 
 # directory index file
 DirectoryIndex index.php
-Options -Indexes                                                   
+Options -Indexes                                                    
 Options +FollowSymlinks
 
 # www to non-www
@@ -23,3 +25,5 @@ RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [L]
+
+</IfModule>

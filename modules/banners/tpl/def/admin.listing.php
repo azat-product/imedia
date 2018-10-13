@@ -12,14 +12,27 @@
     if($rotate){
         tpl::includeJS('tablednd', true);
     }
+    $aTabs = array(
+        0 => array('t' => _t('', 'все')),
+        1 => array('t' => _t('', 'выключенные')),
+        2 => array('t' => _t('', 'включенные')),
+    );
 ?>
+<div class="tabsBar" id="items-status-tabs">
+    <? foreach($aTabs as $k=>$v) { ?>
+        <span class="tab<?= $k==$f['tab'] ? ' tab-active' : '' ?>"><a href="javascript:void(0);" onclick="jBannersList.onTab(<?= $k ?>);"><?= $v['t'] ?></a></span>
+    <? } ?>
+</div>
+
 <div class="actionBar relative">
     <form action="<?= $this->adminLink(NULL) ?>" method="get" name="bannersForm" id="j-banners-form" class="form-inline">
         <input type="hidden" name="s" value="<?= bff::$class ?>" />
         <input type="hidden" name="ev" value="<?= bff::$event ?>" />
         <input type="hidden" name="order" value="<?= $order_by.tpl::ORDER_SEPARATOR.$order_dir ?>" />
+        <input type="hidden" name="tab" value="<?= $f['tab'] ?>" />
         <div class="controls controls-row">
             <div class="left">
+            <input type="text" name="q" value="<?= HTML::escape($f['q']) ?>" placeholder="<?= _te('', 'Поиск по названию'); ?>" style="width:140px;" />
             <select name="pos" class="input-medium" style="width: 130px;" onchange="jBannersList.submit();">
                  <option value=""><?= _t('banners', 'Все позиции'); ?></option>
                  <?php foreach($positions as $k=>$v) { ?>
@@ -38,15 +51,19 @@
             </div>
             <div class="left">
                 <?= Geo::i()->regionSelect($f['region'], 'region', array(
+                    'on_change' => 'jBannersList.submit',
                     'placeholder' => Geo::coveringType(Geo::COVERING_COUNTRIES) ? _t('', 'Страна / Регион') : _t('', 'Регион'), 'width' => '130px',
                 )); ?>
             </div>
             <div class="left" style="margin-left: 4px;">
             &nbsp;<?= _t('banners', 'Показ:'); ?> <input type="text" name="show_start" value="<?= HTML::escape($f['show_start']) ?>" placeholder="<?= _te('date', 'с'); ?>" style="width:65px;" />
             <input type="text" name="show_finish" value="<?= HTML::escape($f['show_finish']) ?>" placeholder="<?= _te('date', 'по'); ?>" style="width:65px;" />
-            &nbsp;<select name="status" onchange="jBannersList.submit();" style="width:100px;"><?= HTML::selectOptions(array(0=>_t('', 'все'),1=>_t('', 'выключенные'),2=>_t('', 'включенные')), $f['status']) ?></select>
-            &nbsp;<input class="btn btn-small button submit" type="submit" value="<?= _te('', 'найти'); ?>" />
-            <a class="cancel" onclick="jBannersList.reset(); return false;"><?= _t('', 'сбросить'); ?></a>
+            </div>
+            <div class="left" style="margin-left: 4px;">
+                <div class="btn-group">
+                    <input type="submit" class="btn btn-small" value="найти">
+                    <a class="btn btn-small" onclick="jBannersList.reset(); return false;" title="сбросить"><i class="disabled icon icon-refresh"></i></a>
+                </div>
             </div>
             <div class="clear"></div>
         </div>
@@ -92,7 +109,7 @@
         <td class="small"><?= $v['id'] ?></td>
         <td width="200">
             <a href="<?= HTML::escape($v['click_url']) ?>" class="but linkout" target="_blank" rel="noreferrer noopener"></a><a href="javascript:void(0)" onclick="return jBannersList.preview(<?= $v['id'] ?>);"><?= ! empty($v['description']) ? tpl::truncate($v['description'], 35, '...', true) : $v['pos']['title'] ?></a><br />
-            <a href="#" onclick="jBannersList.region(<?= $v['region_id'] ?>); return false;" class="desc"><?= $v['region_title'] ?></a>
+            <?= $v['region_title'] ?>
             <? if($localeFilter && ! empty($v['locale']) && ! in_array(Banners::LOCALE_ALL, $v['locale'])) { ?>
                <span class="desc">/ <? foreach ($v['locale'] as $l) { ?><a href="javascript:void(0);" class="but" style="margin-right: 3px;"><span class="lang-icon country-icon country-icon-<?= (isset($locales[$l]['country']) ? $locales[$l]['country'] : '') ?>"></span></a><? } ?></span>
             <? } ?>
@@ -107,7 +124,7 @@
             <a class="but sett" title="Статистика" href="<?= $this->adminLink('statistic&id='.$v['id']) ?>" ></a>
             <a class="but <?php if($v['enabled']){ ?>un<?php } ?>block" onclick="return jBannersList.toggle(<?= $v['id'] ?>, this);"></a>
             <a class="but edit" href="<?= $this->adminLink('edit&id='.$v['id']) ?>"></a>
-            <a class="but del" href="#" onclick="bff.confirm('sure',{r: '<?= $this->adminLink('delete&id='.$v['id']) ?>'}); return false;"></a>
+            <a class="but del" href="javascript:void(0);" onclick="bff.confirm('sure',{r: '<?= $this->adminLink('delete&id='.$v['id']) ?>'}); return false;"></a>
         </td>
 </tr>
 <?php } if(empty($banners)) { ?>
@@ -172,6 +189,11 @@ var jBannersList = (function(){
         submit: function()
         {
             formSubmit();
+        },
+        onTab:function (tab)
+        {
+            $form.find('[name="tab"]').val(tab);
+            $form.submit();
         }
     };
 }());

@@ -22,9 +22,9 @@ if($device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET) { ?>
             <? foreach($items as $k=>&$v) { ?>
             <div class="sr-page__map__list__item sh-page__map__list__item rel j-maplist-item" data-index="<?= $k ?>">
                 <span class="num"><?= $v['num'] ?>.</span>
-                <h5>
+                <div class="sr-page__map__list__item_title">
                     <a href="<?= $v['link'] ?>"><?= $v['title'] ?></a>
-                </h5>
+                </div>
                 <p>
                     <small><?= tpl::truncate($v['descr'], 150, '...', true) ?></small>
                 </p>
@@ -34,14 +34,14 @@ if($device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET) { ?>
             </div>
             <div class="sr-page__map_ymap span7 j-map" data-short-class="span7">
                 <div class="sr-page__map__controls">
-                    <span id="j-search-map-toggler"><span class="j-search-map-toggler-arrow">&laquo;</span> <a href="#" class="ajax j-search-map-toggler-link"><?= _t('search', 'больше карты'); ?></a></span>
+                    <span id="j-search-map-toggler"><span class="j-search-map-toggler-arrow">&laquo;</span> <a href="javascript:void(0);" class="ajax j-search-map-toggler-link"><?= _t('search', 'больше карты'); ?></a></span>
                 </div>
                 <div style="height: 500px; width: 100%;" class="j-search-map-desktop j-search-map-tablet"></div>
             </div>
         </div>
         <div class="row-fluid hide">
             <div class="sr-page__map_tablet_listarrow span5 visible-tablet">
-                <a href="#" class="sr-page__map__list__item_down block " >
+                <a href="#" class="sr-page__map__list__item_down block">
                     <i class="fa fa-chevron-down"></i>
                 </a>
             </div>

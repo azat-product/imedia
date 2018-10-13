@@ -18,7 +18,7 @@ class Help_ extends HelpBase
 
         $bUseBigWysiwyg = config::sysAdmin('help.questions.form.wysiwyg', false, TYPE_BOOL);
         $sAct = $this->input->postget('act', TYPE_STR);
-        if (!empty($sAct) || Request::isPOST()) {
+        if (!empty($sAct) || $this->isPOST()) {
             $aResponse = array();
             switch ($sAct) {
                 case 'add':
@@ -173,7 +173,7 @@ class Help_ extends HelpBase
                     $aResponse = false;
             }
 
-            if ($aResponse !== false && Request::isAJAX()) {
+            if ($aResponse !== false && $this->isAJAX()) {
                 $this->ajaxResponseForm($aResponse);
             }
         }
@@ -225,7 +225,7 @@ class Help_ extends HelpBase
 
         $aData['list'] = $this->viewPHP($aData, 'admin.questions.listing.ajax');
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
                     'list' => $aData['list'],
                     'pgn'  => $aData['pgn'],
@@ -250,7 +250,7 @@ class Help_ extends HelpBase
         }
 
         $sAct = $this->input->postget('act', TYPE_STR);
-        if (!empty($sAct) || Request::isPOST()) {
+        if (!empty($sAct) || $this->isPOST()) {
             $aResponse = array();
             switch ($sAct) {
                 case 'add':
@@ -366,7 +366,7 @@ class Help_ extends HelpBase
                     $aResponse = false;
             }
 
-            if ($aResponse !== false && Request::isAJAX()) {
+            if ($aResponse !== false && $this->isAJAX()) {
                 $this->ajaxResponseForm($aResponse);
             }
         }
@@ -388,7 +388,7 @@ class Help_ extends HelpBase
 
         $aData['list'] = $this->viewPHP($aData, 'admin.categories.listing.ajax');
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
                     'list' => $aData['list'],
                     'pgn'  => $aData['pgn'],
@@ -419,7 +419,7 @@ class Help_ extends HelpBase
             $this->adminRedirect(Errors::IMPOSSIBLE, 'categories');
         }
 
-        if (Request::isPOST()) {
+        if ($this->isPOST()) {
 
             $nNextCategoryID = $this->input->post('next', TYPE_UINT);
             if ($nNextCategoryID > 0) {

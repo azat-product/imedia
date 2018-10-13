@@ -49,14 +49,14 @@
                     <label class="control-label"><?= _t('shops', 'Логотип') ?><br /><small><?= _t('shops', 'Магазины с логотипом пользуются большим доверием') ?></small></label>
                     <div class="controls">
                         <div class="u-cabinet__settings__photo span6">
-                            <a class="v-author__avatar" href="#" onclick="return false;">
+                            <a class="v-author__avatar" href="javascript:void(0);" onclick="return false;">
                                 <? if($is_open){ ?><input type="hidden" name="logo" value="" id="j-shop-logo-fn" /><? } ?>
                                 <img alt="" src="<?= $logo_preview ?>" id="j-shop-logo-preview" />
                             </a>
                         </div>
                         <div class="u-cabinet__settings__photo_upload">
                             <a href="javascript:void(0);" class="btn" id="j-shop-logo-upload"><?= _t('shops', 'Загрузить логотип') ?></a>
-                            <a href="#" id="j-shop-logo-delete" class="pseudo-link-ajax ajax-ico mrgl10 remove<? if(!$logo){ ?> hide<? } ?>"><i class="fa fa-times"></i> <span><?= _t('shops', 'удалить') ?></span></a>
+                            <a href="javascript:void(0);" id="j-shop-logo-delete" class="pseudo-link-ajax ajax-ico mrgl10 remove<? if(!$logo){ ?> hide<? } ?>"><i class="fa fa-times"></i> <span><?= _t('shops', 'удалить') ?></span></a>
                             <div class="help-block"><?= _t('shops', 'Максимальный размер файла - [size]', array('size'=>$logo_maxsize_format)) ?></div>
                         </div>
                     </div>
@@ -82,7 +82,7 @@
                         <input type="hidden" name="category-last" value="0" class="j-cat-selected-last j-required" />
                         <div class="i-formpage__catselect rel">
                             <div class="i-formpage__catselect__close">
-                                <a href="#" class="ajax ajax-ico j-cat-select-link"><span><?= _t('shops', 'Выберите категорию') ?></span> <i class="fa fa-chevron-down"></i></a>
+                                <a href="javascript:void(0);" class="ajax ajax-ico j-cat-select-link"><span><?= _t('shops', 'Выберите категорию') ?></span> <i class="fa fa-chevron-down"></i></a>
                             </div>
                             <div class="i-formpage__catselect__popup dropdown-block box-shadow abs hide j-cat-select-popup">
                                 <div class="i-formpage__catselect__popup__content">
@@ -199,7 +199,7 @@
                     <div id="j-shop-social-links"></div>
                     <select id="j-shop-social-links-types" class="hide"><?= Shops::socialLinksTypes(true) ?></select>
                     <div class="controls">
-                        &nbsp;<a class="pseudo-link-ajax" id="j-social-links-plus" href="#"><small>+ <?= _t('shops', 'ещё социальная сеть') ?></small></a>
+                        &nbsp;<a class="pseudo-link-ajax" id="j-social-links-plus" href="javascript:void(0);"><small>+ <?= _t('shops', 'ещё социальная сеть') ?></small></a>
                     </div>
                 </div>
             </div>

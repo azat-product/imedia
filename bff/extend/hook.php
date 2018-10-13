@@ -4,6 +4,7 @@
  * Плагинизация: хук
  * @version 0.1
  * @modified 6.jul.2017
+ * @copyright Tamaranga
  */
 
 class Hook extends \Component

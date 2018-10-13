@@ -5,7 +5,7 @@ if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
 }
 define('BFF_PRODUCT', 'do');
-define('BFF_VERSION', '2.4.1');
+define('BFF_VERSION', '2.4.2');
 
 require 'paths.php';
 require PATH_CORE . 'init.php';
@@ -24,10 +24,10 @@ class bff extends \bff\base\app
         # Инициализируем base\app
 
         static::autoloadEx(array(
-                'User' => array('app', 'app/user.php'),
-                'Hooks' => array('app', 'app/hooks.php'),
-            )
-        );
+            'User'  => array('app', 'app/user.php'),
+            'Hooks' => array('app', 'app/hooks.php'),
+            'Theme' => array('app', 'app/theme/base.php'),
+        ));
         parent::init();
         if (static::cron()) {
             return;
@@ -52,8 +52,8 @@ class bff extends \bff\base\app
         if (!static::adminPanel()) {
             # для фронтенда
             js::setDefaultPosition(js::POS_FOOT); # переносим все инициализируемые inline-скрипты в footer
-            tpl::includeJS('app', false, 16);
-            self::$userSettings = static::DI('input')->cookie(static::cookiePrefix() . 'usett');
+            tpl::includeJS('app', false, 18);
+            self::$userSettings = static::input()->cookie(static::cookiePrefix() . 'usett');
         } else {
             # для админки
             tpl::includeJS('admin/bff', true, 2);
@@ -63,17 +63,17 @@ class bff extends \bff\base\app
         if (($userID = User::id())) {
             # актуализируем "Время последней активности" пользователя
             if ((BFF_NOW - func::SESSION('last_activity', 0)) >= config::sys('users.activity.timeout')) {
-                Users::model()->userSave($userID, false, array('last_activity' => static::DI('database')->now()));
+                Users::model()->userSave($userID, false, array('last_activity' => static::database()->now()));
                 func::setSESSION('last_activity', BFF_NOW);
             }
             # актуализируем счетчики пользователя
-            static::DI('security')->userCounter(null);
+            static::security()->userCounter(null);
         }
     }
 
     public static function isIndex()
     {
-        return (self::$event == 'index' && self::$class == 'site');
+        return static::router()->isCurrent('index');
     }
 
 
@@ -183,13 +183,49 @@ class bff extends \bff\base\app
         return !BBS::publisher(BBS::PUBLISHER_USER) || ($shopsCatalog && !$onlyPublisher);
     }
 
-    public static function servicesEnabled()
+    public static function servicesEnabled($settingOnly = false)
     {
-        if (bff::adminPanel()) {
-            return bff::moduleExists('svc', false);
-        } else {
-            return config::sys('services.enabled', false) && bff::moduleExists('svc', false);
+        $setting = config::sysAdmin('services.enabled', true);
+        if ($settingOnly) {
+            return $setting;
         }
+        $module = bff::moduleExists('svc', false);
+        if (bff::adminPanel()) {
+            return $module;
+        } else {
+            return $setting && $module;
+        }
+    }
+
+    /**
+     * Подмена общих URL префиксов модулей
+     * @param string $module название модуля
+     * @param string $section дополнительное название секции
+     * @param string $default значение по умолчанию
+     * @return mixed
+     */
+    public static function urlPrefix($module, $section, $default)
+    {
+        return trim(config::sysAdmin($module.'.url.prefix.'.$section, $default), "/ \t\n\r\0\x0B");
+    }
+
+    /**
+     * Формирование URL при изменении региона
+     * @param string $regionKey ключ региона
+     * @param boolean $addQuery добавлять в URL строку запроса
+     * @return string
+     */
+    public static function urlRegionChange($regionKey, $addQuery = true)
+    {
+        $url = SITEURL; # proto + host
+        $extra = \Site::urlExtra(array(), array('region'=>$regionKey)); # extra
+        if (!empty($extra)) { $url.= '/'.join('/', $extra).'/'; } else { $url .= '/'; }
+        $url.= static::router()->getUri(); # uri
+        if ($addQuery) {
+            $query = \Request::getSERVER('QUERY_STRING');
+            $url .= ( ! empty($query) ? '?' . $query : '');
+        }
+        return $url;
     }
 
     public static function urlAway($sURL)
@@ -199,7 +235,7 @@ class bff extends \bff\base\app
             return static::urlBase();
         }
 
-        return static::urlBase(false) . '/away/?url=' . rawurlencode($sURL);
+        return Site::url('away', array('url'=>$sURL));
     }
 }
 
@@ -214,6 +250,7 @@ define('DEVICE_TABLET_OR_PHONE', DEVICE_TABLET || DEVICE_PHONE);
 
 if (bff::adminPanel()) {
 
+    config::set('core.dev.menu.localization.hide', true);
     Site::adminPanel(array(
         'bbs'          => _t('menu', 'Объявления'),
         'shops'        => _t('menu', 'Магазины'),

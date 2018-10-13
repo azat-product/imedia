@@ -87,7 +87,7 @@ class BBS_ extends BBSBase
                     if ($cronManager->isEnabled()) {
                         $cronManager->executeOnce('bbs', 'itemsLinksRebuild');
                         $data['cronManager'] = 1;
-                    }else{
+                    } else {
                         $this->errors->set(_t('bbs', 'Не запущен cron-manager'));
                     }
                     return $this->viewPHP($data, 'admin.info');
@@ -158,7 +158,7 @@ class BBS_ extends BBSBase
         # - исключаем формирующиеся(недооформленные) объявления из списка
         $limit = config::sysAdmin('bbs.admin.items.list.limit', 20, TYPE_UINT);
         $sql = array();
-        $orderBy = 'publicated_order DESC, id DESC';
+        $orderBy = 'id DESC';
 
         switch ($f['status']) {
             case 0:
@@ -207,6 +207,11 @@ class BBS_ extends BBSBase
                 $orderBy = 'id DESC';
             }
             break;
+            default: {
+                bff::hook('bbs.admin.item.list.status.filter', $f['status'], array(
+                    'filter' => &$f, 'sql' => &$sql, 'orderBy' => &$orderBy,
+                ));
+            } break;
         }
 
         if ($f['cat'] > 0) {
@@ -1005,9 +1010,10 @@ class BBS_ extends BBSBase
                         $bBlocked = false;
                     }
                 }
-                if($blockedID != static::BLOCK_OTHER){
+                if ($blockedID != static::BLOCK_OTHER &&
+                    $blockedID != static::BLOCK_FOREVER) {
                     $reasons = static::blockedReasons();
-                    if(isset($reasons[ $blockedID ])){
+                    if (isset($reasons[ $blockedID ])) {
                         $aUpdate['blocked_reason'] = $sBlockedReason = $reasons[ $blockedID ];
                     }
                 }
@@ -1292,23 +1298,24 @@ class BBS_ extends BBSBase
                 }
 
                 $nItemID = $this->input->post('id', TYPE_UINT);
-                if (!$nItemID) {
+                if ( ! $nItemID) {
                     $this->errors->unknownRecord();
                     break;
                 }
 
                 $aItem = $this->model->itemData($nItemID, array(
-                        'id',
-                        'status',
-                        'moderated',
-                        'publicated',
-                        'publicated_to'
-                    )
-                );
+                    'id',
+                    'status',
+                    'moderated',
+                    'publicated',
+                    'publicated_to',
+                ));
                 if (empty($aItem)) {
                     $this->errors->unknownRecord();
                     break;
                 }
+                # поднять вверх списка
+                $bTopUp = $this->input->post('topup', TYPE_BOOL);
 
                 switch ($aItem['status']) {
                     case self::STATUS_NOTACTIVATED:
@@ -1327,11 +1334,14 @@ class BBS_ extends BBSBase
                     case self::STATUS_PUBLICATED:
                     {
                         # продлеваем от даты завершения срока публикации
-                        $this->model->itemSave($nItemID, array(
-                                'publicated_to' => $this->getItemRefreshPeriod($aItem['publicated_to'])
-                            )
+                        $aUpdate = array(
+                            'publicated_to' => $this->getItemRefreshPeriod($aItem['publicated_to']),
                         );
-                        $statusBlock($nItemID);
+                        # поднимаем вверх списка
+                        if ($bTopUp) {
+                            $aUpdate['publicated_order'] = $this->db->now();
+                        }
+                        $this->model->itemSave($nItemID, $aUpdate);
                     }
                     break;
                     case self::STATUS_PUBLICATED_OUT:
@@ -1343,16 +1353,8 @@ class BBS_ extends BBSBase
                             'status'        => self::STATUS_PUBLICATED,
                             'moderated'     => 1,
                         );
-
-                        /**
-                         * Если разница между датой снятия с публикации и текущей датой
-                         * более 7 дней, тогда поднимаем объявление вверх.
-                         * в противном случае: оставлем дату старта публикации(pulicated)
-                         *   и дату порядка публикации(publicated_order) прежними
-                         */
-                        $toOld = strtotime($aItem['publicated_to']);
-                        $bUpdatePublicatedOrder = ((BFF_NOW - $toOld) > 604800);
-                        if ($bUpdatePublicatedOrder) {
+                        # поднимаем вверх списка
+                        if ($bTopUp) {
                             $aUpdate['publicated'] = $this->db->now();
                             $aUpdate['publicated_order'] = $this->db->now();
                         }
@@ -1363,7 +1365,6 @@ class BBS_ extends BBSBase
                         } else {
                             # обновляем счетчик "на модерации"
                             $this->moderationCounterUpdate();
-                            $statusBlock($nItemID);
                         }
                     }
                     break;
@@ -1372,6 +1373,10 @@ class BBS_ extends BBSBase
                         $this->errors->set(_t('bbs', 'Текущий статус объявления указан некорректно'));
                     }
                     break;
+                }
+
+                if ($this->errors->no()) {
+                    $statusBlock($nItemID);
                 }
             }
             break;
@@ -1739,7 +1744,7 @@ class BBS_ extends BBSBase
                 # вид списка по-умолчанию
                 if ($actions['list_type']) {
                     $nListType = $this->input->post('list_type', TYPE_UINT);
-                    if ( ! in_array($nListType, array(static::LIST_TYPE_LIST, static::LIST_TYPE_GALLERY, static::LIST_TYPE_MAP))) {
+                    if ( ! array_key_exists($nListType, static::itemsSearchListTypes()) ) {
                         $actions['list_type'] = false;
                     } else {
                         $catsFields[] = 'list_type';
@@ -1846,7 +1851,9 @@ class BBS_ extends BBSBase
             if ($this->errors->no('bbs.admin.category.submit',array('id'=>$nCategoryID,'data'=>&$aDataSave,'before'=>$aData))) {
                 # смена parent-категории
                 if ($bAllowEditParent && !$bCopySettingsToSubs && $aDataSave['pid'] != $aData['pid'] && $this->input->post('structure_modified', TYPE_STR) === $aData['structure_modified']) {
-                    $this->model->catChangeParent($nCategoryID, $aDataSave['pid']);
+                    if ($this->model->catChangeParent($nCategoryID, $aDataSave['pid']) !== false) {
+                        $aResponse['structure_modified'] = $this->db->now();
+                    }
                     # очищаем состояние списка категорий из-за смены порядка вложенности
                     Request::deleteCOOKIE(bff::cookiePrefix() . 'bbs_cats_state', $this->security->getAdminPath());
                 }
@@ -1869,6 +1876,8 @@ class BBS_ extends BBSBase
                     }
                     # сбрасываем кеш дин. свойств категории
                     $this->dpSettingsChanged($nCategoryID, 0, 'cat-edit');
+                    # хук успешного сохранения
+                    bff::hook('bbs.admin.category.submit.success',array('id'=>$nCategoryID,'data'=>&$aDataSave,'before'=>$aData));
                 }
 
                 if ($this->model->catIsMain($nCategoryID, $aDataSave['pid'])) {
@@ -2269,7 +2278,7 @@ class BBS_ extends BBSBase
                 break;
             case 'import-cancel':
                 $importID = $this->input->get('id', TYPE_UINT);
-                $import->importCancel($importID);
+                $import->importCancel(array('id'=>$importID));
                 $this->ajaxResponseForm();
                 break;
             case 'yandex-save':
@@ -2303,14 +2312,18 @@ class BBS_ extends BBSBase
                         'type'   => $this->input->post('type', TYPE_BOOL),
                         # срок публикации
                         'publicate_period' => $this->input->post('publicate_period', TYPE_UINT),
+                        # несколько пользователей
+                        'multi_users'       => $this->input->post('multi_users', TYPE_UINT),
+                        # создавать фейковых
+                        'multi_users_fake'  => $this->input->post('multi_users_fake', TYPE_UINT),
                     );
-                    if ( ! $aSettings['userId']) {
-                        $this->errors->set(_t('bbs.import', 'Укажите пользователя'));
-                    }
                     if (empty($aSettings['state'])) {
                         $this->errors->set(_t('bbs.import', 'Необходимо выбрать статус объявлений'));
                     }
 
+                    if (empty($aSettings['multi_users']) && empty($aSettings['userId'])) {
+                        $this->errors->set(_t('bbs.import', 'Укажите пользователя'));
+                    }
 
                     if ($aSettings['type'] == BBSItemsImport::TYPE_URL) {
                         $settUrl = $this->input->postm(array(
@@ -2700,6 +2713,7 @@ class BBS_ extends BBSBase
      */
     protected function validateCategoryData($nCategoryID = 0)
     {
+        $bSubmit = $this->isPOST();
         $aData['pid'] = $this->input->postget('pid', TYPE_UINT);
         $aParams = array(
             'price'          => TYPE_BOOL,
@@ -2734,7 +2748,7 @@ class BBS_ extends BBSBase
 
         $this->validateCategoryPriceSettings($aData['price_sett']);
 
-        if (Request::isPOST()) {
+        if ($bSubmit) {
             do {
                 # основная категория обязательна
                 if (!$aData['pid']) {
@@ -2825,7 +2839,7 @@ class BBS_ extends BBSBase
                 $aData['owner_search'] = array_sum($aData['owner_search']);
 
                 # тип списка по-умолчанию
-                if ( ! in_array($aData['list_type'], array(static::LIST_TYPE_LIST, static::LIST_TYPE_GALLERY, static::LIST_TYPE_MAP))) {
+                if ( ! array_key_exists($aData['list_type'], static::itemsSearchListTypes())) {
                     $aData['list_type'] = 0;
                 } else if ($aData['list_type'] == static::LIST_TYPE_MAP && ! $aData['addr']) {
                     $aData['list_type'] = 0;
@@ -2837,6 +2851,8 @@ class BBS_ extends BBSBase
                 $aData['mtemplate'] = 1;
             }
         }
+
+        bff::hook('bbs.admin.category.form.validate', array('id'=>$nCategoryID,'data'=>&$aData,'submit'=>$bSubmit));
 
         return $aData;
     }

@@ -2,9 +2,7 @@
 <script type="text/javascript">//<![CDATA[
 var app = {adm: true, host:'<?= SITEHOST ?>', root: '<?= SITEHOST ?>', rootStatic: '<?= SITEURL_STATIC ?>', cookiePrefix: '<?= bff::cookiePrefix() ?>'};
 //]]></script>
-<?php foreach(bff::filter('admin.js.includes', tpl::$includesJS) as $v) { ?>
-<script src="<?= $v ?>" type="text/javascript" charset="utf-8"></script>
-<?php } ?>
+<?= tpl::includesJS(array('minifier'=>false)); ?>
 <script type="text/javascript">
 $(function() {
     bff.map.setType('<?= Geo::mapsType() ?>');

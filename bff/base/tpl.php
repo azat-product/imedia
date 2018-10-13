@@ -3,8 +3,9 @@
 /**
  * Вспомогательные методы в шаблонах
  * @abstract
- * @version 0.35
- * @modified 23.jan.2018
+ * @version 0.41
+ * @modified 16.aug.2018
+ * @copyright Tamaranga
  */
 
 abstract class tpl
@@ -43,6 +44,7 @@ abstract class tpl
                 # admin
                 'fancybox'        => array('admin/fancybox', true, true),
                 'datepicker'      => array('admin/datepicker', true, true),
+                'datepicker.bs'   => array('admin/bootstrap-datepicker', 'js/bootstrap-datepicker.min', 'css/bootstrap-datepicker3.min'),
                 'tablednd'        => array('admin', true),
                 'comments'        => array('admin/comments', true, true),
                 # common
@@ -52,7 +54,7 @@ abstract class tpl
                 'dynprops'        => array('dynprops', 'dynprops.min'),
                 'fancybox2'       => array('fancybox2', 'jquery.fancybox', 'jquery.fancybox'),
                 'history'         => array('history', 'history.min'),
-                'jcrop'           => array('jcrop', 'jquery.Jcrop.min', 'jquery.Jcrop'),
+                'jcrop'           => array('jcrop', 'jquery.jcrop.min', 'jquery.Jcrop'),
                 'jquery'          => array('jquery', 'jquery.min'),
                 'maps.editor'     => array('maps', 'editor'),
                 'publicator'      => array('publicator', 'publicator.min', true),
@@ -61,6 +63,7 @@ abstract class tpl
                 'swfupload'       => array('swfupload', array('swfupload', 'handlers'), true),
                 'swfobject'       => array('swfobject', true),
                 'ui.sortable'     => array('jquery.ui', array('core', 'sortable')),
+                'ui.sortable.last'=> array('jquery.ui', 'sortable.last'),
                 'wysiwyg'         => array('wysiwyg', 'wysiwyg.min', true),
             ));
             }
@@ -133,6 +136,47 @@ abstract class tpl
     }
 
     /**
+     * Формирование списка подключаемых JavaScript файлов
+     * @param array $opts:
+     *    bool html
+     *    bool minifier
+     *    bool adminPanel
+     * @return array|string
+     */
+    public static function includesJS(array $opts = array())
+    {
+        \func::array_defaults($opts, array(
+            'html'       => true,
+            'minifier'   => true,
+            'adminPanel' => \bff::adminPanel(),
+        ));
+        $list = static::$includesJS;
+        if ($opts['minifier']) {
+            \Minifier::process($list);
+        }
+        $list = \bff::filter(($opts['adminPanel'] ? 'admin.' : '') . 'js.includes', $list, $opts);
+        foreach ($list as $k=>$v) {
+            if ( ! is_array($v)) {
+                $list[$k] = array('url'=>$v);
+            }
+        }
+        \func::sortByPriority($list, 'priority');
+        if ($opts['html']) {
+            $html = '';
+            foreach ($list as $v) {
+                $attr = array_merge(array(
+                    'src' => $v['url'],
+                    'type' => 'text/javascript',
+                    'charset' => 'utf-8',
+                ), (isset($v['attr']) ? $v['attr'] : array()));
+                $html .= '<script'.\HTML::attributes($attr).'></script>'.PHP_EOL;
+            }
+            return $html;
+        }
+        return $list;
+    }
+
+    /**
      * Подключаем CSS файл
      * @param string|array $mInclude название css файла(без расширения ".css") или полный URL
      * @param bool $bAddUrl false - если в $mInclude был указан полный URL
@@ -168,7 +212,7 @@ abstract class tpl
         if (mb_strlen($sString) > $nLength) {
             $nLength -= ($bCalcEtcLength === true ? mb_strlen($sEtc) : $bCalcEtcLength);
             if (!$bBreakWords)
-                $sString = preg_replace('/\s+?(\S+)?$/', '', mb_substr($sString, 0, $nLength + 1));
+                $sString = preg_replace('/\s+?(\S+)?$/u', '', mb_substr($sString, 0, $nLength + 1));
 
             return mb_substr($sString, 0, $nLength) . $sEtc;
         } else
@@ -252,6 +296,10 @@ abstract class tpl
         }
 
         # формируем HTML
+        if (empty($sJSObjectName)) {
+            # формируем название js объекта на основе имени текстового поля
+            $sJSObjectName = 'jwysiwyg_'.trim(mb_strtolower(strtr($sFieldName, ['['=>'_',']'=>'_'])), '_');
+        }
         $htmlTextarea = '<textarea name="' . $sFieldName . '" id="' . $sFieldID . '" style="height:' . $HeightCSS . '; width:' . $WidthCSS . ';">' . $sContent . '</textarea>';
         $htmlJavascript = '$(function(){ ' . (!empty($sJSObjectName) ? $sJSObjectName . ' = ' : '') . ' $(\'#' . $sFieldID . '\').bffWysiwyg(
                     ' . (is_string($mParams) ? $mParams : \func::php2js($mParams)) . ', true); });';

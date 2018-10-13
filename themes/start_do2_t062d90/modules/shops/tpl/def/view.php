@@ -13,9 +13,7 @@
 tpl::includeJS('shops.view', false, 5);
 ?>
 
-<?php if(DEVICE_DESKTOP_OR_TABLET) {
-  echo tpl::getBreadcrumbs($breadcrumbs);
-} ?>
+<?= tpl::getBreadcrumbs($breadcrumbs); ?>
 
 <div class="l-mainLayout" id="j-shops-v-container">
 

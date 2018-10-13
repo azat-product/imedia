@@ -7,10 +7,14 @@
 <!DOCTYPE html>
 <html class="no-js">
 <head>
+<?php View::blockStart('head'); ?>
 <?= SEO::i()->metaRender(array('content-type'=>true)) ?>
 <?= View::template('css'); ?>
+<?php View::blockEnd(); ?>
 </head>
-<body data-dbq="<?= bff::database()->statQueryCnt(); ?>">
+<body>
+<?php View::blockStart('body'); ?>
+<?= View::template('alert'); ?>
 <div id="wrap">
     <!-- BEGIN main content -->
     <div id="main">
@@ -18,5 +22,6 @@
     </div>
     <!-- END main content -->
 </div>
+<?php View::blockEnd(); ?>
 </body>
 </html>

@@ -15,7 +15,7 @@
 <input type="hidden" name="id" value="<?= $id ?>" />
 <div class="tabsBar" id="BlogCategoriesFormTabs">
     <? foreach($aTabs as $k=>$v) { ?>
-        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="#" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
+        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="javascript:void(0);" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
     <? } ?>
 </div>
 <div class="j-tab j-tab-info">
@@ -28,7 +28,7 @@
         </td>
     </tr>'); ?>
     <tr>
-        <td class="row1 field-title"><?= _t('','URL-Keyword') ?><span class="required-mark">*</span>:<br /><a href="#" onclick="return bff.generateKeyword('#category-title-<?= LNG ?>', '#category-keyword');" class="ajax desc small"><?= _t('', 'generate') ?></a></td>
+        <td class="row1 field-title"><?= _t('','URL-Keyword') ?><span class="required-mark">*</span>:<br /><a href="javascript:void(0);" onclick="return bff.generateKeyword('#category-title-<?= LNG ?>', '#category-keyword');" class="ajax desc small"><?= _t('', 'generate') ?></a></td>
         <td class="row2">
             <input class="stretch" type="text" id="category-keyword" name="keyword" value="<?= $keyword ?>" />
         </td>

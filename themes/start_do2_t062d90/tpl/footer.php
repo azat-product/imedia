@@ -24,33 +24,16 @@ $counters = Site::i()->getCounters();
         <div class="col-sm-3">
           <?= Site::copyright(); ?>
         </div>
-        <?php if (!empty($footerMenu['col1']['sub'])) { ?>
-          <div class="col-sm-2">
-            <ul class="l-footer-menu">
-              <?php foreach ($footerMenu['col1']['sub'] as $v) {
-                echo $footerLink($v);
-              } ?>
-            </ul>
-          </div>
-        <?php } ?>
-        <?php if (!empty($footerMenu['col2']['sub'])) { ?>
-          <div class="col-sm-2">
-            <ul class="l-footer-menu">
-              <?php foreach ($footerMenu['col2']['sub'] as $v) {
-                echo $footerLink($v);
-              } ?>
-            </ul>
-          </div>
-        <?php } ?>
-        <?php if (!empty($footerMenu['col3']['sub'])) { ?>
-          <div class="col-sm-2">
-            <ul class="l-footer-menu">
-              <?php foreach ($footerMenu['col3']['sub'] as $v) {
-                echo $footerLink($v);
-              } ?>
-            </ul>
-          </div>
-        <?php } ?>
+        <?php $footerCols = array('col1'=>['w'=>'2'], 'col2'=>['w'=>'2'], 'col3'=>['w'=>'2','last'=>true]);
+          foreach ($footerCols as $colKey=>$colData):
+            if ( ! empty($footerMenu[$colKey]['sub']) ) { ?>
+                <div class="col-sm-<?= $colData['w'] ?>"><ul class="l-footer-menu"><?php
+                    foreach($footerMenu[$colKey]['sub'] as $v):
+                        echo $footerLink($v);
+                    endforeach; ?>
+                </ul></div>
+            <?php }
+          endforeach; ?>
         <div class="col-sm-3">
           <?= Site::languagesSwitcher(); # Выбор языка ?>
           <div class="l-footer-counters">

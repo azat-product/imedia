@@ -4,6 +4,7 @@
     $edit = $user_id > 0;
     $bNoShop = ( ! $shop_id );
     $limitsPayed = BBS::limitsPayedEnabled();
+    $permissionDelete = $edit && ! empty($permissionDelete) && ! $superadmin;
 ?>
 
 <? if($edit) {
@@ -11,6 +12,12 @@
     echo $this->viewPHP($aData, 'admin.user.status');
     echo $this->viewPHP($aData, 'admin.user.comment');
 } ?>
+<? if( ! empty($unfake_url)): ?>
+    <div class="alert alert-block" style="margin-bottom: 5px; padding: 10px;">
+        <?= _t('users', 'Сгенерированный пользователь'); ?>
+        <a href="<?= $unfake_url ?>" class="btn pull-right btn-mini btn-warning" onclick="return bff.confirm('sure');"><?= _t('users', 'конвертировать'); ?></a>
+    </div>
+<? endif; ?>
 
 <div class="tabsBar">
     <script type="text/javascript">
@@ -25,19 +32,19 @@
             return false;
         }
     </script>
-    <span class="tab tab-active"><a href="#" onclick="return jUserTab('profile', this);"><?= _t('users', 'Профиль'); ?></a></span>
+    <span class="tab tab-active"><a href="javascript:void(0);" onclick="return jUserTab('profile', this);"><?= _t('users', 'Профиль'); ?></a></span>
     <? if($edit) { ?>
-    <? if($shops_on) { ?><span class="tab"><a href="#" <? if($bNoShop){ ?> class="disabled" <? } ?> id="shop-form-tab" onclick="return jUserTab('shop', this);"><?= _t('shops', 'Магазин'); ?></a></span><? } ?>
-    <? if($limitsPayed) { ?><span class="tab"><a href="#" onclick="return jUserTab('limits', this);"><?= _t('bbs', 'Лимиты'); ?></a></span><? } ?>
+    <? if($shops_on) { ?><span class="tab"><a href="javascript:void(0);" <? if($bNoShop){ ?> class="disabled" <? } ?> id="shop-form-tab" onclick="return jUserTab('shop', this);"><?= _t('shops', 'Магазин'); ?></a></span><? } ?>
+    <? if($limitsPayed) { ?><span class="tab"><a href="javascript:void(0);" onclick="return jUserTab('limits', this);"><?= _t('bbs', 'Лимиты'); ?></a></span><? } ?>
     <? bff::hook('users.admin.user.form.tabs.extra', array('edit'=>$edit,'data'=>&$aData)) ?>
     <span class="tab"><a href="<?= $this->adminLink('listing&uid='.$user_id, 'bills'); ?>"><?= _t('users', 'Баланс'); ?> <span class="desc">(<?= $balance ?>)</span></a></span>
     <div class="right">
         <div style="margin:0 0 0 10px; float: right;<? if( ! $activated) { ?> display: none;<? } ?>" class="left u_block_links">
-            <a href="#" onclick="return jUserStatus.unblock(this);" class="u_unblock_lnk ajax clr-success <? if(!$blocked){ ?>hidden<? } ?>"><?= _t('', 'разблокировать'); ?></a>
-            <a href="#" onclick="return jUserStatus.block(this);" class="u_block_lnk ajax clr-error <? if($blocked){ ?>hidden<? } ?>"><?= _t('', 'заблокировать'); ?></a>
+            <a href="javascript:void(0);" onclick="return jUserStatus.unblock(this);" class="u_unblock_lnk ajax clr-success <? if(!$blocked){ ?>hidden<? } ?>"><?= _t('', 'разблокировать'); ?></a>
+            <a href="javascript:void(0);" onclick="return jUserStatus.block(this);" class="u_block_lnk ajax clr-error <? if($blocked){ ?>hidden<? } ?>"><?= _t('', 'заблокировать'); ?></a>
         </div>
         <div style="margin:0 0 0 10px; float: right;<? if (mb_strlen(trim($admin_comment)) > 0) { ?>display:none;<? } ?>" id="userAdminCommentBlockToggler">
-            <a href="#" onclick="$('#userAdminCommentBlock .j-edit').show(); return false;" class="ajax desc"><?= _t('', 'добавить заметку'); ?></a>
+            <a href="javascript:void(0);" onclick="$('#userAdminCommentBlock .j-edit').show(); return false;" class="ajax desc"><?= _t('', 'добавить заметку'); ?></a>
         </div>
     </div>
     <? } ?>
@@ -120,11 +127,11 @@
     </td>
     <td class="row2">
         <div id="passwordCurrent" style="height:17px; padding-top:5px;">
-            <a href="#" class="ajax" onclick="jUser.doChangePassword(1); return false;"><?= _t('users', 'изменить пароль'); ?></a>
+            <a href="javascript:void(0);" class="ajax" onclick="jUser.doChangePassword(1); return false;"><?= _t('users', 'изменить пароль'); ?></a>
         </div>
         <div id="passwordChange" style="display:none; height:22px;">
             <input type="text" id="password" name="password" value="" maxlength="100" />
-            &nbsp;&nbsp;<a href="#" class="ajax desc" onclick="jUser.doChangePassword(0); return false;"><?= _t('', 'отмена'); ?></a>
+            &nbsp;&nbsp;<a href="javascript:void(0);" class="ajax desc" onclick="jUser.doChangePassword(0); return false;"><?= _t('', 'отмена'); ?></a>
         </div>
     </td>
 </tr>
@@ -296,6 +303,7 @@ if($this->profileBirthdate)
             <? if (!empty($admin_auth_url)): ?>
                 <a href="<?= $admin_auth_url ?>" class="btn" target="_blank"><?= _t('users', 'Авторизоваться'); ?></a>
             <? endif; ?>
+            <? if($permissionDelete): ?><a href="javascript:" class="btn btn-danger j-user-delete"><?= _t('users', 'Удалить'); ?></a><? endif; ?>
         </div>
         <div class="clear"></div>
     </td>
@@ -335,6 +343,15 @@ var jUser = (function(){
         });
 
         initPhones(<?= $this->profilePhonesLimit ?>, <?= func::php2js($phones) ?>);
+
+        <? if ($permissionDelete && ! empty($tuid)): ?>
+        $form.on('click', '.j-user-delete', function(e){
+            e.preventDefault();
+            if ( ! confirm('<?= _tejs('users', 'Удалить учетную запись пользователя?'); ?>')) return;
+            if ( ! confirm('<?= _tejs('users', 'Отмена изменений будет невозможна, продолжить?'); ?>')) return;
+            document.location='<?= $this->adminLink('user_action&type=delete&rec='.$user_id.'&tuid='.$tuid) ?>';
+        });
+        <? endif; ?>
     });
 
     function initPhones(limit, phones)
@@ -348,7 +365,7 @@ var jUser = (function(){
             index++; total++;
             $block.append('<div class="j-phone">\
                                 <input type="text" maxlength="40" name="phones['+index+']" value="'+(value?value.replace(/"/g, "&quot;"):'')+'" class="left j-value" placeholder="<?= _te('users', 'Номер телефона'); ?>" />\
-                                <div class="left" style="margin: 3px 0 0 4px;">'+(total==1 ? '<a class="ajax desc j-plus" href="#"><?= _t('users', '+ еще телефон'); ?></a>' : '<a href="#" class="but cross j-remove"></a>')+'</div>\
+                                <div class="left" style="margin: 3px 0 0 4px;">'+(total==1 ? '<a class="ajax desc j-plus" href="javascript:void(0);"><?= _t('users', '+ еще телефон'); ?></a>' : '<a href="javascript:void(0);" class="but cross j-remove"></a>')+'</div>\
                                 <div class="clear"></div>\
                             </div>');
         }

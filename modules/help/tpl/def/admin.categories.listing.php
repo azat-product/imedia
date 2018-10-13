@@ -136,13 +136,13 @@ var jHelpCategoriesList =
         $listPgn   = $block.find('#HelpCategoriesListPgn');
         filters    = $block.find('#HelpCategoriesListFilters').get(0);
 
-        $list.delegate('a.category-edit', 'click', function(){
+        $list.on('click','a.category-edit', function(){
             var id = intval($(this).data('id'));
             if(id>0) jHelpCategoriesFormManager.action('edit',id);
             return false;
         });
 
-        $list.delegate('a.category-toggle', 'click', function(){
+        $list.on('click','a.category-toggle', function(){
             var id = intval($(this).data('id'));
             var type = $(this).data('type');
             if(id>0) {
@@ -152,13 +152,13 @@ var jHelpCategoriesList =
             return false;
         });
 
-        $list.delegate('a.category-del', 'click', function(){
+        $list.on('click','a.category-del', function(){
             var id = intval($(this).data('id'));
             if(id>0) bff.redirect('<?= $this->adminLink('categories_delete&id=') ?>'+id);
             return false;
         });
 
-        $list.delegate('a.category-expand', 'click', function(){
+        $list.on('click','a.category-expand', function(){
             var id = intval($(this).data('id'));
             if(id>0) {
                 bff.expandNS(id, ajaxUrl+'expand&id=', {cookie:app.cookiePrefix+'help_categories_expand', progress:$progress});
@@ -166,7 +166,7 @@ var jHelpCategoriesList =
             return false;
         });
 
-        $(window).bind('popstate',function(e){
+        $(window).on('popstate',function(e){
             if('state' in window.history && window.history.state === null) return;
             var loc = document.location;
             var actForm = /act=(add|edit)/.exec( loc.search.toString() );

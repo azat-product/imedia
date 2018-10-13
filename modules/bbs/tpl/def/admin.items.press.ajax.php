@@ -4,7 +4,7 @@
 <? foreach($list as $k=>$v) { $id = $v['id']; ?>
 <tr class="row<?= $k%2 ?>">
     <td><? if($f['status'] == BBS::PRESS_STATUS_PAYED): ?><label class="checkbox inline"><input type="checkbox" name="i[]" value="<?= $id ?>" class="check j-item-check" /></label><? endif; ?></td>
-    <td><a href="#" onclick="return bff.iteminfo(<?= $id ?>);"><?= $id ?></a></td>
+    <td><a href="javascript:void(0);" onclick="return bff.iteminfo(<?= $id ?>);"><?= $id ?></a></td>
     <td class="left">
         <a class="linkout but" href="<?= BBS::urlDynamic($v['link'], array('from'=>'adm')) ?>" target="_blank"></a><?= $v['title'] ?>
         <br /><span class="desc"><?= $v['cat_title'] ?></span>

@@ -34,7 +34,7 @@ extract($f, EXTR_REFS | EXTR_PREFIX_ALL, 'f'); # параметры фильтр
             <table width="100%">
                 <tr>
                     <td class="category" width="20">
-                        <a class="f-msearch_desktop__category btn nowrap" href="#" id="j-f-cat-desktop-link">
+                        <a class="f-msearch_desktop__category btn nowrap" href="javascript:void(0);" id="j-f-cat-desktop-link">
                             <span class="title"><?= ( $catACTIVE ? $catData['title'] : _t('shops','Все категории') ) ?></span>
                             <i class="fa fa-caret-down"></i>
                         </a>
@@ -64,7 +64,7 @@ extract($f, EXTR_REFS | EXTR_PREFIX_ALL, 'f'); # параметры фильтр
             <!--STAR select category-->
             <div class="select-ext select-ext-group">
                 <div class="select-ext-container " style="width:100%">
-                    <a class="select-ext-bnt" href="#" id="j-f-cat-phone-link">
+                    <a class="select-ext-bnt" href="javascript:void(0);" id="j-f-cat-phone-link">
                         <span><?= ( $catACTIVE ? $catData['title'] : _t('shops','Все категории') ) ?></span>
                         <i class="fa fa-caret-down"></i>
                     </a>

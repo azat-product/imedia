@@ -43,13 +43,13 @@ abstract class BillsModuleBase extends Module
         $this->psystemsData = array(
             static::PS_UNKNOWN => array('id' => static::PS_UNKNOWN, 'title' => _t('bills','Неизвестная'), 'key' => 'unknown'),
             static::PS_WM      => array('id' => static::PS_WM,      'title' => 'Webmoney', 'key' => 'wm', 'desc' => ''),
-            static::PS_ROBOX   => array('id' => static::PS_ROBOX,   'title' => 'Робокасса', 'key' => 'robox', 'desc' => ''),
-            static::PS_ZPAY    => array('id' => static::PS_ZPAY,    'title' => 'Z-Pay', 'key' => 'zpay', 'desc' => ''),
-            static::PS_RBK     => array('id' => static::PS_RBK,     'title' => 'RBKMoney', 'key' => 'rbkmoney', 'desc' => ''),
+            static::PS_ROBOX   => array('id' => static::PS_ROBOX,   'title' => 'Робокасса', 'key' => 'robox', 'desc' => '', 'currency'=>2),
+            //static::PS_ZPAY    => array('id' => static::PS_ZPAY,    'title' => 'Z-Pay', 'key' => 'zpay', 'desc' => ''),
+            //static::PS_RBK     => array('id' => static::PS_RBK,     'title' => 'RBKMoney', 'key' => 'rbkmoney', 'desc' => ''),
             static::PS_W1      => array('id' => static::PS_W1,      'title' => 'W1', 'key' => 'w1', 'desc' => ''),
-            static::PS_PAYPAL  => array('id' => static::PS_PAYPAL,  'title' => 'PayPal', 'key' => 'paypal', 'desc' => ''),
-            static::PS_LIQPAY  => array('id' => static::PS_LIQPAY,  'title' => 'Liqpay', 'key' => 'liqpay', 'desc' => ''),
-            static::PS_YANDEX_MONEY => array('id' => static::PS_YANDEX_MONEY, 'title' => 'Yandex.Money', 'key' => 'yandex', 'desc' => ''),
+            static::PS_PAYPAL  => array('id' => static::PS_PAYPAL,  'title' => 'PayPal', 'key' => 'paypal', 'desc' => '', 'currency'=>3),
+            static::PS_LIQPAY  => array('id' => static::PS_LIQPAY,  'title' => 'Liqpay', 'key' => 'liqpay', 'desc' => '', 'currency'=>1),
+            static::PS_YANDEX_MONEY => array('id' => static::PS_YANDEX_MONEY, 'title' => 'Yandex.Money', 'key' => 'yandex', 'desc' => '', 'currency'=>2),
         );
 
         # полный список доступных настроек систем оплаты:
@@ -165,7 +165,7 @@ abstract class BillsModuleBase extends Module
      * Получаем данные о системе оплаты
      * @param string|int|array $mPaySystem ключ системы оплаты или Bills::PS_
      * @param string|boolean $mDataKey ключ необходимых данных или FALSE
-     * @return int|string
+     * @return int|string|array
      */
     public function getPaySystemData($mPaySystem, $mDataKey = false)
     {
@@ -188,6 +188,8 @@ abstract class BillsModuleBase extends Module
             }
 
             return $aResult;
+        } else if (is_bool($mPaySystem) && $mPaySystem === true) {
+            return $data;
         }
 
         if (!isset($data[$nPaySystem])) {
@@ -424,9 +426,9 @@ abstract class BillsModuleBase extends Module
         }
 
         $sAction = ($bIncrement ? '+' : '-');
-        $fAmount = floatval($fAmount);
+        $fAmount = number_format(floatval($fAmount), 4, '.', '');
 
-        $bSuccess = bff::model('users')->userSave($nUserID, array("balance = balance $sAction $fAmount"));
+        $bSuccess = bff::model('users')->userSave($nUserID, array("balance = balance $sAction $fAmount") );
         if (!$bSuccess) {
             $this->log(strtr('Неудалось обновить баланс пользователя #[user], сумма [amount]', [
                 '[user]' => $nUserID, '[amount]'=>$sAction.' '.$fAmount,
@@ -563,10 +565,10 @@ abstract class BillsModuleBase extends Module
                     'message' => $sMessage
                 ), 'error.pay'
             );
-            exit;
+            \bff::shutdown();
         } elseif ($mPrint === 2) {
             echo $sMessage;
-            exit;
+            \bff::shutdown();
         }
 
         return $sMessage;
@@ -642,7 +644,11 @@ abstract class BillsModuleBase extends Module
      */
     protected function wm_purse($sWebmoneyWay, $bSecretKey = false)
     {
-        return config::sys('bills.wm.' . $sWebmoneyWay . ($bSecretKey ? '_secret' : ''));
+        if ($bSecretKey) {
+            return config::sysAdmin('bills.wm.' . $sWebmoneyWay . '_secret', '', TYPE_PASS);
+        } else {
+            return config::sysAdmin('bills.wm.' . $sWebmoneyWay, '');
+        }
     }
 
     /**

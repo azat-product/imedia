@@ -19,11 +19,11 @@
             <? else: ?>
                 <a class="but" href="javascript:void(0);"></a>
             <? endif; ?>
-            <a href="#" onclick="return jBbsImportsList.importInfo(<?= $id ?>);" class="but sett" title="<?= _te('bbs', 'Информация'); ?>"></a>
-            <a href="#" onclick="return bff.userinfo(<?= $v['user_id'] ?>);" class="but userlink" title="<?= _te('users', 'Пользователь'); ?>" style="padding:0px;"></a>
+            <a href="javascript:void(0);" onclick="return jBbsImportsList.importInfo(<?= $id ?>);" class="but sett" title="<?= _te('bbs', 'Информация'); ?>"></a>
+            <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $v['user_id'] ?>);" class="but userlink" title="<?= _te('users', 'Пользователь'); ?>" style="padding:0px;"></a>
             <?php
                if(in_array($v['status'], array(BBSItemsImport::STATUS_WAITING,BBSItemsImport::STATUS_PROCESSING)) && $v['is_admin'] > 0){ ?>
-                <a class="but del item-del" href="#" title="<?= _te('', 'Cancel'); ?>" rel="<?= $id ?>"></a>
+                <a class="but del item-del" href="javascript:void(0);" title="<?= _te('', 'Cancel'); ?>" rel="<?= $id ?>"></a>
             <? } else { ?>
                 <a class="but" href="javascript:void(0);"></a>
             <? } ?>

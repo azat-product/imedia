@@ -60,10 +60,10 @@
         <? } ?>
         <div class="right">
             <span id="progress-im" style="margin-right:10px; display:none;" class="progress"></span>
-            <a href="#" id="imNewMessageLink" class="ajax"><?= _t('internalmail', 'написать сообщение'); ?></a>
+            <a href="javascript:void(0);" id="imNewMessageLink" class="ajax"><?= _t('internalmail', 'написать сообщение'); ?></a>
         </div>
     <? } else { ?>
-        <a href="#" id="imNewMessageLink" class="ajax"><?= _t('internalmail', 'написать сообщение'); ?></a>
+        <a href="javascript:void(0);" id="imNewMessageLink" class="ajax"><?= _t('internalmail', 'написать сообщение'); ?></a>
         <span id="progress-im" style="margin-left:10px; display:none;" class="progress"></span>
     <? } ?>
 </div>
@@ -87,7 +87,7 @@ foreach($contacts as $v)
     <td class="left">
         <a href="<?= $url ?>"><img src="<?= $v['avatar'] ?>" class="left img-polaroid" style="margin-right: 8px;" width="50" alt="" /></a>
         <div style="margin-bottom: 3px;">
-            <a href="#" class="ajax" onclick="return bff.userinfo(<?= $userID ?>);"><?= ( ! empty($v['name']) ? $v['name'] : $v['login'] ) ?></a>
+            <a href="javascript:void(0);" class="ajax" onclick="return bff.userinfo(<?= $userID ?>);"><?= ( ! empty($v['name']) ? $v['name'] : $v['login'] ) ?></a>
             <? if($shopID) { ?><i class="icon-shopping-cart" title="<?= _te('internalmail', 'Сообщение для магазина'); ?>"></i><? } ?>
             <? if( ! $v['activated'] ) { ?>&nbsp;<span class="disabled">[<?= _t('internalmail', 'неактивирован'); ?>]</span><? } ?>
         </div>
@@ -112,7 +112,7 @@ foreach($contacts as $v)
             <div class="im-folders-actions">
                 <? foreach($folders as $folderID=>$ff) {
                     if( $v['admin'] && $ff['notforadmin'] ) continue;
-                    ?><a title="<?= $ff['title'] ?>" data-user-id="<?= $userID ?>" data-shop-id="<?= $shopID ?>" data-folder-id="<?= $folderID ?>" class="f-action f-action-<?= $ff['class'] ?><? if(in_array($folderID,$v['folders'])){ ?> active<? } ?>" href="#"><i class="<?= $ff['icon-admin'] ?> icon-white"></i></a> <?
+                    ?><a title="<?= $ff['title'] ?>" data-user-id="<?= $userID ?>" data-shop-id="<?= $shopID ?>" data-folder-id="<?= $folderID ?>" class="f-action f-action-<?= $ff['class'] ?><? if(in_array($folderID,$v['folders'])){ ?> active<? } ?>" href="javascript:void(0);"><i class="<?= $ff['icon-admin'] ?> icon-white"></i></a> <?
                 } ?>
             </div>
             <div class="clearfix"></div>
@@ -137,7 +137,7 @@ $(function(){
 
     // new message
     var imNewMessageInited = false;
-    $('#imNewMessageLink').click(function(e){ nothing(e);
+    $('#imNewMessageLink').on('click',function(e){ nothing(e);
         var $block = $('#imNewMessage');
         var $recipient = $block.find('#nmRecipientAutocomplete');
         if( ! imNewMessageInited) {

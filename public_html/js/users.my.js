@@ -82,10 +82,10 @@ var jMySettings = (function(){
                     }
                 });
             }, {noEnterSubmit:true});
-
-            // social form
-            socialButtonsInit();
         }
+
+        // social form
+        socialButtonsInit();
 
         // enotify form
         app.form($cont.find('.j-form-enotify'), false, {
@@ -212,7 +212,7 @@ var jMySettings = (function(){
             if( ! f.checkRequired({focus:true}) ) return;
             f.ajax(o.url_settings,{},function(data,errors){
                 if(data && data.success) {
-                    f.alertSuccess(o.lang.account_destoyed, {reset:true});
+                    f.alertSuccess(data.message_success, {reset:true});
                     setTimeout(function(){
                         bff.redirect(data.redirect);
                     }, 1500);
@@ -309,7 +309,7 @@ var jMySettings = (function(){
                 updateAddressIgnoreClass: 'typed'
             });
 
-            geo.addr.$addr.bind('change keyup input', $.debounce(function(){
+            geo.addr.$addr.on('change keyup input', $.debounce(function(){
                 if( ! $.trim(geo.addr.$addr.val()).length ) {
                     geo.addr.$addr.removeClass('typed');
                 } else {

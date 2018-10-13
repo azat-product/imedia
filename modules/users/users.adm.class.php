@@ -117,8 +117,9 @@ class Users_ extends UsersBase
 
     function logout()
     {
-        bff::hook('users.user.logout', User::id());
-        $this->security->sessionDestroy($this->adminLink('login'));
+        $redirectUrl = $this->adminLink('login');
+        bff::hook('users.user.logout', User::id(), $redirectUrl);
+        $this->security->sessionDestroy($redirectUrl);
     }
 
     function login()
@@ -178,15 +179,20 @@ class Users_ extends UsersBase
 
                     # обновляем статистику
                     $this->model->userSave($nUserID, false, array(
-                            'last_activity' => $this->db->now(),
-                            'last_login2'   => $aData['last_login'],
-                            'last_login'    => $this->db->now(),
-                            'last_login_ip' => Request::remoteAddress(true),
-                            'session_id'    => session_id(),
-                        )
-                    );
+                        'last_activity' => $this->db->now(),
+                        'last_login2'   => $aData['last_login'],
+                        'last_login'    => $this->db->now(),
+                        'last_login_ip' => Request::remoteAddress(true),
+                        'session_id'    => session_id(),
+                    ));
 
                     $this->security->setUserInfo($nUserID, $aUserGroups, $aData);
+
+                    $referer = $this->input->post('ref', TYPE_NOTAGS);
+                    $refererAdmin = SITEURL.$this->adminLink(null);
+                    if (!empty($referer) && mb_stripos($referer, $refererAdmin) === 0 && $this->security->validateReferer($referer)) {
+                        $this->redirect($referer);
+                    }
 
                     $this->redirect($this->adminLink(null));
                 }
@@ -233,6 +239,10 @@ class Users_ extends UsersBase
                     break;
                 case 4:
                     $sqlFilter[':subscribed'] = 'enotify & ' . static::ENOTIFY_NEWS;
+                    $sqlFilter['blocked'] = 0;
+                    break;
+                case 5:
+                    $sqlFilter['fake'] = 1;
                     $sqlFilter['blocked'] = 0;
                     break;
             }
@@ -308,7 +318,8 @@ class Users_ extends UsersBase
                 'shop_id',
                 'last_login',
                 'blocked',
-                'activated'
+                'activated',
+                'fake',
             ), false, $oPgn->getLimitOffset(), "$orderBy $orderDirection"
         );
 
@@ -453,6 +464,10 @@ class Users_ extends UsersBase
         $aData['user_id'] = 0;
         $aData['shops_on'] = bff::shopsEnabled();
         $aData['region_title'] = '';
+
+        if (BBS::limitsPayedEnabled()) {
+            $aData['limits'] = '';
+        }
 
         return $this->viewPHP($aData, 'admin.user.form');
     }
@@ -612,6 +627,10 @@ class Users_ extends UsersBase
         $aData['social'] = $this->social()->getUserSocialAccountsData($nUserID, true);
 
         $aData['admin_auth_url'] = $this->adminAuthURL($aUserInfo['user_id'], $aUserInfo['last_login'], $aUserInfo['email']);
+        $aData['permissionDelete'] = $this->haveAccessTo('users-delete');
+        if ( ! empty($aData['fake'])) {
+            $aData['unfake_url'] = $this->adminLink('user_action&type=unfake&rec='.$nUserID.'&tuid='.$sTUID);
+        }
 
         return $this->viewPHP($aData, 'admin.user.form');
     }
@@ -636,14 +655,25 @@ class Users_ extends UsersBase
         }
 
         switch ($this->input->get('type')) {
-            case 'delete': # удаление пользователя [нереализовано]
+            case 'delete': # удаление пользователя
             {
-                $this->adminRedirect(Errors::IMPOSSIBLE);
 
-                # аватар
-                $this->avatar($nUserID)->delete(false);
-                # данные
-                $this->model->deleteUser($nUserID);
+                # завершение сессии
+                $this->userSessionDestroy($nUserID, false); # frontend
+                if (!$this->security->isCurrentUser($nUserID)) {
+                    $this->userSessionDestroy($nUserID, true); # admin panel
+                }
+
+                $saved = $this->model->userSave($nUserID, array(
+                    'deleted' => static::DESTROY_BY_ADMIN,
+                    'blocked' => 1,
+                    'blocked_reason' => _t('users', 'Учетная запись будет удалена в течение суток'),
+                ));
+                if ($saved) {
+                    bff::cronManager()->executeOnce('users', 'cronDeleteUsers');
+                }
+
+                $this->adminRedirect(Errors::SUCCESS);
             }
             break;
             case 'logout': # завершение сессии
@@ -656,6 +686,15 @@ class Users_ extends UsersBase
 
                 $this->adminRedirect(Errors::SUCCESS, "user_edit&rec=$nUserID&tuid=$sTUID");
 
+            }
+            break;
+            case 'unfake': # удаление флага fake
+            {
+
+                $this->model->userSave($nUserID, array(
+                    'fake' => 0,
+                ));
+                $this->adminRedirect(Errors::SUCCESS, "user_edit&rec=$nUserID&tuid=$sTUID");
             }
             break;
         }
@@ -849,10 +888,9 @@ class Users_ extends UsersBase
                         break;
                     }
 
-                    $aDeleted = $this->model->deleteUnactivated(($aData['mode'] == 'all'), $aData['i']);
+                    $nTotal = $this->model->deleteUnactivated(($aData['mode'] == 'all'), $aData['i']);
 
-                    $aResponse['msg'] = _t('users', 'Удалено: [cnt].', array('cnt' => tpl::declension(count($aDeleted), 'пользователь;пользователя;пользователей')));
-                    $aResponse['deleted'] = $aDeleted;
+                    $aResponse['msg'] = _t('users', 'Помечены на удаление: [cnt].', array('cnt' => tpl::declension($nTotal, 'пользователь;пользователя;пользователей')));
 
                 } while(false);
                 $this->ajaxResponseForm($aResponse);

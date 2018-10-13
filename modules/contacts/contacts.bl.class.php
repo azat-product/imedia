@@ -39,7 +39,7 @@ abstract class ContactsBase_ extends Module
         return array(
             'contacts_admin' => array(
                 'title'       => _t('contacts','Форма контактов: уведомление о новом сообщении'),
-                'description' => _t('contacts','Уведомление, отправляемое <u>администратору</u> ([mail]) после отправки сообщения через форму контактов', array('mail'=>config::sys('mail.admin'))),
+                'description' => _t('contacts','Уведомление, отправляемое <u>администратору</u> ([mail]) после отправки сообщения через форму контактов', array('mail'=>config::sysAdmin('mail.admin'))),
                 'vars'        => array('{name}' => _t('contacts','Имя'), '{email}' => _t('', 'Email'), '{message}' => _t('contacts', 'Сообщение'))
             ,
                 'impl'        => true,
@@ -58,14 +58,7 @@ abstract class ContactsBase_ extends Module
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # форма контактов
-            case 'form':
-                $url .= '/contact/';
-                break;
-        }
-        return bff::filter('contacts.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('contacts-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'contacts']);
     }
 
     /**
@@ -134,4 +127,14 @@ abstract class ContactsBase_ extends Module
         }
     }
 
+    /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        $this->model->onUserDeleted($userID, $options);
+        $this->countersRefresh();
+    }
 }

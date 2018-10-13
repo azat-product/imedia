@@ -2,6 +2,6 @@
 <!DOCTYPE 
 cross-domain-policy SYSTEM "http://www.macromedia.com/xml/dtds/cross-domain-policy.dtd">
 <cross-domain-policy>
-  <allow-access-from domain="imedia.kz" to-ports="80" />
-  <allow-access-from domain="*.imedia.kz" to-ports="80" />
+  <allow-access-from domain="do2dev.tamaranga.com" to-ports="80" />
+  <allow-access-from domain="*.do2dev.tamaranga.com" to-ports="80" />
 </cross-domain-policy>

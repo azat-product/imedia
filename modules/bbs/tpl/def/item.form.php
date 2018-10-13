@@ -15,7 +15,7 @@
 
     Geo::mapsAPI(true);
     tpl::includeJS(array('autocomplete','ui.sortable','qquploader'), true);
-    tpl::includeJS('bbs.form', false, 12);
+    tpl::includeJS('bbs.form', false, 14);
     $aData = HTML::escape($aData, 'html', array('title','descr','addr_addr','name','video'));
     $autoTitle = ! empty($cat_data['tpl_title_enabled']);
 ?>
@@ -49,7 +49,7 @@
                                     <div class="alert alert-info rel">
                                         <?= _t('bbs', 'Объявление опубликовано') ?><br />
                                         <small><?= _t('bbs', 'до [date]', array('date'=>tpl::date_format2($publicated_to, true))) ?></small>
-                                        <a href="#" class="btn btn-info alert-action" id="j-i-form-action-refresh"><i class="fa fa-refresh white"></i> <?= _t('bbs', 'Продлить') ?></a>
+                                        <a href="javascript:void(0);" class="btn btn-info alert-action" id="j-i-form-action-refresh"><i class="fa fa-refresh white"></i> <?= _t('bbs', 'Продлить') ?></a>
                                     </div>
                                 </div>
                             </div>
@@ -62,7 +62,7 @@
                                     <div class="alert alert-info rel">
                                         <?= _t('bbs', 'Объявление снято с публикации') ?> <br />
                                         <small><?= tpl::date_format2($publicated_to, true) ?></small>
-                                        <a href="#" class="btn btn-info alert-action" id="j-i-form-action-publicate"><i class="fa fa-check white"></i> <?= _t('bbs', 'Опубликовать снова') ?></a>
+                                        <a href="javascript:void(0);" class="btn btn-info alert-action" id="j-i-form-action-publicate"><i class="fa fa-check white"></i> <?= _t('bbs', 'Опубликовать снова') ?></a>
                                     </div>
                                 </div>
                             </div>
@@ -103,8 +103,8 @@
                         <label class="control-label"><?= _t('item-form', 'Заголовок') ?><span class="required-mark">*</span></label>
                         <div class="controls">
                             <input type="text" name="title" value="<?= $title ?>" class="input-block-level j-required" id="j-i-title" data-limit="<?= $titleLimit ?>" autocomplete="off" <?= $autoTitle ? 'disabled="disabled"' : '' ?>/>
-                            <span class="help-block<?= ! empty($cat_data['tpl_title_enabled']) ? ' hidden' : '' ?>" id="j-i-title-maxlength"></span>
-                            <span class="help-block grey extrasmall<?= empty($cat_data['tpl_title_enabled']) ? ' hidden' : '' ?>" id="j-i-title-auto"><?= _t('item-form', 'Заголовок будет сгенерирован автоматически на основе указанных вами данных') ?></span>
+                            <span class="help-block<?= $autoTitle ? ' hidden' : '' ?>" id="j-i-title-maxlength"></span>
+                            <span class="help-block grey extrasmall<?= !$autoTitle ? ' hidden' : '' ?>" id="j-i-title-auto"><?= _t('item-form', 'Заголовок будет сгенерирован автоматически на основе указанных вами данных') ?></span>
                         </div>
                     </div>
                     <div class="control-group control-group__100">
@@ -115,7 +115,7 @@
                                 <div class="i-formpage__catselect__done j-cat-select-link-selected<? if( ! $cat_id) { ?> hide<? } ?>">
                                     <img class="abs j-icon" alt="" src="<?= ($cat_id ? $cat_data['icon'] : '') ?>" />
                                     <div class="i-formpage__catselect__done_cat">
-                                        <a href="#" class="j-cat-select-link j-title"><?= join(' &raquo; ', $cat_path) ?></a>
+                                        <a href="javascript:void(0);" class="j-cat-select-link j-title"><?= join(' &raquo; ', $cat_path) ?></a>
                                     </div>
                                 </div>
                                 <? if( $edit && ! BBS::categoryFormEditable() ): ?>
@@ -124,7 +124,7 @@
                                     </div>
                                 <? endif; ?>
                                 <div class="i-formpage__catselect__close j-cat-select-link-empty<? if($cat_id) { ?> hide<? } ?>">
-                                    <a href="#" class="ajax ajax-ico j-cat-select-link"><span><?= _t('item-form', 'Выберите категорию') ?></span> <i class="fa fa-chevron-down"></i></a>
+                                    <a href="javascript:void(0);" class="ajax ajax-ico j-cat-select-link"><span><?= _t('item-form', 'Выберите категорию') ?></span> <i class="fa fa-chevron-down"></i></a>
                                 </div>
                                 <div class="i-formpage__catselect__popup dropdown-block box-shadow abs hide j-cat-select-popup">
                                     <div class="i-formpage__catselect__popup__content">
@@ -186,8 +186,8 @@
                                             <a class="i-form__addphotos__item__plus j-img-link" href="javascript:void(0);" title="<?= $lang['image_add'] ?>">+</a>
                                         </span>
                                         <span class="j-img-preview hide">
-                                            <a class="i-form__addphotos__item__del j-img-link" href="#" title="<?= $lang['image_del'] ?>">&times;</a>
-                                            <a class="i-form__addphotos__item__rotate j-img-rotate" href="#" title="<?= $lang['image_rotate'] ?>"><i class="fa fa-rotate-right white"></i></a>
+                                            <a class="i-form__addphotos__item__del j-img-link" href="javascript:void(0);" title="<?= $lang['image_del'] ?>">&times;</a>
+                                            <a class="i-form__addphotos__item__rotate j-img-rotate" href="javascript:void(0);" title="<?= $lang['image_rotate'] ?>"><i class="fa fa-rotate-right white"></i></a>
                                             <img src="" alt="" class="j-img-img" />
                                             <input type="hidden" name="" value="" class="j-img-fn" />
                                         </span>
@@ -205,8 +205,8 @@
                                 <? endfor; ?>
                             </div>
                             <span>
-                                <small class="j-togglers"><?= _t('item-form', 'Если у вас возникли проблемы воспользуйтесь <a [a_simple]>альтернативной формой</a>', array('a_simple'=>' href="#" class="ajax j-toggler" data-type="simple"')) ?></a></small>
-                                <small class="j-togglers hide"><a href="#" class="ajax j-toggler" data-type="ajax"><?= _t('item-form', 'Удобная форма загрузки фотографий') ?></a></small>
+                                <small class="j-togglers"><?= _t('item-form', 'Если у вас возникли проблемы воспользуйтесь <a [a_simple]>альтернативной формой</a>', array('a_simple'=>' href="javascript:void(0);" class="ajax j-toggler" data-type="simple"')) ?></a></small>
+                                <small class="j-togglers hide"><a href="javascript:void(0);" class="ajax j-toggler" data-type="ajax"><?= _t('item-form', 'Удобная форма загрузки фотографий') ?></a></small>
                             </span>
                         </div>
                     </div>
@@ -243,12 +243,12 @@
                             <div class="controls rel">
                                 <div class="i-formpage__metroselect">
                                     <div class="i-formpage__metroselect__close j-geo-metro-link-empty<? if($metro_id) { ?> hide<? } ?>">
-                                        <a href="#" class="ajax ajax-ico j-geo-metro-link"><span><?= _t('item-form', 'Выберите станцию') ?></span> <i class="fa fa-chevron-down"></i></a>
+                                        <a href="javascript:void(0);" class="ajax ajax-ico j-geo-metro-link"><span><?= _t('item-form', 'Выберите станцию') ?></span> <i class="fa fa-chevron-down"></i></a>
                                     </div>
                                     <div class="i-formpage__metroselect__done j-geo-metro-link-selected<? if(!$metro_id) { ?> hide<? } ?>">
                                         <div class="i-formpage__metroselect__done_cat">
                                             <span class="i-formpage__metroselect__item inlblk j-color" style="background-color:<?= ( $metro_id ? $metro_data['sel']['branch']['color'] : '' ) ?>;"></span>
-                                            <a href="#" class="j-geo-metro-link j-title"><?= ( $metro_id ? $metro_data['sel']['branch']['t'] . ' &raquo; ' . $metro_data['sel']['station']['t'] : '' ) ?></a>
+                                            <a href="javascript:void(0);" class="j-geo-metro-link j-title"><?= ( $metro_id ? $metro_data['sel']['branch']['t'] . ' &raquo; ' . $metro_data['sel']['station']['t'] : '' ) ?></a>
                                             <a href="javascript:void(0);" class="cancel<? if(!$metro_id) { ?> hide<? } ?> j-geo-metro-cancel"><i class="fa fa-times"></i></a>
                                         </div>
                                     </div>
@@ -463,6 +463,7 @@
                 ),
                 'autoTitle' => $autoTitle,
                 'catLastTitle' => ! empty($cat_path) ? end($cat_path) : '',
+                'catPath' => $cat_path,
             );
             if ($city_id) {
                 $cityData = Geo::model()->regionData(array('id' => $city_id), true);

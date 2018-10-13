@@ -25,7 +25,7 @@ class Site_ extends SiteBase
         $aData = array('options'=>&$options);
         return $this->viewPHP($aData, 'admin.settings.sys');
     }
-
+    
     #---------------------------------------------------------------------------------------
     # Инструкции
 

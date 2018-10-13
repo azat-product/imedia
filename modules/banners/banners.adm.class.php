@@ -22,7 +22,8 @@ class Banners_ extends BannersBase
                 'locale'      => TYPE_NOTAGS, # Локализация
                 'show_start'  => TYPE_NOTAGS, # дата показа (с)
                 'show_finish' => TYPE_NOTAGS, # дата показа (по)
-                'status'      => TYPE_UINT, # статус
+                'q'           => TYPE_NOTAGS, # название
+                'tab'         => TYPE_UINT, # статус
             )
         );
 
@@ -31,12 +32,7 @@ class Banners_ extends BannersBase
             $sql['pos'] = $f['pos'];
         }
         if ($f['region']) {
-            $aRegions = Geo::regionData($f['region']);
-            switch ($aRegions['numlevel']) {
-                case Geo::lvlCountry: $sql['reg1_country'] = $f['region']; break;
-                case Geo::lvlRegion:  $sql['reg2_region']  = $f['region']; break;
-                case Geo::lvlCity:    $sql['reg3_city']    = $f['region']; break;
-            }
+            $sql['region'] = $f['region'];
         }
         if (!empty($f['locale'])) {
             if ($f['locale'] == self::LOCALE_ALL) {
@@ -76,8 +72,14 @@ class Banners_ extends BannersBase
             }
         }
 
-        if ($f['status'] > 0) {
-            switch ($f['status']) {
+        if ($f['q']) {
+            $sql[':q'] = array('(B.title LIKE :q OR B.alt LIKE :q OR B.description LIKE :q OR B.click_url LIKE :q)',
+                ':q' => '%'.$f['q'].'%'
+            );
+        }
+
+        if ($f['tab'] > 0) {
+            switch ($f['tab']) {
             case 1:
                 $sql['enabled'] = 0;
                 break; # включенные
@@ -102,7 +104,19 @@ class Banners_ extends BannersBase
             foreach ($aData['banners'] as &$v) {
                 $v['pos'] =& $aPositions[$v['pos']];
                 $v['ctr'] = round(($v['clicks'] / ($v['shows'] ? $v['shows'] : 1)) * 100, 2);
-                $v['region_title'] = Geo::regionTitle($v['region_id'], _t('banners', 'Во всех регионах'));
+                $v['region_title'] = _t('banners', 'Во всех регионах');
+                if ( ! empty($v['regions'])) {
+                    $regs = array();
+                    foreach($v['regions'] as $vv) {
+                        $regs[] = '<a href="javascript:void(0);" onclick="jBannersList.region('.$vv['id'].'); return false;" class="desc">'.$vv['title'].'</a>';
+                        if (count($regs) > 3) {
+                            $regs[] = '...';
+                            break;
+                        }
+                    }
+                    $v['region_title'] = join(', ', $regs);
+                }
+
                 if (static::FILTER_LOCALE) {
                     $v['locale'] = (!empty($v['locale']) ? explode(',', $v['locale']) : array());
                 }
@@ -570,8 +584,7 @@ class Banners_ extends BannersBase
                 'pos'             => TYPE_UINT, # ID позиции
                 'type'            => TYPE_UINT, # ID типа баннера (Banners::TYPE_...)
                 'sitemap_id'      => TYPE_ARRAY_INT, # ID пунктов меню (TABLE_SITEMAP)
-                'region_id'       => TYPE_UINT, # ID региона (TABLE_REGIONS) или 0
-                'reg1_country'    => TYPE_UINT, # ID страны или 0
+                'regions'         => TYPE_ARRAY_UINT, # ID регионов
                 'list_pos'        => TYPE_INT, # № позиции в списке
                 'locale'          => TYPE_ARRAY_NOTAGS, # Локализация
                 'category_id'     => TYPE_ARRAY_UINT, # ID категорий или 0
@@ -600,7 +613,7 @@ class Banners_ extends BannersBase
                 $enabled = 0; # добавляем - но выключенный
             }
 
-            if ($type!=self::TYPE_CODE)
+            if ($type !== static::TYPE_CODE)
             {
                 if (empty($click_url) || $click_url == '#') {
                     $this->errors->set(_t('banners', 'Укажите корректную ссылку'));
@@ -647,14 +660,13 @@ class Banners_ extends BannersBase
             $show_start = date('Y-m-d H:i:s', strtotime($show_start));
             $show_finish = date('Y-m-d H:i:s', strtotime($show_finish));
 
-            if ($aData['region_id']) {
-                # разворачиваем данные о регионе: region_id => reg1_country, reg2_region, reg3_city
-                $aRegions = Geo::model()->regionParents($aData['region_id']);
-                $aData = array_merge($aData, $aRegions['db']);
-            } else {
-                $aData['reg2_region'] = 0;
-                $aData['reg3_city'] = 0;
-                $aData['region_id'] = $aData['reg1_country'];
+            $t = $regions;
+            $regions = array();
+            foreach($t as $v) {
+                $r = Geo::model()->regionParents($v);
+                if ( ! empty($r['db']['reg1_country'])) {
+                    $regions[] = $r['db'];
+                }
             }
             if( ! $aData['list_pos']){
                 $aData['list_pos'] = 1;
@@ -703,7 +715,7 @@ class Banners_ extends BannersBase
                 $sqlUpdate['img'] = $sFilename;
             }
         }
-            break;
+        break;
         case self::TYPE_FLASH:
         {
             # загружаем изображение
@@ -739,13 +751,13 @@ class Banners_ extends BannersBase
                 )
             );
         }
-            break;
+        break;
         case self::TYPE_CODE:
         {
             $bDeleteFlash = true;
             $sqlUpdate['type_data'] = $code;
         }
-            break;
+        break;
         case self::TYPE_TEASER:
         {
             # загружаем изображение
@@ -760,7 +772,7 @@ class Banners_ extends BannersBase
             $bDeleteFlash = true;
             $sqlUpdate['type_data'] = $teaser;
         }
-            break;
+        break;
         }
 
         if (!empty($sqlUpdate)) {

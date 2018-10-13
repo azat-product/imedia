@@ -2,8 +2,9 @@
 
 /**
  * Класс обработки ошибок
- * @version 0.53
- * @modified 9.feb.2018
+ * @version 0.54
+ * @modified 20.jun.2018
+ * @copyright Tamaranga
  *
  * Ключи необходимых шаблонов в TPL_PATH:
  *  - error.layout      - Ошибки: Layout шаблон
@@ -538,7 +539,7 @@ class Errors extends Singleton
                 $message = _t('upload', 'Некорректный размер файла', $params);
                 break;
             case static::FILE_MAX_SIZE:
-                $message = _t('upload', 'Файл превышает масимально допустимый размер', $params);
+                $message = _t('upload', 'Файл превышает максимально допустимый размер', $params);
                 break;
             case static::FILE_DISK_QUOTA:
                 $message = _t('upload', 'Ошибка загрузки файла, обратитесь к администратору', $params);

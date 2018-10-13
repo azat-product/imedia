@@ -513,7 +513,7 @@
 	position: relative;
 	overflow: hidden;
 	> li {
-		> a {
+		> a, .hidden-link {
 			display: block;
 			padding: 7px 15px 7px 40px;
 			color: @link-dark-color;
@@ -523,10 +523,10 @@
 				background-color: @link-hover-bg;
 			}
 		}
-		&.main > a {
+		&.main > a, &.main > .hidden-link {
 			font-weight: bold;
 		}
-		&.active > a {
+		&.active > a, &.active > .hidden-link {
 			color: @link-dark-hover-color;
 			background-color: @link-hover-bg;
 		}
@@ -576,7 +576,7 @@
 		display: inline-block;
 		vertical-align: top;
 		margin: 5px 0;
-		> a {
+		> a, .hidden-link {
 			padding: 10px 5px;
 			width: 125px;
 			display: block;
@@ -595,7 +595,7 @@
 			+ li {
 				border-top: 1px dotted @border-color;
 			}
-			> a {
+			> a, .hidden-link {
 				padding: 10px 15px;
 				width: auto;
 				text-align: left;
@@ -613,6 +613,10 @@
 .l-categories-items-i-img {
 	display: block;
 	margin-bottom: 5px;
+	img {
+		max-width: 54px;
+		max-height: 54px;
+	}
 	@media (max-width: 767px) {
 		display: inline-block;
 		margin-right: 5px;
@@ -730,6 +734,17 @@
 	margin: 0 0 10px 0;
 	font-size: 16px;
 }
+
+.l-mainLayout-sidebar-item-title {
+	margin: 0;
+	padding: 15px 15px 10px 15px;
+	font-size: 16px;
+	font-family: inherit;
+	font-weight: 500;
+	line-height: 1.1;
+	color: inherit;
+}
+
 .l-mainLayout-sidebar-nav {
 	.clear-ul();
 	> li {
@@ -776,6 +791,10 @@
 	font-size: 24px;
 	display: inline;
 	vertical-align: middle;
+	font-family: inherit;
+	font-weight: 500;
+	line-height: 1.1;
+	color: inherit;
 }
 .l-pageHeading-tabs {
 	.clear-ul();
@@ -834,6 +853,9 @@
 	font-size: 16px;
 	font-weight: bold;
 	display: inline-block;
+	font-family: inherit;
+	line-height: 1.1;
+	color: inherit;
 }
 .l-pageDescr {
 	margin-bottom: 30px;
@@ -1312,5 +1334,54 @@
 	}
 	@media (max-width: 992px) {
 		display: block;
+	}
+}
+
+//Новые хлебные крошки
+
+.l-page__breadcrumb_shadow {
+	position: relative;
+	background: @grey-bg;
+	border-radius: 4px;
+	&:after {
+		content: '';
+		top: 0;
+		left: 4px;
+		position: absolute;
+		background: none;
+		box-shadow: -7px -2px 21px 10px @grey-bg;
+		width: 0;
+		display: block;
+		height: 100%;
+	}
+}
+
+.l-page__breadcrumb-wrap {
+	height: 36px;
+	overflow: hidden;
+	position: relative;
+	margin-bottom: 20px;
+}
+
+.l-page__breadcrumb_v2 {
+	margin: 0;
+	padding: 0;
+	white-space: nowrap;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: auto;
+	overflow-y: auto;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+
+	.breadcrumb {
+		display: table;
+		margin-bottom: 0;
+		background: none;
 	}
 }

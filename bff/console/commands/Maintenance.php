@@ -3,7 +3,20 @@
 /**
  * Консоль: команды режима обслуживания
  * @version 0.1
- * @modified 13.sep.2017
+ * @modified 9.may.2018
+ * Examples:
+ * Maintenance mode start:
+ *   php bffc maintenance -a start
+ * Maintenance mode stop:
+ *   php bffc maintenance -a stop
+ * Migration run:
+ *   php bffc maintenance -a migrate -t 1.0.0
+ * Migration status:
+ *   php bffc maintenance -a migrate-status
+ * DRW:
+ *   php bffc maintenance -a drw
+ * Languages list:
+ *   php bffc maintenance -a languages-list
  */
 
 use bff\console\commands\Command as Command;

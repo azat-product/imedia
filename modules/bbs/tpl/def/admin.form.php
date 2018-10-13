@@ -36,12 +36,12 @@
         }
         return ($edit && ! empty($moderated_data[ $subKey ][ $field ]) && $moderated_data[ $subKey ][ $field ] != $value);
     };
-    $autoTitle = $aData['autoTitle'] = ! empty($cat['tpl_title_view']);
+    $autoTitle = $aData['autoTitle'] = ! empty($cat['tpl_title_enabled']);
 ?>
 
 <div class="tabsBar">
     <? foreach($aTabs as $k=>$v) { ?>
-    <span class="tab<?= $k==$tab ? ' tab-active' : '' ?>"><a href="#" onclick="jItem.onTab('<?= $k ?>', this); return false;"><?= $v ?></a></span>
+    <span class="tab<?= $k==$tab ? ' tab-active' : '' ?>"><a href="javascript:void(0);" onclick="jItem.onTab('<?= $k ?>', this); return false;"><?= $v ?></a></span>
     <? } ?>
     <div class="progress" style="margin-left: 5px; display: none;" id="form-progress"></div>
     <? if($edit) { ?>
@@ -130,7 +130,7 @@
             <input type="hidden" name="addr_lat" id="item-addr-lat" value="<?= $addr_lat ?>" />
             <input type="hidden" name="addr_lon" id="item-addr-lon" value="<?= $addr_lon ?>" />
             <input type="text"   name="addr_addr" id="item-addr-addr" value="<?= $addr_addr ?>" style="width: 475px;" />
-            <a href="#" class="ajax" onclick="jItem.onMapSearch(); return false;"><?= _t('', 'найти адрес'); ?></a>
+            <a href="javascript:void(0);" class="ajax" onclick="jItem.onMapSearch(); return false;"><?= _t('', 'найти адрес'); ?></a>
             <? if ($isModerated('addr_addr', $addr_addr)): ?>
                 <div class="moderated-data">
                     <div class="moderation-compare moderation-compare-inline" style="margin-top: 7px; width: 460px;"><?= $moderated_data['addr_addr'] ?></div>
@@ -182,7 +182,8 @@
 <tr>
     <td class="row1"><span class="field-title"><?= _t('users', 'Пользователь'); ?></span>:</td>
     <td class="row2">
-        <a href="#" class="ajax" onclick="return bff.userinfo(<?= $user_id ?>);"><?= $email ?></a>
+        <? if (empty($email)): ?><?= _t('users', 'Пользователь удален'); ?><? else: ?>
+        <a href="javascript:void(0);" class="ajax" onclick="return bff.userinfo(<?= $user_id ?>);"><?= $email ?></a>
         <? if(BBS::publisher(BBS::PUBLISHER_USER_OR_SHOP) && $user_shop_id) { ?>
             <div id="j-item-user-publisher" style="margin: 5px;">
                 <label class="inline radio"><input type="radio" name="shop" value="0"<? if( ! $shop_id) { ?> checked="checked"<? } ?> /><?= _t('bbs', 'Частное лицо'); ?></label>
@@ -190,7 +191,9 @@
             </div>
         <? } else if(BBS::publisher(BBS::PUBLISHER_USER_TO_SHOP) && $user_shop_id) { ?>
             <input type="hidden" name="shop" value="1" />
+            <span class="label" style="margin-left: 5px;"><?= _t('bbs', 'Магазин'); ?></span>
         <? } ?>
+        <? endif; ?>
     </td>
 </tr>
 <tbody<? if($edit && $this->getItemContactsFromProfile()){ ?> class="displaynone"<? } ?>>
@@ -391,7 +394,7 @@ var jItem = (function(){
                 ?>
                         var periodOpts = <?= func::php2js($publicationPeriodOpts) ?>;
                         var $periodHelp = $form.find('.j-publicated-period-help');
-                        $form.find('[name="publicated_period"]').change(function(){
+                        $form.find('[name="publicated_period"]').on('change',function(){
                             var v = $(this).val();
                             if (periodOpts.hasOwnProperty(v)){
                                 $periodHelp.html(periodOpts[v]);
@@ -514,7 +517,7 @@ var jItem = (function(){
                 updateAddressIgnoreClass: 'typed'
             });
 
-            addr.$addr.bind('change keyup input', $.debounce(function(){
+            addr.$addr.on('change keyup input', $.debounce(function(){
                 if( ! $.trim(addr.$addr.val()).length ) {
                     addr.$addr.removeClass('typed');
                 } else {
@@ -555,7 +558,7 @@ var jItem = (function(){
             index++; total++;
             $block.append('<div class="j-phone">\
                                 <input type="text" maxlength="40" name="phones['+index+']" value="'+value.replace(/"/g, "&quot;")+'" class="left j-value" placeholder="<?= _te('item-form', 'Номер телефона') ?>" />\
-                                <div class="left" style="margin: 3px 0 0 4px;">'+(total==1 ? '<a class="ajax desc j-plus" href="#"><?= _t('item-form', '+ ещё<span [attr]> телефон</span>', array('attr'=>'')) ?></a>' : '<a href="#" class="but cross j-remove"></a>')+'</div>\
+                                <div class="left" style="margin: 3px 0 0 4px;">'+(total==1 ? '<a class="ajax desc j-plus" href="javascript:void(0);"><?= _t('item-form', '+ ещё<span [attr]> телефон</span>', array('attr'=>'')) ?></a>' : '<a href="javascript:void(0);" class="but cross j-remove"></a>')+'</div>\
                                 <div class="clear"></div>\
                             </div>');
         }

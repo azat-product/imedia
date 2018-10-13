@@ -31,9 +31,7 @@
                 <div class="l-main__content<?= $rightBlock ? ' l-main__content__short' : '' ?>">
                     <div id="j-shops-search-list">
                         <? # Хлебные крошки: ?>
-                        <? if(DEVICE_DESKTOP_OR_TABLET) {
-                               echo tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb');
-                        } ?>
+                        <?= tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb'); ?>
                         <div class="sr-page__result__navigation rel">
                             <div class="sr-page__result__navigation__title pull-left"><h1 class="pull-left"><?= ( $f_c > 0 ? $cat['titleh1'] : ( ! empty($f_q) ? _t('shops', 'Результаты поиска по запросу "[query]"', array('query'=>$f_q)) : (!empty($cat['titleh1']) ? $cat['titleh1'] : _t('shops', 'Все магазины')) ) ) ?></h1></div>
                             <div class="sr-page__list__navigation_view pull-right">

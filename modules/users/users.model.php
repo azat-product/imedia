@@ -37,21 +37,24 @@ class UsersModel_ extends UsersModelBase
     }
 
     /**
-     * Получаем данные о пользователе по ID
-     * @param int $nUserID ID пользователя
+     * Получаем данные о пользователе по ID или фильтру
+     * @param array|int $filter фильтр или ID пользователя
      * @param mixed $aDataKeys ключи необходимых данных
      * @param bool $bEdit true - выполнить подготовку данных для редактирования
      * @return array|mixed
      */
-    public function userData($nUserID, $aDataKeys = array(), $bEdit = false)
+    public function userData($filter, $aDataKeys = array(), $bEdit = false)
     {
-        $aData = $this->userDataByFilter(array('user_id' => $nUserID), $aDataKeys);
+        if ( ! is_array($filter)) {
+            $filter = array('user_id' => intval($filter));
+        }
+        $aData = $this->userDataByFilter($filter, $aDataKeys);
         if ($bEdit) {
             if (isset($aData['region_id'])) {
                 $aData['region_title'] = Geo::regionTitle($aData['region_id']);
             }
         }
-        if (isset($aData['phones'])) {
+        if (isset($aData['phones']) || (is_array($aData) && array_key_exists('phones', $aData))) {
             $aData['phones'] = (!empty($aData['phones']) ? func::unserialize($aData['phones']) : array());
         }
         if (isset($aData['extra'])) {
@@ -108,6 +111,7 @@ class UsersModel_ extends UsersModelBase
                 'user_id_ex',
                 'last_login',
                 'lang',
+                'fake',
             ))
         );
         $aData = $this->userData($nUserID, $aDataKeys, false);
@@ -117,8 +121,8 @@ class UsersModel_ extends UsersModelBase
             if (empty($aData)) {
                 break;
             }
-            # заблокирован / неактивирован
-            if ($aData['blocked'] || !$aData['activated']) {
+            # заблокирован / неактивирован / фейковый
+            if ($aData['blocked'] || !$aData['activated'] || $aData['fake']) {
                 break;
             }
             # запретил email-уведомления
@@ -156,45 +160,70 @@ class UsersModel_ extends UsersModelBase
      * Удаление неактивированных пользователей
      * @param boolean $bAll удалить всех неактивных
      * @param array $aUsersID ID удаляемых пользователей
-     * @return array ID успешно удаленных пользователей
+     * @return integer кол-во помеченных на удаление пользователей
      */
     public function deleteUnactivated($bAll, array $aUsersID = array())
     {
+        # помечаем для удаления
         $aFilter = array(
             'activated' => 0,
-            ':sa'       => 'U.user_id != 1',
-            ':author'   => 'IM.author IS NULL',
-            ':items'    => 'I.id IS NULL',
+            'admin'     => 0,
         );
 
         if (!$bAll) {
             if (empty($aUsersID)) {
-                return array();
+                return 0;
             }
             $aFilter['user_id'] = $aUsersID;
         }
 
-        $aFilter = $this->prepareFilter($aFilter, 'U');
-
-        # Инициализируем объект модуля InternalMail для работы с таблицей TABLE_INTERNALMAIL
-        InternalMail::i();
-
-        # Удаляем пользователей без закрепленных за ними:
-        # - объявлений
-        # - сообщений во внутренней почте
-        $aUsersID = $this->db->select_one_column('
-            SELECT U.user_id
-            FROM '.TABLE_USERS.' U
-                LEFT JOIN '.TABLE_INTERNALMAIL.' IM ON IM.author = U.user_id
-                LEFT JOIN '.TABLE_BBS_ITEMS.' I ON I.user_id = U.user_id
-            '.$aFilter['where'], $aFilter['bind']);
-        if (!empty($aUsersID)) {
-            $this->db->delete(TABLE_USERS, array('user_id' => $aUsersID));
-            $this->db->delete(TABLE_USERS_STAT, array('user_id' => $aUsersID));
-            $this->db->delete(TABLE_USER_IN_GROUPS, array('user_id' => $aUsersID));
+        $total = $this->db->update(TABLE_USERS, array(
+            'deleted' => Users::DESTROY_BY_ADMIN,
+            'blocked' => 1,
+            'blocked_reason' => _t('users', 'Учетная запись будет удалена в течение суток'),
+        ), $aFilter);
+        if ($total > 0) {
+            bff::cronManager()->executeOnce('users', 'cronDeleteUsers');
         }
 
-        return $aUsersID;
+        return $total;
+    }
+
+    /**
+     * Удаление пользователей помеченных для удаления
+     */
+    public function usersCronDelete()
+    {
+        $avatar = Users::i()->avatar(0);
+
+        $this->db->select_iterator('SELECT user_id, admin, avatar, deleted FROM '.TABLE_USERS.' WHERE deleted > 0', array(), function($row) use(& $avatar){
+            if ($row['user_id'] == 1 || ($row['admin'] && $this->userIsSuperAdmin($row['user_id']))) {
+                $this->userSave($row['user_id'], array(
+                    'deleted' => 0,
+                    'blocked' => 0,
+                    'blocked_reason' => '',
+                ));
+                return;
+            }
+
+            if ($row['avatar']) {
+                $avatar->setRecordID($row['user_id']);
+                $avatar->delete(false, $row['avatar']);
+            }
+
+            $options = array(
+                'initiator' => $row['deleted'] == Users::DESTROY_BY_OWNER ? 'user' : 'admin',
+            );
+            bff::log('Deleted user '.$row['user_id'].' by '.$options['initiator'], Logger::INFO);
+
+            bff::hook('users.user.deleted', $row['user_id'], $options);
+            bff::i()->callModules('onUserDeleted', array($row['user_id'], $options));
+
+            $this->db->delete(TABLE_USERS, array('user_id' => $row['user_id']));
+            $this->db->delete(TABLE_USERS_STAT, array('user_id' => $row['user_id']));
+            $this->db->delete(TABLE_USER_IN_GROUPS, array('user_id' => $row['user_id']));
+            $this->db->delete(TABLE_USERS_SOCIAL, array('user_id' => $row['user_id']));
+        });
     }
 
 }

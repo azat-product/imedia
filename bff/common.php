@@ -22,6 +22,7 @@ define('TYPE_DATE',    15); # date
 define('TYPE_PRICE',   16); # price
 define('TYPE_TEXT',    17); # plain text
 define('TYPE_JSON',    18); # json (config only)
+define('TYPE_PASS',    19); # password = string no trim
 
 define('TYPE_ARRAY_BOOL',     101);
 define('TYPE_ARRAY_INT',      102);
@@ -97,14 +98,28 @@ interface IModuleWithSvc
  * @param string $message фраза
  * @param array $params подстановочные данные
  * @param string $language язык локализации, null - текущая
+ * @param array $opts дополнительные настройки
  * @example ('context', 'Дата: [date]', array('date'=>date('Y.m.d'))); => Дата 2001.01.01
  */
-function _t($context, $message, array $params = array(), $language = null)
+function _t($context, $message, array $params = array(), $language = null, array $opts = array())
 {
-    return bff::locale()->translate($context, $message, $params, $language);
+    return \bff\DI::get('locale')->translate($context, $message, $params, $language, $opts);
 }
 
-function _te($context, $message, array $params = array(), $language = null)
+function _te($context, $message, array $params = array(), $language = null, array $opts = array())
 {
-    return htmlspecialchars(_t($context, $message, $params, $language), ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars(_t($context, $message, $params, $language, $opts), ENT_QUOTES, 'UTF-8');
+}
+
+function _tejs($context, $message, array $params = array(), $language = null, array $opts = array())
+{
+    return strtr(_t($context, $message, $params, $language, $opts), array(
+            '\\' => '\\\\',
+            "'"  => "\\'",
+            '"'  => '\\"',
+            "\r" => '\\r',
+            "\n" => '\\n',
+            '</' => '<\/'
+        )
+    );
 }

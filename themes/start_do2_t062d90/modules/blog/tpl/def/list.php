@@ -16,9 +16,9 @@ $lang_more = _t('blog', 'Читать дальше');
           <img src="<?= BlogPostPreview::url($v['id'], $v['preview'], BlogPostPreview::szList) ?>" />
         </a>
     <?php } ?>
-    <h3 class="bl-list-item-title">
+    <div class="bl-list-item-title">
       <a href="<?= $v['link'] ?>"><?= $v['title'] ?></a>
-    </h3>
+    </div>
     <div class="bl-list-item-text">
       <?= $v['textshort'] ?>
     </div>

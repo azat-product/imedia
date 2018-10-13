@@ -44,26 +44,7 @@ abstract class BlogBase_ extends Module
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # главная
-            case 'index':
-                $url .= '/blog/';
-                break;
-            # список постов по категории
-            case 'cat':
-                $url .= '/blog/' . $opts['keyword'] . '/';
-                break;
-            # список постов по тегу
-            case 'tag':
-                $url .= '/blog/tag/' . HTML::escape($opts['tag']) . '-' . $opts['id'];
-                break;
-            # просмотр поста
-            case 'view':
-                $url .= '/blog/' . mb_substr(mb_strtolower(func::translit($opts['title'])), 0, 100) . '-' . $opts['id'] . '.html';
-                break;
-        }
-        return bff::filter('blog.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('blog-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'blog']);
     }
 
     /**
@@ -170,6 +151,12 @@ abstract class BlogBase_ extends Module
                 'sharp'    => array()
             ), // no sharp
         );
+
+        if (bff::adminPanel()) {
+            $aSettings['wysiwyg_scripts'] = true;
+            $aSettings['wysiwyg_iframes'] = true;
+
+        }
 
         return $this->attachComponent('publicator', new bff\db\Publicator($this->module_name, $aSettings));
     }

@@ -6,19 +6,19 @@
 <div id="popupBBSItemInfo" class="ipopup">
     <div class="ipopup-wrapper">
         <div class="ipopup-title"><?= _t('bbs', 'Информация об объявлении №'); ?><?= $id ?></div>
-        <div class="ipopup-content" style="width:500px;">
+        <div class="ipopup-content" style="width:580px;">
             <table class="admtbl tbledit">
                 <tr>
                     <td class="row1 field-title right" width="134"><?= _t('users', 'Пользователь:'); ?></td>
                     <td class="row2">
-                        <?= ($user_id ? '<a href="#" onclick="return bff.userinfo('.$user_id.');" class="ajax">'.$user['email'].'</a>' : 'Аноним' ); ?>
+                        <?= ($user_id ? '<a href="javascript:void(0);" onclick="return bff.userinfo('.$user_id.');" class="ajax">'.$user['email'].'</a>' : 'Аноним' ); ?>
                     </td>
                 </tr>
                 <? if( ! empty($shop)) { ?>
                 <tr>
                     <td class="row1 field-title right"><?= _t('bbs', 'Магазин:'); ?></td>
                     <td>
-                        <a href="<?= $shop['link'] ?>" target="_blank" class="but linkout"></a><a href="#" onclick="return bff.shopInfo(<?= $shop_id ?>);" class="ajax"><?= $shop['title'] ?></a>
+                        <a href="<?= $shop['link'] ?>" target="_blank" class="but linkout"></a><a href="javascript:void(0);" onclick="return bff.shopInfo(<?= $shop_id ?>);" class="ajax"><?= $shop['title'] ?></a>
                     </td>
                 </tr>
                 <? } ?>

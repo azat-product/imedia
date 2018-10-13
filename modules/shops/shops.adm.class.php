@@ -27,14 +27,8 @@ class Shops_ extends ShopsBase
         if ($sAction) {
             $aResponse = array();
             switch ($sAction) {
-                case 'dev-shops-links-rebuild':
+                case 'default':
                 {
-                    if (!FORDEV) {
-                        $this->showAccessDenied();
-                    }
-
-                    $this->model->shopsLinksRebuild();
-                    $this->adminRedirect(Errors::SUCCESS);
                 }
                 break;
             }

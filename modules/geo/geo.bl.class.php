@@ -51,55 +51,33 @@ abstract class GeoBase_ extends GeoModule
     public static function filter($key = false)
     {
         static $inited = false, $current = array(), $country = array(), $region = array(), $city = array();
-        if (!$inited) {
+        if ( ! $inited) {
             $inited = true;
 
-            # для некоторых страниц регион в URL не должен влиять на выбранный пользователем
             $url = static::filterUrl();
-            $user = 0;
-            $userCover = true;
-            $userRegionChanging = (isset($_GET['region']) || isset($_POST['region']));
-            $userRegionID = bff::input()->getpost('region', TYPE_UINT);
-            if (bff::isIndex() || static::coveringType(self::COVERING_CITY)) {
-                if ($url['id']) {
-                    static::filterUser($url['id']);
-                    $city = $url['city'];
-                    $region = $url['region'];
-                    $country = $url['country'];
-                    $userCover = false;
-                } else {
-                    if ($userRegionChanging) {
-                        static::filterUser($userRegionID);
-                    }
-                    $user = static::regionData(static::filterUser());
-                }
-            } else {
-                if (!$userRegionChanging) {
-                    if ($url['id'] && (bff::$isBot || (!static::filterUser() || !bff::security()->validateReferer())) && (
-                            (bff::$class == 'bbs' && bff::$event == 'search') ||
-                            (bff::$class == 'shops' && bff::$event == 'search')
-                        )
-                    ) {
-                        static::filterUser($url['id']);
-                        if (bff::$isBot) {
-                            $city = $url['city'];
-                            $region = $url['region'];
-                            $country = $url['country'];
-                        }
-                    }
-                    $user = static::regionData(static::filterUser());
-                } else {
-                    $city = $url['city'];
-                    $region = $url['region'];
-                    $country = $url['country'];
-                    static::filterUser($userRegionID);
-                    if ($userRegionID) {
-                        $user = static::regionData($userRegionID);
-                    }
-                }
+            $city = $url['city'];
+            $region = $url['region'];
+            $country = $url['country'];
+            # Меняем фильтр региона пользователя:
+            if (
+                # Исходя из текущего URL
+                static::filterUrlOnly()
+                ||
+                # При поиске объявлений / магазинов
+                bff::router()->isCurrent(array(
+                    'bbs-items.search', 'bbs-items.search-geo',
+                    'shops-search', 'shops-search-geo',
+                ))
+                ||
+                # На главной региона
+                ($url['id'] && bff::isIndex())
+            ) {
+                static::filterUser($url['id'], 'filter-init');
             }
+            $user = static::regionData(static::filterUser());
 
-            if ($userCover && $user && !bff::$isBot) {
+            if ($user && ! static::filterUrlOnly()) {
+                $city = array(); $region = array(); $country = array();
                 if (static::coveringRegionCorrect($user)) {
                     if (static::isCity($user)) {
                         $city = $user;
@@ -145,6 +123,15 @@ abstract class GeoBase_ extends GeoModule
             default:
                 return $current;
         }
+    }
+
+    /**
+     * Применять фильтр по региону только исходя из указанного в URL
+     * @return boolean
+     */
+    public static function filterUrlOnly()
+    {
+        return config::sysAdmin('geo.filter.url', false, TYPE_BOOL) || bff::isRobot();
     }
 
     /**
@@ -247,17 +234,18 @@ abstract class GeoBase_ extends GeoModule
             }
         }
 
-        return array('city' => $city, 'region' => $region, 'country' => $country, 'id' => $id);
+        return array('city' => $city, 'region' => $region, 'country' => $country, 'id' => $id, 'keyword' => $keyword);
     }
 
     /**
      * Получаем / устанавливаем ID города/региона пользователя
      * @param integer|boolean $nRegionID устанавливаем ID города/региона или FALSE (получаем текущий)
+     * @param string|boolean $reason причина по которой регион пользователя был обновлен
      * @return integer
      */
-    public static function filterUser($nRegionID = false)
+    public static function filterUser($nRegionID = false, $reason = false)
     {
-        if (bff::$isBot) {
+        if (bff::isRobot()) {
             if ($nRegionID !== false) {
                 return $nRegionID;
             } else {
@@ -266,12 +254,13 @@ abstract class GeoBase_ extends GeoModule
         }
 
         $cookieKey = static::regionCookie();
-        $cookieExpire = config::sys('geo.filter.cookie.expire', 100, TYPE_UINT); # кол-во дней
         if ($nRegionID !== false) {
             # обновляем куки
             if (!isset($_COOKIE[$cookieKey]) || $_COOKIE[$cookieKey] != $nRegionID) {
-                Request::setCOOKIE($cookieKey, $nRegionID, $cookieExpire);
-                $_COOKIE[$cookieKey] = $nRegionID;
+                Request::setCOOKIE($cookieKey, $nRegionID, config::sysAdmin('geo.filter.cookie.expire', 100, TYPE_UINT));
+                if ( ! ($reason === 'filter-init' && static::ipLocationConfirm())) {
+                    $_COOKIE[$cookieKey] = $nRegionID;
+                }
             }
         } else {
             if (static::coveringType(self::COVERING_CITY)) {
@@ -279,6 +268,7 @@ abstract class GeoBase_ extends GeoModule
             } else {
                 if (!isset($_COOKIE[$cookieKey])) {
                     # определяем ID город по IP адресу пользователя
+                    # - если не включено подтверждение
                     if (!static::ipLocationConfirm()) {
                         if (static::ipLocationEnabled()) {
                             $aData = static::model()->regionDataByIp();
@@ -289,7 +279,6 @@ abstract class GeoBase_ extends GeoModule
                                     $aData['id'] = 0;
                                 }
                             }
-
                             $nRegionID = $aData['id'];
                             if ($nRegionID > 0) {
                                 # кешируем
@@ -299,8 +288,7 @@ abstract class GeoBase_ extends GeoModule
                         } else {
                             $nRegionID = 0;
                         }
-                        $_COOKIE[$cookieKey] = $nRegionID;
-                        Request::setCOOKIE($cookieKey, $nRegionID, $cookieExpire);
+                        static::filterUser($nRegionID, 'ip-location-auto');
                     }
                 } else {
                     # получаем из куков
@@ -315,6 +303,7 @@ abstract class GeoBase_ extends GeoModule
     /**
      * Формирование URL, с учетом фильтра по "региону"
      * @param array $opts параметры:
+     *  > country - keyword/array данные страны
      *  > region - keyword/array данные региона(области)
      *  > city - keyword/array данные города
      * @param boolean $dynamic динамическая ссылка
@@ -671,15 +660,16 @@ abstract class GeoBase_ extends GeoModule
      * Формируем подсказку(presuggest) состоящую из основных городов, в формате JSON
      * @param int $nCountryID ID страны или 0 (Geo::defaultCountry())
      * @param bool $bReturnArray вернуть результат в виде массива
+     * @param bool $limit лимитировать выборку
      * @return string|array
      */
-    public static function regionPreSuggest($nCountryID = 0, $bReturnArray = false)
+    public static function regionPreSuggest($nCountryID = 0, $bReturnArray = false, $limit = true)
     {
         if (empty($nCountryID)) {
             $nCountryID = static::defaultCountry();
         }
 
-        $limit = config::sysAdmin('geo.city.select.presuggest.limit', 15, TYPE_UINT);
+        $limit = ($limit ? config::sysAdmin('geo.city.select.presuggest.limit', 15, TYPE_UINT) : 0);
         $coveringType = static::coveringType();
         $cache = Cache::singleton('geo');
         $cacheKey = 'city-presuggest-' . $coveringType . '-' .$nCountryID.'-'. LNG.'-'.$limit;
@@ -723,7 +713,11 @@ abstract class GeoBase_ extends GeoModule
         foreach ($aData as $v) {
             $v['declension'] = func::unserialize($v['declension']);
             $v['declension'] = (!empty($v['declension'][LNG]) ? $v['declension'][LNG] : '');
-            $aResult[] = array($v['id'], $v['title'], $v['metro'], $v['pid'], $v['declension']);
+            if ($coveringType == self::COVERING_COUNTRIES){
+                $aResult[] = array($v['id'], $v['title'], $v['metro'], $v['pid'], $v['country'], $v['declension']);
+            } else {
+                $aResult[] = array($v['id'], $v['title'], $v['metro'], $v['pid'], $v['declension']);
+            }
         }
 
         return func::php2js($aResult, true); # возвращаем в JSON-формате для autocomplete.js
@@ -864,6 +858,7 @@ abstract class GeoBase_ extends GeoModule
                 case 'shops-form': # форма добавления магазина
                 case 'shops-settings': # настройки магазина (редактирование)
                 case 'users-settings': # настройки пользователя
+                case 'banners-form': # добавление банера
                     $aData['country_id'] = 0;
                     break;
             }
@@ -883,6 +878,7 @@ abstract class GeoBase_ extends GeoModule
         if ($aData['covering_type'] == static::COVERING_COUNTRIES) {
             $aData['country_options'] = HTML::selectOptions(static::countriesList(), $aData['country_id'], ! empty($options['country_empty']) ? $options['country_empty'] : false, 'id', 'title');
         }
+
         if (bff::adminPanel()) {
             return $this->viewPHP($aData, 'admin.city.select');
         } else {

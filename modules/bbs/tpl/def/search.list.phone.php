@@ -21,7 +21,8 @@ $listBanner = function($listPosition) use ($showBanners) {
     return '';
 };
 
-if($list_type == BBS::LIST_TYPE_LIST) { ?>
+# Список:
+if ($list_type == BBS::LIST_TYPE_LIST) { ?>
 <div class="sr-page__list sr-page__list_mobile visible-phone">
     <? $n = 1;
     foreach($items as &$v) { ?><?= $listBanner($n++); ?>
@@ -29,7 +30,7 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
         <table>
             <tr>
                 <td colspan="2" class="sr-page__list__item_descr">
-                    <h5><? if($v['svc_quick']) { ?><span class="label label-warning quickly"><?= $lng_quick ?></span>&nbsp;<? } ?><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a></h5>
+                    <div class="sr-page__list__item_title"><? if($v['svc_quick']) { ?><span class="label label-warning quickly"><?= $lng_quick ?></span>&nbsp;<? } ?><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a></div>
                     <? if($v['fav']) { ?>
                     <a href="javascript:void(0);" class="item-fav active j-i-fav" data="{id:<?= $v['id'] ?>}" title="<?= $lng_fav_out ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
                     <? } else { ?>
@@ -38,7 +39,13 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
                 </td>
             </tr>
             <tr>
-                <td class="sr-page__list__item_date"><?= $v['publicated'] ?></td>
+                <td class="sr-page__list__item_date">
+                <?php if ($v['publicated_up']): ?>
+                    <span class="ajax j-tooltip" data-toggle="tooltip" data-container="body" data-placement="bottom" data-html="true" data-original-title="<div class='text-left'><?= _te('search', 'Обновлено: [date]', ['date'=>$v['publicated_last']]); ?></div> <div class='text-left'><?= _te('search', 'Размещено: [date]', ['date'=>$v['publicated']]); ?></div>"><?= $v['publicated_last'] ?></span>
+                <?php else: ?>
+                    <?= $v['publicated'] ?>
+                <?php endif; ?>
+                </td>
                 <td class="sr-page__list__item_price">
                     <? if($v['price_on']) { ?>
                         <?if ($v['price']) { ?><strong><?= $v['price'] ?></strong><? } ?>
@@ -52,7 +59,10 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
     <?= $last = $listBanner(Banners::LIST_POS_LAST); ?>
     <?= ! $last ? $listBanner($n) : '' ?>
 </div>
-<? } else if($list_type == BBS::LIST_TYPE_GALLERY) { ?>
+<? }
+
+# Галерея:
+else if($list_type == BBS::LIST_TYPE_GALLERY) { ?>
 <div class="sr-page__gallery sr-page__gallery_mobile visible-phone">
 <?  $i = 1;
     foreach($items as &$v) {
@@ -68,14 +78,14 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
                 </a>
             </div>
             <div class="sr-page__gallery__item_descr">
-                <h4>
+                <div class="sr-page__gallery__item_title">
                     <? if($v['fav']) { ?>
                     <a href="javascript:void(0);" class="item-fav active j-i-fav" data="{id:<?= $v['id'] ?>}" title="<?= $lng_fav_out ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
                     <? } else { ?>
                     <a href="javascript:void(0);" class="item-fav j-i-fav" data="{id:<?= $v['id'] ?>}" title="<?= $lng_fav_in ?>"><span class="item-fav__star"><i class="fa fa-star-o j-i-fav-icon"></i></span></a>
                     <? } ?>
                     <? if($v['svc_quick']) { ?><span class="label label-warning"><?= $lng_quick ?></span>&nbsp;<? } ?><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a>
-                </h4>
+                </div>
                 <p class="sr-page__gallery__item_price">
                     <? if($v['price_on']) { ?>
                         <strong><?= $v['price'] ?></strong>
@@ -89,10 +99,12 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
        if( $i!=1 ) { ?></div><? }
     ?>
 </div>
-<? } else if($list_type == BBS::LIST_TYPE_MAP ) {
-    $isAJAX = Request::isAJAX();
+<? }
+
+# Карта:
+else if ($list_type == BBS::LIST_TYPE_MAP) {
     if (!BBS::filterVertical()) { ?>
-    <? if (!$isAJAX) { ?>
+    <? if ($mapBlock) { ?>
     <div class="sr-page__map sr-page__map_mobile visible-phone">
         <div class="sr-page__map_ymap span12">
             <div class="j-search-map-phone" style="height: 300px; width: 100%;"></div>
@@ -105,7 +117,7 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
         <table>
             <tr>
                 <td colspan="2" class="sr-page__list__item_descr">
-                    <h5><? if($v['svc_quick']) { ?><span class="label label-warning quickly"><?= $lng_quick ?></span>&nbsp;<? } ?><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a></h5>
+                    <div class="sr-page__list__item_title"><? if($v['svc_quick']) { ?><span class="label label-warning quickly"><?= $lng_quick ?></span>&nbsp;<? } ?><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a></div>
                     <? if($v['fav']) { ?>
                     <a href="javascript:void(0);" class="item-fav active j-i-fav" data="{id:<?= $v['id'] ?>}" title="<?= $lng_fav_out ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
                     <? } else { ?>
@@ -125,11 +137,11 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
         </table>
     </div>
     <? } unset($v); ?>
-    <? if (!$isAJAX) { ?>
+    <? if ($mapBlock) { ?>
     </div>
     <? } ?>
 <? } else { ?>
-    <? if (!$isAJAX) { ?>
+    <? if ($mapBlock) { ?>
         <div class="visible-phone sr-page__map_ymap j-map">
             <div style="height: 300px; width: 100%;" class="j-search-map-phone"></div>
         </div>
@@ -141,7 +153,7 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
             <table>
                 <tr>
                     <td colspan="2" class="sr-page__list__item_descr">
-                        <h5><? if($v['svc_quick']) { ?><span class="label label-warning quickly"><?= $lng_quick ?></span>&nbsp;<? } ?><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a></h5>
+                        <div class="sr-page__list__item_title"><? if($v['svc_quick']) { ?><span class="label label-warning quickly"><?= $lng_quick ?></span>&nbsp;<? } ?><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a></div>
                         <? if($v['fav']) { ?>
                         <a href="javascript:void(0);" class="item-fav active j-i-fav" data="{id:<?= $v['id'] ?>}" title="<?= $lng_fav_out ?>"><span class="item-fav__star"><i class="fa fa-star j-i-fav-icon"></i></span></a>
                         <? } else { ?>
@@ -162,5 +174,5 @@ if($list_type == BBS::LIST_TYPE_LIST) { ?>
         </div>
         <? } unset($v); ?>
     </div>
-    <? if (!$isAJAX) { ?></div></div><? } ?>
+    <? if ($mapBlock) { ?></div></div><? } ?>
 <? } }

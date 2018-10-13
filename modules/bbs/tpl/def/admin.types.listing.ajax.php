@@ -20,10 +20,10 @@ if( ! empty($types))
         <td class="left"><?= $v['title']; ?></td>
         <td><a href="<?= $this->adminLink('categories_edit&id='.$v['cat_id']) ?>" target="_blank" class="desc"><?= $v['cat_title']; ?></a></td>
         <td>
-            <a class="but <? if($v['enabled']): ?>un<? endif; ?>block<? if($inherited): ?> disabled<? endif; ?>" href="#" onclick="return jCategoryTypes.toggle(<?= $v['id']; ?>, this);"></a>
-            <a class="but edit<? if($inherited): ?> disabled<? endif; ?>" title="<?= _te('', 'редактировать'); ?>" href="#" onclick="return jCategoryTypes.edit(<?= $v['id']; ?>);"></a>
+            <a class="but <? if($v['enabled']): ?>un<? endif; ?>block<? if($inherited): ?> disabled<? endif; ?>" href="javascript:void(0);" onclick="return jCategoryTypes.toggle(<?= $v['id']; ?>, this);"></a>
+            <a class="but edit<? if($inherited): ?> disabled<? endif; ?>" title="<?= _te('', 'редактировать'); ?>" href="javascript:void(0);" onclick="return jCategoryTypes.edit(<?= $v['id']; ?>);"></a>
             <? if( !$inherited){ ?>
-            <a class="but del" title="<?= _te('', 'Delete'); ?>" href="#" onclick="return jCategoryTypes.del(<?= $v['id']; ?>, this);"></a>
+            <a class="but del" title="<?= _te('', 'Delete'); ?>" href="javascript:void(0);" onclick="return jCategoryTypes.del(<?= $v['id']; ?>, this);"></a>
             <? }else{ ?>
             <a class="but"></a>
             <? } ?>

@@ -8,7 +8,7 @@ class Theme_Start_do2_t062d90 extends Theme
 
         $this->setSettings(array(
             'theme_title'   => 'Стартовая тема',
-            'theme_version' => '2.4.1.5',
+            'theme_version' => '2.4.1.6',
             'extension_id'  => 't062d9070171056ece3322974c559def61ca11ff',
         ));
 

@@ -95,6 +95,9 @@
     .hidden-phone {
         display: inherit !important;
     }
+    td.hidden-phone {
+        display: table-cell !important;
+    }
     .hidden-phone.hide {
         display: none !important;
     }
@@ -114,10 +117,16 @@
         display: table-cell !important;
     }
     .breadcrumb {
-        margin: 15px 0;
+        margin: 10px 0 0 0;
+    }
+    .l-page__breadcrumb_v2 {
+        padding-left: 0 !important;
     }
     .l-page__breadcrumb {
         padding-left: 0;
+    }
+    .l-page__breadcrumb-wrap {
+        margin: 10px 0 0 0;
     }
     span.hidden-phone, span.visible-desktop {
         display: inline !important;
@@ -127,6 +136,12 @@
     }
     .sr-page__gallery .sr-page__gallery__item {
         margin-left: 0 !important;
+    }
+    .sr-page__gallery__v2 .span4 {
+        width: 33.1% !important;
+    }
+    .sr-page__gallery__item__v2__in {
+        margin: 0 !important;
     }
     .form-horizontal .control-label {
         float: left;

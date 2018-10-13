@@ -96,9 +96,10 @@ class SEOModelBase extends Model
      * Формирование данных о посадочных страницах для файла Sitemap.xml
      * @param boolean $callback
      * @param string $priority приоритетность url
+     * @param array $opts доп. параметры
      * @return array|callable [['l'=>'url страницы','m'=>'дата последних изменений'],...]
      */
-    public function landingpagesSitemapXmlData($callback = true, $priority = '')
+    public function landingpagesSitemapXmlData($callback = true, $priority = '', array $opts = array())
     {
         if ($callback) {
             return function($count = false, callable $callback = null) use ($priority) {

@@ -9,7 +9,6 @@
  * @var $itemStatus integer статус объявления
  * @var $userID integer ID текущего пользователя
  */
-if (!DEVICE_DESKTOP_OR_TABLET) return;
 tpl::includeJS('bbs.comments', false, 1);
 ?>
 <div id="j-comments-block">
@@ -53,7 +52,7 @@ tpl::includeJS('bbs.comments', false, 1);
         <div class="alert alert-warning mrgb0 hide"><?= _t('comments', 'Комментарии к этому объявлению закрыты'); ?></div>
     <? endif; ?>
 
-    <ul class="l-commentsList l-commentsList-hidden-sm media-list j-comment-block">
+    <ul class="l-commentsList media-list j-comment-block">
         <?= $comments ?>
     </ul>
 </div>

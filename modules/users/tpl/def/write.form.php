@@ -26,11 +26,11 @@
         <span class="upload-mask">
             <input type="file" name="attach" class="j-upload-file" />
         </span>
-        <a href="#" onclick="return false;" class="ajax"><?= _t('users', 'Прикрепить файл') ?></a>
+        <a href="javascript:void(0);" onclick="return false;" class="ajax"><?= _t('users', 'Прикрепить файл') ?></a>
     </div>
     <div class="j-cancel hide">
         <span class="j-cancel-filename"></span>
-        <a href="#" class="ajax pseudo-link-ajax ajax-ico j-cancel-link"><i class="fa fa-times"></i> <?= _t('users', 'Удалить') ?></a>
+        <a href="javascript:void(0);" class="ajax pseudo-link-ajax ajax-ico j-cancel-link"><i class="fa fa-times"></i> <?= _t('users', 'Удалить') ?></a>
     </div>
 </div>
 <? } ?>

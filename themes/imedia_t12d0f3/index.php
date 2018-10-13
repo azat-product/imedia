@@ -112,6 +112,10 @@ class Theme_Imedia_t12d0f3 extends Theme
             }
         ]);
         # ignore-stop
+
+        $this->cssEdit(array(
+            static::CSS_FILE_CUSTOM => ['path' => $this->path('/static/css/custom-t12d0f3.css', false), 'save' => true],
+        ));
     }
 
     /**
@@ -120,7 +124,8 @@ class Theme_Imedia_t12d0f3 extends Theme
     protected function start()
     {
         # CSS:
-        $this->css('css/dist/imedia');
+        $this->css('/css/dist/imedia.css');
+        $this->css('/css/custom-t12d0f3.css');
 
         # Логотипы:
         bff::hookAdd('site.logo.url.header', function($url){

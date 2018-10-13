@@ -31,18 +31,18 @@
             <div class="pull-right hidden-phone">
                 <ul class="nav nav-pills pull-left j-cat">
                     <li class="dropdown">
-                        <a class="dropdown-toggle j-cat-dropdown" data-toggle="dropdown" href="#">
+                        <a class="dropdown-toggle j-cat-dropdown" data-toggle="dropdown" href="javascript:void(0);">
                             <b class="j-cat-title"><?= $cat_active['title'] ?></b>
                             <i class="fa fa-caret-down"></i>
                         </a>
                         <ul class="dropdown-menu">
                             <? foreach($cats as $v) {
                                 if( empty($v['sub']) ) {
-                                    ?><li><a href="#" data-value="<?= $v['id'] ?>" class="j-cat-option"><?= $v['title'] ?></a></li><?
+                                    ?><li><a href="javascript:void(0);" data-value="<?= $v['id'] ?>" class="j-cat-option"><?= $v['title'] ?></a></li><?
                                 } else {
                                     ?><li class="nav-header"><?= $v['title'] ?></li><?
                                     foreach($v['sub'] as $vv) {
-                                        ?><li><a href="#" data-value="<?= $vv['id'] ?>" class="j-cat-option"><?= $vv['title'] ?></a></li><?
+                                        ?><li><a href="javascript:void(0);" data-value="<?= $vv['id'] ?>" class="j-cat-option"><?= $vv['title'] ?></a></li><?
                                     }
                                 }
                             } ?>
@@ -55,15 +55,8 @@
 
         <? # Список объявлений ?>
         <div class="j-list">
-            <div class="sr-page__list sr-page__list_desktop hidden-phone j-list-<?= bff::DEVICE_DESKTOP ?> j-list-<?= bff::DEVICE_TABLET ?>">
-                <? if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET ) {
-                    echo $this->searchList(bff::DEVICE_DESKTOP, $f['lt'], $items);
-                } ?>
-            </div>
-            <div class="sr-page__list sr-page__list_mobile visible-phone j-list-<?= bff::DEVICE_PHONE ?>">
-                <? if( $device == bff::DEVICE_PHONE ) {
-                    echo $this->searchList(bff::DEVICE_PHONE, $f['lt'], $items);
-                } ?>
+            <div class="j-list-<?= bff::DEVICE_DESKTOP ?> j-list-<?= bff::DEVICE_TABLET ?> j-list-<?= bff::DEVICE_PHONE ?>">
+                <?= $this->searchList(false, BBS::LIST_TYPE_LIST, $items); ?>
             </div>
         </div>
 

@@ -7,6 +7,7 @@
  */
 
 use \bff\utils\Files;
+use bff\db\Dynprops;
 
 class BBSItemsImport_ extends Component
 {
@@ -50,7 +51,7 @@ class BBSItemsImport_ extends Component
      */
     public function extensionsAllowed()
     {
-        return bff::filter('bbs.import.extensions.whitelist', array('xml', 'csv'));
+        return bff::filter('bbs.import.extensions.whitelist', array('xml', 'csv', 'yml'));
     }
 
     /**
@@ -59,7 +60,7 @@ class BBSItemsImport_ extends Component
      */
     public static function availableCsvFields()
     {
-        $fields = ['item-id', 'item-external', 'title', 'description', 'category-id', 'category-type',
+        $fields = ['item-id', 'item-external', 'user', 'title', 'description', 'category-id', 'category-type',
             'geo-delivery', 'geo-city-id', 'geo-station-id', 'geo-district-id', 'geo-addr', 'geo-lat', 'geo-lon',
             'price', 'price-currency', 'price-free', 'price-exchange', 'price-mod', 'price-agreed',
             'images', 'contacts-name', 'contacts-phones', 'video'];
@@ -70,6 +71,10 @@ class BBSItemsImport_ extends Component
             if (!in_array($contact, $fields)) {
                 $fields[] = $contact;
             }
+        }
+        $dp = BBS::i()->dp();
+        for($i = 1; $i <= $dp->datafield_text_last; $i++) {
+            $fields[] = 'param-'.$i;
         }
 
         return bff::filter('bbs.items.import.csv.available.fields', $fields);
@@ -107,27 +112,37 @@ class BBSItemsImport_ extends Component
      */
     public function importUrlStart(array $settings, $parentID = 0)
     {
-        $ext = pathinfo($settings['url'], PATHINFO_EXTENSION);
-        if ( ! in_array($ext, $this->extensionsAllowed())) {
-            $this->errors->set(_t('bbs.import', 'Неизвестный формат файла'));
-            return false;
-        }
-        $filePath = $this->importPath . func::generator(14, false) . '.'.$ext;
-        \bff\utils\Files::downloadFile($settings['url'], $filePath);
-        if( ! $this->errors->no()){
-            return false;
-        }
-        $fileInfo = new SplFileInfo($filePath);
-        $file['extension'] = $fileInfo->getExtension();
-        $file['filesize'] = $fileInfo->getSize();
-        $file['filename'] = $fileInfo->getFilename();
-        $file['hash'] = md5_file($filePath);
+        $filePath = bff::filter('bbs.import.url.start.download', '', array(
+            'settings' => & $settings,
+            'parentID' => $parentID,
+        ));
 
-        # проверка структуры файла
-        $items = $this->checkFile($file, $settings, $cat);
-        if($items === false){
-            return false;
+        if (empty($filePath)) {
+            $ext = pathinfo($settings['url'], PATHINFO_EXTENSION);
+            if ( ! in_array($ext, $this->extensionsAllowed())) {
+                $this->errors->set(_t('bbs.import', 'Неизвестный формат файла'));
+                return false;
+            }
+            $filePath = $this->importPath . func::generator(14, false) . '.'.$ext;
+            \bff\utils\Files::downloadFile($settings['url'], $filePath);
+            if( ! $this->errors->no()){
+                return false;
+            }
         }
+
+        if (file_exists($filePath)) {
+            $fileInfo = new SplFileInfo($filePath);
+            $file['extension'] = $fileInfo->getExtension();
+            $file['filesize'] = $fileInfo->getSize();
+            $file['filename'] = $fileInfo->getFilename();
+            $file['hash'] = md5_file($filePath);
+            # проверка структуры файла
+            $items = $this->checkFile($file, $settings, $cat);
+            if($items === false){
+                return false;
+            }
+        }
+
         if (empty($settings['langKey'])) {
             $settings['langKey'] = LNG;
         }
@@ -163,14 +178,16 @@ class BBSItemsImport_ extends Component
                 'periodic_timeout' => $settings['period'],
                 'periodic_expire' => $this->db->now(),
             );
-            @unlink($filePath);
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
         }
         return $this->importSaveRun($save);
     }
 
     /**
      * Инициализация импорта из файла
-     * @param string $fileKey ключ файла импорта в _FILES
+     * @param string $fileKey ключ файла импорта в _FILES или false $settings['file_path'] - путь к файлу
      * @param array $settings параметры импорта
      *  catId  - ID категории
      *  userId - ID пользователя (владельца импортируемых объявлений)
@@ -182,28 +199,44 @@ class BBSItemsImport_ extends Component
     {
         $isAdmin = bff::adminPanel();
 
-        # загрузка файла
-        $uploader = new \bff\files\Attachment($this->importPath, 0);
-        $uploader->setCheckFreeDiskSpace(false);
-        $uploader->setFiledataAsString(false);
-        $uploader->setAllowedExtensions($this->extensionsAllowed());
-        if ($isAdmin) {
-            # для администратора, ограничиваем размер файла 25mb
-            $uploader->setMaxSize(config::sysAdmin('bbs.import.file.maxsize.admin', 1048576 * 25, TYPE_UINT));
-        } else {
-            # для фронтенда, ограничиваем размер файла 10mb
-            $uploader->setMaxSize(config::sysAdmin('bbs.import.file.maxsize', 1048576 * 10, TYPE_UINT));
-        }
+        $file = array();
+        if ($fileKey){
+            # загрузка файла
+            $uploader = new \bff\files\Attachment($this->importPath, 0);
+            $uploader->setCheckFreeDiskSpace(false);
+            $uploader->setFiledataAsString(false);
+            $uploader->setAllowedExtensions($this->extensionsAllowed());
+            if($isAdmin){
+                # для администратора, ограничиваем размер файла 25mb
+                $uploader->setMaxSize(config::sysAdmin('bbs.import.file.maxsize.admin', 1048576 * 25, TYPE_UINT));
+            }else{
+                # для фронтенда, ограничиваем размер файла 10mb
+                $uploader->setMaxSize(config::sysAdmin('bbs.import.file.maxsize', 1048576 * 10, TYPE_UINT));
+            }
 
-        if ($this->errors->no()) {
-            $uploader->setAssignErrors(true);
-            $file = $uploader->uploadFILES($fileKey);
-            if (!$this->errors->no()) {
-                return false;
+            if($this->errors->no()){
+                $uploader->setAssignErrors(true);
+                $file = $uploader->uploadFILES($fileKey);
+                if(!$this->errors->no()){
+                    return false;
+                }
+            }else{
+                $file = $uploader->uploadFILES($fileKey);
             }
         } else {
-            $file = $uploader->uploadFILES($fileKey);
+            if (isset($settings['file_path']) && file_exists($settings['file_path'])) {
+                $path = $settings['file_path'];
+                unset($settings['file_path']);
+                $file = array(
+                    'error'     => 0,
+                    'filesize'  => filesize($path),
+                    'rfilename' => basename($path),
+                    'extension' => pathinfo($path, PATHINFO_EXTENSION),
+                    'filename'  => basename($path),
+                );
+            }
         }
+
         if (empty($file)) {
             $this->errors->set(_t('bbs.import', 'Не удалось загрузить файл импорта'));
             return false;
@@ -241,7 +274,14 @@ class BBSItemsImport_ extends Component
         );
 
         # сохранение настроек импорта в базу
-        return $this->importSaveRun($aData);
+        $id = $this->importSaveRun($aData);
+        
+        # при тестировании запускаем задачу сразу
+        if (BFF_TEST && $id) {
+            $this->importContinue($id);
+        }
+
+        return $id;
     }
 
     /**
@@ -375,6 +415,42 @@ class BBSItemsImport_ extends Component
     }
 
     /**
+     * Определим тип файла по его содержанию
+     * @param string $path путь к файлу
+     * @param array $ext расширение файла
+     * @return string
+     */
+    public function detectFileType($path, $ext)
+    {
+        $fh = fopen($path, 'r');
+        while (!feof($fh)) {
+            $line = fgets($fh, 5000);
+            $line = mb_strtolower($line);
+            if (mb_strpos($line, '<?xml') !== false) {
+                while (!feof($fh)) {
+                    if (mb_strpos($line, '<bbs') !== false) {
+                        $ext = 'XML';
+                        break 2;
+                    }
+                    if (mb_strpos($line, '<yml_catalog') !== false) {
+                        $ext = 'YML';
+                        break 2;
+                    }
+                    $line = fgets($fh, 5000);
+                    $line = mb_strtolower($line);
+                }
+                break;
+            }
+            if (mb_substr_count($line, ';') > 1) {
+                $ext = 'CSV';
+                break;
+            }
+        }
+        fclose($fh);
+        return bff::filter('bbs.import.detect.filetype', $ext, $path);
+    }
+
+    /**
      * Проверка структуры файла импорта
      * @param array $file @ref данные о файле
      * @param array $settings @ref параметры импорта
@@ -384,12 +460,18 @@ class BBSItemsImport_ extends Component
     protected function checkFile(& $file, & $settings, & $cat = array())
     {
         $filePath = $this->importPath.$file['filename'];
+        if ( ! file_exists($filePath)) {
+            $this->errors->set(_t('bbs.import', 'Файл не найден'));
+            return false;
+        }
         $file['hash'] = md5_file($filePath);
         unset($file['error']);
 
+        $file['extension'] = $this->detectFileType($filePath, $file['extension']);
+
         $methodCheck = 'checkFile'.$file['extension'];
         if (method_exists($this, $methodCheck)) {
-            $items = $this->$methodCheck($filePath);
+            $items = $this->$methodCheck($filePath, $settings);
         } else {
             $this->errors->set(_t('bbs.import', 'Неизвестный формат файла'));
             return false;
@@ -414,19 +496,17 @@ class BBSItemsImport_ extends Component
 
         # проверяем пользователя - владельца объявления
         if (bff::adminPanel()){
-            if (!$settings['userId']) {
-                $this->errors->set(_t('bbs.import', 'Укажите владельца объявлений'));
-                return false;
-            }
-            $aUserData = Users::model()->userData($settings['userId'], array('shop_id'));
-            if (empty($aUserData)) {
-                $this->errors->set(_t('bbs.import', 'Пользователь был указан некорректно'));
-                return false;
-            }
-            # корректируем магазин
-            if ($settings['shop'] > 0) {
-                $_POST['shop_import'] = !empty($settings['shop']);
-                $settings['shop'] = $this->bbs->publisherCheck($aUserData['shop_id'], 'shop_import');
+            if ( ! empty($settings['userId'])) {
+                $aUserData = Users::model()->userData($settings['userId'], array('shop_id'));
+                if (empty($aUserData)) {
+                    $this->errors->set(_t('bbs.import', 'Пользователь был указан некорректно'));
+                    return false;
+                }
+                # корректируем магазин
+                if ($settings['shop'] > 0) {
+                    $_POST['shop_import'] = !empty($settings['shop']);
+                    $settings['shop'] = $this->bbs->publisherCheck($aUserData['shop_id'], 'shop_import');
+                }
             }
         }
         return $items;
@@ -435,9 +515,10 @@ class BBSItemsImport_ extends Component
     /**
      * Проверка структуры XML файла
      * @param string $path путь к файлу
+     * @param array $settings параметры импорта
      * @return int кол-во объявлений в файле для импорта
      */
-    protected function checkFileXML($path)
+    protected function checkFileXML($path, $settings = array())
     {
         $items = 0;
         try {
@@ -505,9 +586,10 @@ class BBSItemsImport_ extends Component
     /**
      * Проверка структуры XML файла
      * @param string $path путь к файлу
+     * @param array $settings параметры импорта
      * @return int кол-во объявлений в файле для импорта
      */
-    protected function checkFileCSV($path)
+    protected function checkFileCSV($path, $settings = array())
     {
         if (!file_exists($path)) {
             $this->errors->set(_t('bbs.import', 'Файл импорта не найден'));
@@ -529,6 +611,101 @@ class BBSItemsImport_ extends Component
             $items++;
         }
         fclose($fs);
+
+        return $items;
+    }
+
+    /**
+     * Проверка структуры YML файла
+     * @param string $path путь к файлу
+     * @param array $settings параметры импорта
+     * @return int кол-во объявлений в файле для импорта
+     */
+    protected function checkFileYML($path, $settings = array())
+    {
+        $items = 0;
+        try {
+
+            if (empty($settings['userId'])) {
+                $this->errors->set(_t('bbs.import', 'Укажите пользователя'));
+                return 0;
+            }
+            $user = Users::model()->userData($settings['userId'], array('user_id', 'reg3_city'));
+            if (empty($user['reg3_city'])) {
+                if (bff::adminPanel()) {
+                    $this->errors->set(_t('bbs.import', 'У выбранного вами пользователя в настройках профиля не указан город'));
+                } else {
+                    $this->errors->set(_t('bbs.import', 'Укажите ваш регион в настройках профиля'));
+                }
+                return 0;
+            }
+
+            if (empty($settings['catId'])) {
+                $this->errors->set(_t('bbs.import', 'Укажите категорию'));
+                return 0;
+            }
+            $sub = $this->bbs->model->catSubcatsData($settings['catId']);
+            if ( ! empty($sub)) {
+                $this->errors->set(_t('bbs.import', 'Категория указана некорректно. Укажите категорию не содержащую подкатегорий.'));
+                return 0;
+            }
+
+            $fh = fopen($path, 'r');
+            while (!feof($fh)) {
+                $line = fgets($fh, 2000);
+                $line = mb_strtolower($line);
+                if (mb_strpos($line, '<yml_catalog') !== false) break;
+                if (mb_strpos($line, '<!doctype') !== false) {
+                    $this->errors->set(_t('bbs.import', 'Invalid XML: Detected use of illegal DOCTYPE'));
+                    return 0;
+                }
+            }
+            fclose($fh);
+
+            libxml_use_internal_errors(true);
+
+            $reader = new XMLReader();
+
+            # проверка наличия XML структуры
+            if ( ! $reader->open($path)) {
+                $this->errors->set(_t('bbs.import', 'Файл импорта не соответствует требуемой структуре (#1)'));
+                return 0;
+            }
+
+            # проверка тега yml_catalog
+            do { $res = $reader->read(); } while ($res && $reader->name !== 'yml_catalog');
+            if ( ! $res) {
+                $this->errors->set(_t('bbs.import', 'Файл импорта не соответствует требуемой структуре (#2)'));
+                return 0;
+            }
+
+            do { $res = $reader->read(); } while ($res && $reader->name !== 'offers'); # найдем первый тег items
+            do { $res = $reader->read(); } while ($res && $reader->name !== 'offer'); # найдем первый тег item
+            # посчитаем количество тегов offer
+            do {
+                if ($reader->name !== 'offer') break;
+                $items++;
+                $res = $reader->next('offer');
+            } while ($res);
+
+            $reader->close();
+
+            $error = libxml_get_last_error();
+            if ( ! empty($error)) {
+                $this->errors->set(_t('bbs.import', 'Ошибка при анализе файла. ([msg])', array(
+                    'msg' => trim($error->message).', line: ' . $error->line . ', col: ' . $error->column,
+                )));
+                return 0;
+            }
+
+            libxml_use_internal_errors(false);
+
+        } catch (Exception $e) {
+            $msg = $e->getMessage();
+            bff::log('BBSItemsImport: XMLReader exception');
+            bff::log($msg);
+            return 0;
+        }
 
         return $items;
     }
@@ -579,10 +756,11 @@ class BBSItemsImport_ extends Component
     public function importPeriodicCron()
     {
         $tasks = $this->bbs->model->importListing(array('I.id, I.settings, I.periodic_timeout'), array(
-                'periodic' => self::TYPE_URL,
+                'periodic' => static::TYPE_URL,
                 array('periodic_expire < :now', ':now' => $this->db->now()),
                 'parent_id' => 0,
         ));
+        
         if (empty($tasks)) return;
         $types = $this->importPeriodOptions();
         foreach ($tasks as $v) {
@@ -704,11 +882,16 @@ class BBSItemsImport_ extends Component
         $aData['publicatedTo'] = $this->bbs->getItemPublicationPeriod(isset($settings['publicate_period']) ? $settings['publicate_period'] : 0);
 
         $aData['catFields'] = array('id', 'pid', 'subs', 'numlevel', 'numleft', 'numright', 'price', 'price_sett', 'addr',
-            'keyword', 'landing_url', 'photos', 'regions_delivery');
+            'keyword', 'landing_url', 'photos', 'regions_delivery', 'tpl_title_enabled');
 
-        $aData['userData'] = Users::model()->userData($settings['userId'], array('name','phones','contacts'));
-        if (empty($aData['userData'])) {
-            $this->importError($importID, _t('bbs.import', 'Неудалось получить данные пользователя по id=[id]', array('id' => $settings['userId'])));
+        if ( ! empty($settings['userId'])){
+            $aData['userData'] = Users::model()->userData($settings['userId'], array('name', 'phones', 'contacts'));
+            if(empty($aData['userData'])){
+                $this->importError($importID, _t('bbs.import', 'Неудалось получить данные пользователя по id=[id]', array('id' => $settings['userId'])));
+                return false;
+            }
+        } else if ( ! $aData['is_admin']){
+            $this->importError($importID, _t('bbs.import', 'Не указан пользователь.'));
             return false;
         }
 
@@ -754,7 +937,7 @@ class BBSItemsImport_ extends Component
     /**
      * Обработка импорта файла XML по крону
      * @param array $aData @ref данные о задании
-     * @return array
+     * @return array|boolean
      */
     protected function importContinueXML(& $aData)
     {
@@ -787,7 +970,10 @@ class BBSItemsImport_ extends Component
         $priceEx = array(
             'free'=>BBS::PRICE_EX_FREE, 'exchange'=>BBS::PRICE_EX_EXCHANGE, 'mod'=>BBS::PRICE_EX_MOD, 'agreed'=>BBS::PRICE_EX_AGREED,
         );
-        $aUserData = $aData['userData'];
+        $isUsersInFile = $isAdmin && ! empty($settings['multi_users']);
+        $isUsersFake = ! empty($settings['multi_users_fake']);
+        $aUserData = $isUsersInFile ? array() : $aData['userData'];
+        $usersCache = array();
 
         $reader = new XMLReader();
 
@@ -908,6 +1094,12 @@ class BBSItemsImport_ extends Component
 
                     $images = array();
 
+                    if ($isUsersInFile) {
+                        $aUserData = array();
+                        $item['user_id'] = 0;
+                        $item['shop_id'] = 0;
+                    }
+
                     $nodeKeys = array();
                     foreach($data->childNodes as $node){
                         $nodeKeys[] = strval($node->nodeName);
@@ -932,7 +1124,46 @@ class BBSItemsImport_ extends Component
                                 $item['descr'] = $this->input->cleanTextPlain(strval($node->nodeValue), 3000, false);
                                 break;
                             case 'user': # пользователь
-                                # игнорируем данные <user>
+                                if ($isUsersInFile) { # админ может указывать пользователя в файле
+                                    $userFields = array('user_id', 'name', 'phones', 'contacts');
+                                    # ищем по ИД
+                                    $userID = (int)$node->getAttribute('id');
+                                    if ($userID) {
+                                        if (isset($usersCache[$userID])) {
+                                            $aUserData = $usersCache[$userID];
+                                        } else {
+                                            $aUserData = Users::model()->userData($userID, $userFields);
+                                            if ( ! empty($aUserData)) {
+                                                $usersCache[$userID] = $aUserData;
+                                            }
+                                        }
+                                    }
+                                    if (empty($aUserData)) { # ищем по email
+                                        $email = strval($node->nodeValue);
+                                        if ($email) {
+                                            if (isset($usersCache[$email])) {
+                                                $aUserData = $usersCache[$email];
+                                            } else {
+                                                $aUserData = Users::model()->userData(array('email' => $email), $userFields);
+                                                if ( ! empty($aUserData)) {
+                                                    $usersCache[$email] = $aUserData;
+                                                }
+                                            }
+                                            if (empty($aUserData)) { # не нашли - создадим
+                                                $aUserData = $this->userCreate($email, $userFields, $isUsersFake);
+                                                if ( ! empty($aUserData)) {
+                                                    $usersCache[$email] = $aUserData;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (empty($aUserData)) { # не нашли или не смогди создать пользователя - пропускаем объявление
+                                        $ignored++;
+                                        break 3;
+                                    } else {
+                                        $item['user_id'] = $aUserData['user_id'];
+                                    }
+                                } # else игнорируем данные <user>
                                 break;
                             case 'category': # категория
                                 if($isUpdate){
@@ -1136,7 +1367,7 @@ class BBSItemsImport_ extends Component
     /**
      * Обработка импорта файла CSV по крону
      * @param array $aData @ref данные об импорте
-     * @return array
+     * @return array|boolean
      */
     protected function importContinueCSV(& $aData)
     {
@@ -1167,7 +1398,11 @@ class BBSItemsImport_ extends Component
         $priceEx = array(
             'free'=>BBS::PRICE_EX_FREE, 'exchange'=>BBS::PRICE_EX_EXCHANGE, 'mod'=>BBS::PRICE_EX_MOD, 'agreed'=>BBS::PRICE_EX_AGREED,
         );
-        $aUserData = $aData['userData'];
+
+        $isUsersInFile = $isAdmin && ! empty($settings['multi_users']);
+        $isUsersFake = ! empty($settings['multi_users_fake']);
+        $aUserData = $isUsersInFile ? array() : $aData['userData'];
+        $usersCache = array();
 
         # Полный список полей
         $available = static::availableCsvFields();
@@ -1267,6 +1502,13 @@ class BBSItemsImport_ extends Component
                         }
                     }
                 }
+
+                if ($isUsersInFile) {
+                    $aUserData = array();
+                    $item['user_id'] = 0;
+                    $item['shop_id'] = 0;
+                }
+
                 $images = array();
                 foreach ($available as $f) {
                     $val = $value($f, $csv);
@@ -1287,6 +1529,50 @@ class BBSItemsImport_ extends Component
                             }
                             $item['title_edit'] = $val;
                             $item['title'] = HTML::escape($val);
+                            break;
+                        case 'user': # пользователь id или email
+                            if ($isUsersInFile) { # админ может указывать пользователя в файле
+                                $userFields = array('user_id', 'name', 'phones', 'contacts');
+
+                                if ($this->input->isEmail($val)) {
+                                    $email = $val;
+                                    # Указан email
+                                    if (isset($usersCache[$email])) {
+                                        $aUserData = $usersCache[$email];
+                                    } else {
+                                        $aUserData = Users::model()->userData(array('email' => $email), $userFields);
+                                        if ( ! empty($aUserData)) {
+                                            $usersCache[$email] = $aUserData;
+                                        }
+                                    }
+                                    if (empty($aUserData)) { # не нашли - создадим
+                                        $aUserData = $this->userCreate($email, $userFields, $isUsersFake);
+                                        if ( ! empty($aUserData)) {
+                                            $usersCache[$email] = $aUserData;
+                                        }
+                                    }
+                                } else {
+                                    # ищем по ИД
+                                    $userID = (int)$val;
+                                    if ($userID) {
+                                        if (isset($usersCache[$userID])) {
+                                            $aUserData = $usersCache[$userID];
+                                        } else {
+                                            $aUserData = Users::model()->userData($userID, $userFields);
+                                            if ( ! empty($aUserData)) {
+                                                $usersCache[$userID] = $aUserData;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (empty($aUserData)) { # не нашли или не смогди создать пользователя - пропускаем объявление
+                                    $ignored++;
+                                    break 3;
+                                } else {
+                                    $item['user_id'] = $aUserData['user_id'];
+                                }
+                            } # else игнорируем данные user
                             break;
                         case 'description': # описание
                             $item['descr'] = $this->input->cleanTextPlain($val, 3000, false);
@@ -1395,6 +1681,13 @@ class BBSItemsImport_ extends Component
                             }
                             break;
                         default:
+                            if (substr($f, 0, 6) == 'param-') {
+                                $dpf = (int)substr($f, 6);
+                                if ($dpf) {
+                                    $item['f'.$dpf] = $this->input->clean($val, TYPE_NOTAGS);
+                                }
+                                break;
+                            }
                             if(in_array($f,  $this->csvContactsFields))
                                 break;
                             bff::hook('bbs.items.import.csv.process.custom.field', array(
@@ -1454,6 +1747,223 @@ class BBSItemsImport_ extends Component
     }
 
     /**
+     * Обработка импорта файла XML по крону
+     * @param array $aData @ref данные о задании
+     * @return array|boolean
+     */
+    protected function importContinueYML(& $aData)
+    {
+        if (empty($aData['id'])) return false;
+        $importID = $aData['id'];
+
+        $processed = $aData['items_processed'];
+        $ignored   = & $aData['items_ignored'];
+        $isAdmin   = ! empty($aData['is_admin']);
+        $settings = & $aData['settings'];
+        $stat = & $settings['stat'];
+
+        $import_catID  = $settings['catId'];
+        $import_userID = $settings['userId'];
+        $catFields = $aData['catFields'];
+        $user = Users::model()->userData($import_userID, array('user_id', 'reg3_city'));
+
+        $catsData = array();
+        $catParents = array();
+        $regionsData = array();
+        if ($import_catID) {
+            $catsData[$import_catID] = $this->bbs->model->catData($import_catID, $catFields);
+            if (empty($catsData[$import_catID])) {
+                $this->importError($importID, _t('bbs.import', 'Неудалось получить данные категории по id=[id]', array('id' => $import_catID)));
+                return false;
+            }
+        }
+        $import_shopID = $settings['shop'];
+        $priceEx = array(
+            'free'=>BBS::PRICE_EX_FREE, 'exchange'=>BBS::PRICE_EX_EXCHANGE, 'mod'=>BBS::PRICE_EX_MOD, 'agreed'=>BBS::PRICE_EX_AGREED,
+        );
+        $dp = $this->bbs->dp()->getByOwner($import_catID, true, true, false);
+
+        $reader = new XMLReader();
+
+        if ( ! $reader->open($aData['filePath'])) {
+            $this->importError($importID, _t('bbs.import', 'Неудалось открыть файл "[path]"', array('path' => $aData['filePath'])));
+            return false;
+        }
+
+        do{
+            $res = $reader->read();
+            if ($reader->name == 'offers') {
+                break;
+            }
+        } while ($res);
+
+        $t = Site::model()->currencyData(false);
+        $currencies = array();
+        foreach ($t as $v) {
+            $currencies[ mb_strtoupper($v['keyword']) ] = $v['id'];
+        }
+
+        $itemExist = true;
+        $ic = 0;
+        $start = time();
+        if ($res && $reader->name == 'offers') {
+            do { $res = $reader->read(); } while ($res && $reader->name !== 'offer');
+            do {
+                if($reader->name !== 'offer')
+                    break;
+                do {
+                    $ic++;
+                    if ($ic < $processed) {
+                        break;
+                    }
+                    if ($ic > $processed+$this->importProcessingStep) {
+                        break 2;
+                    }
+
+                    $node = $reader->expand();
+
+                    $dom = new DomDocument();
+                    $n = $dom->importNode($node,true);
+                    $dom->appendChild($n);
+                    $data = $dom->getElementsByTagName('offer')->item(0);
+
+                    if (is_null($data)) break;
+
+                    $item = array();
+                    $catID = $import_catID;
+                    $delivery = 0;
+                    $item['city_id'] = $user['reg3_city'];
+                    $item['user_id'] = $import_userID;
+                    $item['shop_id'] = $import_shopID;
+
+                    # ID объявления
+                    $itemID = strval($data->getAttribute('id'));
+                    $item['import_external_id'] = $itemID;
+                    if ($itemID) {
+                        $itemExists = $this->bbs->model->itemDataByFilter(array('import_external_id' => $itemID, 'user_id' => $import_userID),
+                            array('id', 'user_id', 'status', 'moderated', 'cat_id', 'city_id', 'video', 'name', 'contacts', 'phones', 'title_edit', 'imgcnt', 'price'));
+                        if (!empty($itemExists)) {
+                            $itemID = $itemExists['id'];
+                            unset($item['import_external_id']);
+                        }
+                    }
+
+                    $itemID = (int)$itemID;
+
+                    if (empty($itemExists)) {
+                        $isUpdate = false; # создаем новое объявление
+                        $itemID = 0;
+                    } else {
+                        $isUpdate = true; # обновляем существующее объявление
+                        if (!$isAdmin) {
+                            if ($itemExists['user_id'] != $import_userID) {
+                                # объявление закреплено за другим пользователем, игнорируем <item>
+                                $ignored++;
+                                break;
+                            }
+                        }
+                    }
+
+                    $images = array();
+
+                    $nodeKeys = array();
+                    foreach($data->childNodes as $node){
+                        $nodeKeys[] = strval($node->nodeName);
+                        switch($node->nodeName){
+                            case 'name': # заголовок
+                                $title = strval($node->nodeValue);
+                                $this->input->clean($title, TYPE_NOTAGS, true, array('len' => 100));
+                                if (empty($title)) {
+                                    if ($isUpdate) {
+                                        $title = $itemExists['title_edit'];
+                                    } else {
+                                        # добавление: заголовок не может быть пустым, игнорируем <item>
+                                        $stat['title']++;
+                                        $ignored++;
+                                        break 3;
+                                    }
+                                }
+                                $item['title_edit'] = $title;
+                                $item['title'] = HTML::escape($title);
+                                break;
+                            case 'description': # описание
+                                $item['descr'] = $this->input->cleanTextPlain(strval($node->nodeValue), 3000, false);
+                                break;
+                            case 'price': # цена
+                                $item['price'] = floatval($node->nodeValue);
+                                $item['price_curr'] = (int)$node->getAttribute('currency');
+                                if ( ! empty($item['price']) && ! empty($item['price_curr'])) {
+                                    $item['price_search'] = Site::currencyPriceConvertToDefault($item['price'], $item['price_curr']);
+                                }
+                                break;
+                            case 'currencyId':
+                                $cur = strval($node->nodeValue);
+                                $cur = mb_strtoupper($cur);
+                                if (isset($currencies[$cur])) {
+                                    $item['price_curr'] = (int)$currencies[$cur];
+                                }
+                                if ( ! empty($item['price']) && ! empty($item['price_curr'])) {
+                                    $item['price_search'] = Site::currencyPriceConvertToDefault($item['price'], $item['price_curr']);
+                                }
+                                break;
+                            case 'picture': # изображения
+                                $images[] = array(
+                                    'id' => 0,
+                                    'url' => strval($node->nodeValue),
+                                );
+                                break;
+                            case 'param': # дин. свойства
+                                $val = strval($node->nodeValue);
+                                $name = strval($node->getAttribute('name'));
+                                if (empty($name)) break;
+                                foreach ($dp as $v) {
+                                    if ($v['title'] != $name) continue;
+                                    if (!empty($v['multi']) && in_array($v['type'], array(
+                                                Dynprops::typeRadioGroup,
+                                                Dynprops::typeCheckboxGroup,
+                                                Dynprops::typeCheckboxGroup,
+                                                Dynprops::typeSelect
+                                            )
+                                        )
+                                    ) {
+                                        foreach($v['multi'] as $vv) {
+                                            if ($vv['name'] == $val) {
+                                                $item[ 'f'.$v['data_field'] ] = $vv['value'];
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        $item[ 'f'.$v['data_field'] ] = $val;
+                                    }
+                                    break;
+                                }
+                                break;
+                        } # ^ switch
+                    } # ^ foreach
+
+                    $this->importContinueSave($aData, $itemID, $item, $images, $isUpdate, $itemExists, $catsData, $regionsData, $catID, $priceEx, $delivery);
+
+                } while(false);
+
+                # обновляем статистику раз в минуту
+                if ( ! $this->importContinueStatistic($start, $importID, $ic, $ignored)) {
+                    break;
+                }
+
+                unset($dom);
+                $itemExist = $reader->next('item');
+            } while ($itemExist);
+        }
+        $aData['items_processed'] = $ic;
+        $aData['items_processed_parent'] = $ic - $processed;
+
+        return array(
+            'exist'   => $itemExist,
+            'stat'    => $stat,
+        );
+    }
+
+    /**
      * Проверка корректности данных для импортируемого объявления
      */
     protected function importContinueSave(& $aData, $itemID, & $item, & $images, $isUpdate, & $itemExists, & $catsData, & $regionsData, $catID, & $priceEx, $delivery)
@@ -1462,6 +1972,10 @@ class BBSItemsImport_ extends Component
         static $imagesReload;
         if( ! isset($imagesReload)) {
             $imagesReload = config::sys('bbs.import.photos.reload', false, TYPE_BOOL);
+        }
+        static $titleAuto;
+        if( ! isset($titleAuto)) {
+            $titleAuto = config::sysAdmin('bbs.import.title.auto', false, TYPE_BOOL);
         }
         $importID = $aData['id'];
         $ignored   = & $aData['items_ignored'];
@@ -1477,6 +1991,11 @@ class BBSItemsImport_ extends Component
         $ownerType = ( $import_shopID ? BBS::OWNER_BUSINESS : BBS::OWNER_PRIVATE );
         # дата завершения публикации
         $publicatedTo = $aData['publicatedTo'];
+
+        if (empty($item['user_id'])) {
+            $ignored++;
+            return; # не указан user_id игнорируем <item>
+        }
 
         # 1. неудалось получить данные категории по ID
         # 2. есть подкатегории => необходимо указывать самую "глубокую" подкатегорию
@@ -1529,6 +2048,49 @@ class BBSItemsImport_ extends Component
         } else {
             $item['reg_path'] = '-'.join('-', $regionsData[$item['city_id']]['db']).'-';
         }
+
+        # формирование автозаголовков
+        if ($titleAuto) {
+            static $nearest = array('title' => array(), 'descr' => array(), 'catLangT' => array(), 'catLangD' => array());
+            $autoTplFields = BBS::autoTplFields();
+            $oldTitle = $item['title'];
+            if ($catData['tpl_title_enabled']) {
+                if ( ! isset($nearest['title'][$catID])) {
+                    $nearest['title'][$catID] = BBS::i()->catNearestParent($catID, array_keys($autoTplFields), $catData);
+                }
+                if ($nearest['title'][$catID]) {
+                    if ( ! isset($nearest['catLangT'][$catID])) {
+                        $catLang = BBS::model()->catDataLang($nearest['title'][$catID], array_keys($autoTplFields), array($lang));
+                        $catLang = reset($catLang);
+                        $nearest['catLangT'][$catID] = $catLang;
+                    } else {
+                        $catLang = $nearest['catLangT'][$catID];
+                    }
+                    foreach ($autoTplFields as $k => $v) {
+                        $item[ $v ] = $this->bbs->dpFillTpl($catID, $catLang[$k], $item, $lang);
+                    }
+                }
+                if (empty($item['title'])) {
+                    $item['title'] = $oldTitle;
+                }
+                $item['title_edit'] = $item['title'];
+                $item['title'] = HTML::escape($item['title_edit']);
+            }
+            if ( ! isset($nearest['descr'][$catID])) {
+                $nearest['descr'][$catID] = BBS::i()->catNearestParent($catID, array('tpl_descr_list'), $catData);
+            }
+            if ($nearest['descr'][$catID]) {
+                if ( ! isset($nearest['catLangD'][$catID])) {
+                    $catLang = BBS::model()->catDataLang($nearest['title'][$catID], array('tpl_descr_list'), array($lang));
+                    $catLang = reset($catLang);
+                    $nearest['catLangD'][$catID] = $catLang;
+                } else {
+                    $catLang = $nearest['catLangD'][$catID];
+                }
+                $item['descr_list'] = $this->bbs->dpFillTpl($catID, $catLang['tpl_descr_list'], $item, $lang);
+            }
+        }
+
 
         # формируем URL объявления (@items.search@translit-ID.html)
         $item['keyword'] = mb_strtolower(func::translit($item['title']));
@@ -1765,6 +2327,60 @@ class BBSItemsImport_ extends Component
     }
 
     /**
+     * Создание пользователя по e-mail
+     * @param string $email Email пользователя
+     * @param array $resultFields список полей с данными для возвращения значения
+     * @param bool $isFake создавать фейковых пользователей
+     * @return array
+     */
+    protected function userCreate($email, $resultFields = array('user_id'), $isFake = false)
+    {
+        do {
+
+            if ( ! $this->input->isEmail($email)) break;
+
+            $data = array(
+                'email' => $email,
+            );
+
+            $login = mb_strtolower(mb_substr($email, 0, mb_strpos($email, '@')));
+            $loginHash = '';
+
+            $data['password_salt'] = $this->security->generatePasswordSalt();
+            $data['password'] = $this->security->getUserPasswordMD5(func::generator(5), $data['password_salt']);
+
+            $data['activated'] = 1;
+            $data['contacts'] = '{}';
+
+            $data['user_id_ex'] = func::generator(6);
+            if($isFake) {
+                $data['fake'] = 1;
+            }
+            $i = 0;
+            do{
+                $exist = Users::model()->userDataByFilter(array('login' => $login.$loginHash), array('user_id'));
+                if (empty($exist['user_id'])) {
+                    break;
+                } else {
+                    $loginHash = rand(12345, 54321);
+                }
+                $i++;
+            } while($i < 5);
+            if ($i < 5) {
+                $data['login'] = $login.$loginHash;
+            }
+
+            $userID = Users::model()->userCreate($data, Users::GROUPID_MEMBER);
+
+            if ( ! $userID) break;
+
+            return Users::model()->userData($userID, $resultFields);
+
+        } while (false);
+        return array();
+    }
+
+    /**
      * Формирование шаблона для импорта
      * @param array $settings параметры
      */
@@ -1801,17 +2417,17 @@ class BBSItemsImport_ extends Component
     }
 
     /**
-     * Отмена импорта по ID
-     * @param integer $importID ID импорта
+     * Отмена импорта (группы)
+     * @param array $filter фильтр списка импортов
      */
-    public function importCancel($importID)
+    public function importCancel(array $filter = array())
     {
 
-        $this->bbs->model->importUpdateByFilter(array(
-            'status'    => array(self::STATUS_WAITING, self::STATUS_PROCESSING),
-            'id'        => $importID,
-        ), array(
-            'status'         => self::STATUS_CANCELED,
+        if ( ! isset($filter['status'])) {
+            $filter['status'] = array(static::STATUS_WAITING, static::STATUS_PROCESSING);
+        }
+        $this->bbs->model->importUpdateByFilter($filter, array(
+            'status'         => static::STATUS_CANCELED,
             'status_changed' => $this->db->now(),
         ));
    }
@@ -2346,10 +2962,43 @@ class BBSItemsImport_ extends Component
             return $value;
         };
 
+        # дин. свойства
+        $this->bbs->dp()->setCurrentLanguage($langKey);
+        $aDynprops = $this->bbs->dp()->getByOwner($catData['id'], true, true, false);
+        $itemFields = array();
+        if ($aDynprops) {
+            foreach ($aDynprops as $param) {
+                $itemFields[] = 'I.f' . $param['data_field'];
+                if ( ! empty($param['parent'])) {
+                    $parent = &$param;
+                    $children = array();
+                    foreach ($parent['multi'] as $value) {
+                        $children[] = array('parent_id'=>$parent['id'], 'parent_value'=>$value['value']);
+                    }
+                    $children = $this->bbs->dp()->getByParentIDValuePairs($children);
+                    if (empty($children[$parent['id']])) continue;
+                    $children = $children[$parent['id']];
+                    $child = current($children);
+                    $itemFields[] = 'I.f' . $child['data_field'];
+                }
+            }
+        }
+
         $aData = $this->bbs->model->itemsListExport($itemsFilter, false, array(
             'lang'  => $langKey,
             'limit' => $limit,
+            'fields' => $itemFields,
         ));
+
+        # карта для полей дин.свойств вида f1 => param-1
+        foreach ($itemFields as & $v) {
+            $v = substr($v, 2);
+        } unset($v);
+        $itemFields = array_flip($itemFields);
+        foreach ($itemFields as $k => & $v) {
+            $v = 'param-'.substr($k, 1);
+        } unset($v);
+
         if ($aData) {
             $aItemId = array_keys($aData);
             $i = new BBSItemImages();
@@ -2360,6 +3009,7 @@ class BBSItemsImport_ extends Component
                 $item = array();
                 $item['item-id'] = $isAdmin ? $v['id'] : mt_rand(1,1000);
                 $item['item-external'] = 0;
+                $item['user'] = $v['user_id'];
 
                 # заголовок
                 $item['title'] = $value( $isAdmin ? $v['title'] : _t('bbs.import', 'Заголовок объявления'));
@@ -2432,6 +3082,14 @@ class BBSItemsImport_ extends Component
                     }
                 }
                 $item['video'] = $v['video'];
+
+                # DP
+                foreach($itemFields as $kk => $vv) {
+                    if (isset($v[$kk])) {
+                        $item[ $vv ] = $v[$kk];
+                    }
+                }
+
                 $save = array();
                 foreach ($fields as $f) {
                     $save[$f] = isset($item[$f]) ? $item[$f] : '';
@@ -2449,17 +3107,22 @@ class BBSItemsImport_ extends Component
     /**
      * Отменяем все импорты пользователя
      * @param int $nUserID ID пользователя
+     * @param array $opts доп. параметры:
+     *  string 'reason' текст причины отмены
      */
-    public function cancelUserImport($nUserID)
+    public function cancelUserImport($nUserID, array $opts = array())
     {
+        $update = array(
+            'status'         => self::STATUS_CANCELED,
+            'status_changed' => $this->db->now(),
+        );
+        if ( ! empty($opts['reason']) && is_string($opts['reason'])) {
+            $update['status_comment'] = serialize(array('message'=>$opts['reason']));
+        }
         $this->bbs->model->importUpdateByFilter(array(
             'status'  => array(self::STATUS_WAITING, self::STATUS_PROCESSING),
             'user_id' => $nUserID
-        ), array(
-            'status'         => self::STATUS_CANCELED,
-            'status_changed' => $this->db->now(),
-            'status_comment' => serialize(array('message'=>_t('bbs.import', 'Блокировка пользователя')))
-        ));
+        ), $update);
     }
 
     /**
@@ -2748,10 +3411,10 @@ class BBSItemsImport_ extends Component
                 'time' => '+30 days',
             ),
         ));
-        func::sortByPriority($aTypes);
         foreach ($aTypes as $k => & $v) {
             $v['id'] = $k;
         } unset($v);
+        func::sortByPriority($aTypes, 'priority', true);
         if ($bSelectOptions) {
             return HTML::selectOptions($aTypes, $nSelectedID, false, 'id', 'title');
         }

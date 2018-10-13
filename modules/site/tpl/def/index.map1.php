@@ -18,9 +18,17 @@
             foreach ($cats as $k => $v): ?>
                 <div class="index__catlist__item i<?= $catCnt % 2 ?>">
                     <div class="index__catlist__item__vert">
+                        <?php if ($v['items'] > 0) { ?>
                         <a href="<?= $v['l'] ?>" class="img"><img src="<?= $v['i'] ?>" alt=""/></a>
+                        <?php } else { ?>
+                        <span class="img hidden-link" data-link="<?= $v['l'] ?>"><img src="<?= $v['i'] ?>" alt=""/></span>
+                        <?php } ?>
                         <div class="title">
+                            <?php if ($v['items'] > 0) { ?>
                             <a href="<?= $v['l'] ?>"><?= $v['t'] ?></a>
+                            <?php } else { ?>
+                            <span class="hidden-link" data-link="<?= $v['l'] ?>"><?= $v['t'] ?></span>
+                            <?php } ?>
                             <span class="index__catlist__item__count">(<?= $v['items'] ?>)</span>
                         </div>
                     </div>
@@ -49,7 +57,13 @@
                     foreach ($regions as $k => $reg) {
                         if($reg['numlevel'] != Geo::lvlCity) continue;
                         if (++$i > 8) break; ?>
-                        <li><a href="<?= $reg['l'] ?>"><strong><?= $reg['title'] ?></strong></a></li>
+                        <li>
+                            <?php if ($reg['items'] > 0) { ?>
+                            <a href="<?= $reg['l'] ?>"><strong><?= $reg['title'] ?></strong></a>
+                            <?php } else { ?>
+                            <span class="hidden-link" data-link="<?= $reg['l'] ?>"><strong><?= $reg['title'] ?></strong></span>
+                            <?php } ?>
+                        </li>
                         <? unset($regions[$k]);
                     } ?>
                 </ul>
@@ -60,7 +74,13 @@
                         if($reg['numlevel'] != Geo::lvlCity) continue;
                         if(++$i > $catCnt) break;
                         ?>
-                        <li><a href="<?= $reg['l'] ?>"><?= $reg['title'] ?></a></li>
+                        <li>
+                            <?php if ($reg['items'] > 0) { ?>
+                            <a href="<?= $reg['l'] ?>"><?= $reg['title'] ?></a>
+                            <?php } else { ?>
+                            <span class="hidden-link" data-link="<?= $reg['l'] ?>"><?= $reg['title'] ?></span>
+                            <?php } ?>
+                        </li>
                     <? } ?>
                 </ul>
                 <? endif; ?>

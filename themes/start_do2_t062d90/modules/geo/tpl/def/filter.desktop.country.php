@@ -48,7 +48,7 @@ else if ($step == 2)
     ?>
     <div class="l-regions-heading">
       <div class="l-regions-heading-left">
-        <h3 class="l-regions-heading-title"><?= $region['title'] ?></h3>
+        <div class="l-regions-heading-title"><?= $region['title'] ?></div>
       </div>
       <div class="l-regions-heading-right">
         <span class="l-regions-heading-right-item">

@@ -11,15 +11,15 @@
 
     <? foreach($list as $v) { $v['link'] = Blog::urlDynamic($v['link']); ?>
     <div class="b-list-item">
-        <div class="b-article_date"><?= tpl::dateFormat($v['created'], '%d.%m.%Y в %H:%M') ?></div>
+        <div class="b-article_date"><?= tpl::dateFormat($v['created'], _t('blog','%d.%m.%Y в %H:%M')) ?></div>
         <? if($v['preview']):?>
             <a href="<?= $v['link'] ?>" class="sr-page__list__item__img">
-                <img src="<?= BlogPostPreview::url($v['id'], $v['preview'], BlogPostPreview::szList) ?>">
+                <img src="<?= BlogPostPreview::url($v['id'], $v['preview'], BlogPostPreview::szList) ?>" />
             </a>
         <? endif; ?>
-        <h3>
+        <div class="b-list-item__title">
             <a href="<?= $v['link'] ?>"><?= $v['title'] ?></a>
-        </h3>
+        </div>
         <p><?= $v['textshort'] ?></p>
         <a href="<?= $v['link'] ?>"><?= $lang_more ?></a> &rarr;
     </div>

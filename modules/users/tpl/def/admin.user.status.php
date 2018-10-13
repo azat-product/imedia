@@ -13,15 +13,21 @@
         <span class="bold"><?= _t('', 'неактивирован'); ?></span> <a class="ajax desc" onclick="<?= $jObject ?>.activate(this); return false;">(<?= _t('', 'активировать'); ?>)</a>
     </div>
     <? } ?>
+    <? if ($fake && $popup) { ?>
+    <div class="alert text-center">
+        <span class="bold"><?= _t('', 'сгенерированный пользователь'); ?></span>
+    </div>
+    <? } ?>
+
     <div class="alert alert-error <?= ( ! $blocked ? ' hidden':'') ?> u_status_block" style="margin-bottom: 5px; padding: 10px 20px;">
         <div><?= _t('users', 'Причина блокировки:'); ?></div>
         <div class="u_blocked">
-            <span class="u_blocked_text"><?= ( ! empty($blocked_reason) ? nl2br($blocked_reason) :'?') ?></span> - <a href="#" onclick="<?= $jObject ?>.changeBlocked(1,0); return false;" class="ajax desc"><?= _t('', 'изменить'); ?></a>
+            <span class="u_blocked_text"><?= ( ! empty($blocked_reason) ? nl2br($blocked_reason) :'?') ?></span> - <a href="javascript:void(0);" onclick="<?= $jObject ?>.changeBlocked(1,0); return false;" class="ajax desc"><?= _t('', 'изменить'); ?></a>
         </div>
         <div class="u_blocking" style="display: none;">
             <textarea name="blocked_reason" class="stretch u_blocked_reason" style="height:60px; min-height:60px;"><?= $blocked_reason; ?></textarea>
-            <a onclick="<?= $jObject ?>.changeBlocked(3,1); return false;" class="btn btn-mini btn-success" href="#"><?= ( ! $blocked ? _t('', 'продолжить'):_t('', 'изменить причину')) ?></a>
-            <a onclick="<?= $jObject ?>.changeBlocked(2); return false;" class="btn btn-mini" href="#"><?= _t('', 'отмена'); ?></a>
+            <a onclick="<?= $jObject ?>.changeBlocked(3,1); return false;" class="btn btn-mini btn-success" href="javascript:void(0);"><?= ( ! $blocked ? _t('', 'продолжить'):_t('', 'изменить причину')) ?></a>
+            <a onclick="<?= $jObject ?>.changeBlocked(2); return false;" class="btn btn-mini" href="javascript:void(0);"><?= _t('', 'отмена'); ?></a>
         </div>
     </div>
     <? bff::hook('users.admin.user.form.status', array('data'=>&$aData,'popup'=>$popup,'blockID'=>'u_status_block'.($popup ? '_popup' : ''))); ?>

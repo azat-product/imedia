@@ -10,19 +10,22 @@ class Site_ extends SiteBase
         $aData = array('titleh1' => '', 'seotext' => '');
         $region = Geo::filterUrl(); # seo
         if (!empty($region['id'])) {
+            View::setPageData([
+                'index_region_id' => $region['id'],
+                'index_region_data' => $region,
+            ]);
             # главная региона => список объявлений
-            if (config::sysTheme('bbs.index.region.search', false, TYPE_BOOL)) {
+            if (config::sysTheme('bbs.index.region.search', true, TYPE_BOOL)) {
                 bff::setActiveMenu('//index');
                 return BBS::i()->search();
             }
             # seo: Главная страница (регион)
-            $this->seo()->canonicalUrl(static::url('index-geo', $region, true));
+            $this->seo()->canonicalUrl(Geo::url($region, true));
             $this->setMeta('index-region', array(
                 'region' => ($region['city'] ? $region['city'] :
                     ($region['region'] ? $region['region'] :
                         ($region['country'] ? $region['country'] : '')))
-            ), $aData
-            );
+            ), $aData);
         } else {
             # seo: Главная страница
             $this->seo()->canonicalUrl(static::url('index', array(), true));
@@ -31,18 +34,26 @@ class Site_ extends SiteBase
 
         # Варианты центрального блока главной
         if (DEVICE_DESKTOP_OR_TABLET) {
-            $indexTemplate = config::get('site_index_tpl','index.default');
-            if (bff::theme() !== false) {
+            $indexTemplate = 'index.default';
+            if (bff::theme() !== false && bff::theme()->configExists('site.index.template')) {
                 $indexTemplate = bff::theme()->config('site.index.template', $indexTemplate);
             }
 
             $indexTemplate = static::indexTemplates($indexTemplate);
+            $initRegions = !empty($indexTemplate['regions']);
+            $initMap = !empty($indexTemplate['map']);
             $regionID = Geo::coveringRegion();
             if (is_array($regionID)) {
-                $regionID = reset($regionID);
+                $filter = Geo::filter();
+                if ( ! empty($filter['id']) && in_array($filter['id'], $regionID)) {
+                    # применим карту для страны из фильтра
+                    $regionID = $filter['id'];
+                } else {
+                    $regionID = reset($regionID);
+                }
             }
 
-            if ($indexTemplate['regions'] || $indexTemplate['map']) {
+            if ($initRegions || $initMap) {
                 $regions = Geo::model()->regionsList(array(Geo::lvlRegion, Geo::lvlCity), array(':reg' => '(R.country = ' . $regionID . ' AND R.main > 0) OR R.pid = ' . $regionID));
                 $items = BBS::model()->itemsCountByFilter(array(
                     'cat_id' => 0,
@@ -54,14 +65,14 @@ class Site_ extends SiteBase
                 if (!empty($regions)) {
                     foreach ($regions as &$v) {
                         $v['items'] = ! empty($items[ $v['id'] ]['items']) ? $items[ $v['id'] ]['items'] : 0;
-                        $v['l'] = BBS::url('items.search', array('region' => $v['keyword'])) . '?region=' . $v['id'];
+                        $v['l'] = BBS::url('items.search', array('region' => $v['keyword']));
                     } unset($v);
                 }
             }
-            if ($indexTemplate['map']) {
+            if ($initMap) {
                 $aData['map'] = Geo::i()->regionMap($regionID, $regions);
             }
-            if ($indexTemplate['regions']) {
+            if ($initRegions) {
                 uasort($regions, function($a, $b){
                     if ($a['numlevel'] == $b['numlevel']) {
                         return $a['items'] < $b['items'];
@@ -78,7 +89,7 @@ class Site_ extends SiteBase
         }
         $aData['cats'] = BBS::i()->catsList('index', bff::DEVICE_DESKTOP, 0);
         if (DEVICE_DESKTOP_OR_TABLET) {
-            $aData['centerBlock'] = $this->viewPHP($aData, $indexTemplate['tpl']);
+            $aData['centerBlock'] = $this->viewPHP($aData, $indexTemplate['file']);
         }
         $aData['lastBlog'] = Blog::i()->indexLastBlock();
 
@@ -135,6 +146,8 @@ class Site_ extends SiteBase
             if (isset($aData['svc_shops'][Shops::SERVICE_ABONEMENT])) {
                 unset($aData['svc_shops'][Shops::SERVICE_ABONEMENT]);
             }
+        } else {
+            $aData['svc_shops'] = array();
         }
         $aData['user_logined'] = (User::id() > 0);
 
@@ -259,37 +272,11 @@ class Site_ extends SiteBase
     }
 
     /**
-     * Cron: Формирование файла Sitemap.xml
+     * Cron: Чистка мусора
      * Рекомендуемый период: раз в сутки
      */
-    public function cronSitemapXML()
+    public function cronCleaner()
     {
-        $data = array();
-
-        # Посадочные страницы
-        if (SEO::landingPagesEnabled()) {
-            $data['landingpages'] = SEO::model()->landingpagesSitemapXmlData();
-        }
-
-        # Блог
-        if (bff::moduleExists('blog')) {
-            $data['blog'] = Blog::model()->postsSitemapXmlData();
-        }
-
-        # Объявления
-        $data['items'] = BBS::model()->itemsSitemapXmlData();
-
-        # Дополнительно
-        $data = bff::filter('site.cron.sitemapXML', $data);
-
-        # Строим XML
-        ini_set('memory_limit', '2048M');
-        $sitemap = new CSitemapXML();
-        $sitemap->setPing(config::sysAdmin('site.sitemapXML.ping', true, TYPE_BOOL));
-        $sitemap->buildIterator($data, 'sitemap', bff::path(''), bff::url(''), config::sysAdmin('site.sitemapXML.gzip', true, TYPE_BOOL));
-
-        # Self-cleaning:
-
         # Удаление временных файлов изображений / файлов
         $this->temporaryDirsCleanup(array(
             bff::path('tmp', 'images'),
@@ -332,7 +319,7 @@ class Site_ extends SiteBase
     {
 
         return array(
-            'cronSitemapXML' => array('period' => '0 0 * * *'),
+            'cronCleaner' => array('period' => '0 0 * * *'),
             'cronCurrencyRate' => array('period' => '0 10 * * *'),
         );
     }

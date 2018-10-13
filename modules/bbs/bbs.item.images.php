@@ -11,6 +11,8 @@ class BBSItemImages_ extends CImagesUploaderTable
     const szZoom = 'z'; # zoom - просмотр zoom
     const szOrginal = 'o'; # original - оригинальное изображение
 
+    protected $urlDefaultCache = [];
+
     protected function initSettings()
     {
         $this->path = bff::path('items', 'images');
@@ -43,6 +45,7 @@ class BBSItemImages_ extends CImagesUploaderTable
                 'watermark_pos_y' => $watermark['pos_y'],
             );
         }
+        $watermarkSettings = bff::filter('bbs.items.images.wm', $watermarkSettings);
 
         # размеры изображений
         $this->sizes = bff::filter('bbs.items.images.sizes', array(
@@ -66,15 +69,12 @@ class BBSItemImages_ extends CImagesUploaderTable
                     'height'   => false,
                     'vertical' => array('width' => false, 'height' => 670) + $watermarkSettings,
                 ) + $watermarkSettings,
-            self::szOrginal => array('o' => true),
-/*
             self::szOrginal => array(
                 'o' => true,
                 'width'    => 1000,
                 'height'   => false,
                 'vertical' => array('width' => false, 'height' => 670),
             ),
-*/
         ), $watermarkSettings);
 
         # размеры изображений, полный URL которых необходимо кешировать
@@ -154,9 +154,21 @@ class BBSItemImages_ extends CImagesUploaderTable
         $this->watermarkSettings($settings);
     }
 
-    public function urlDefault($sSizePrefix)
+    /**
+     * URL изображения по умолчанию
+     * @param string $sizePrefix префикс размера
+     * @return string URL
+     */
+    public function urlDefault($sizePrefix)
     {
-        return $this->url . 'def-' . $sSizePrefix . '.png';
+        if ( ! array_key_exists($sizePrefix, $this->urlDefaultCache)) {
+            if (preg_match('/^([a-zA-Z0-9]+)\:([a-z]+)$/i', $sizePrefix, $matches) && !empty($matches[2])) {
+                $this->urlDefaultCache[$sizePrefix] = bff::url('/files/images/items/def-' . $matches[1] . '.' . $matches[2]);
+            } else {
+                $this->urlDefaultCache[$sizePrefix] = bff::url('/files/images/items/def-' . $sizePrefix . '.png');
+            }
+        }
+        return $this->urlDefaultCache[$sizePrefix];
     }
 
     /**
@@ -262,8 +274,9 @@ class BBSItemImages_ extends CImagesUploaderTable
      */
     public function getMaxSizeKey()
     {
-        $sizes = $this->getSizes();
-        return key(end($sizes));
+        $sizes = $this->getSizes(array(static::szOrginal));
+        end($sizes);
+        return key($sizes);
     }
 
     /**

@@ -16,12 +16,20 @@
       <div class="col-sm-6">
         <div class="index-categories-item <?= $catCnt%2 ?>">
           <div class="index-categories-item-img">
+            <?php if ($v['items'] > 0) { ?>
             <a href="<?= $v['l'] ?>" class="img"><img src="<?= $v['i'] ?>" alt="" /></a>
+            <?php } else { ?>
+            <span class="hidden-link img" data-link="<?= $v['l'] ?>"><img src="<?= $v['i'] ?>" alt="" /></span>
+            <?php } ?>
           </div>
           <div class="index-categories-item-content">
             <div class="index-categories-item-title">
-              <a href="<?= $v['l'] ?>"><?= $v['t'] ?></a>
-              <span class="index-categories-item-title-count">(<?= $v['items'] ?>)</span>
+                <?php if ($v['items'] > 0) { ?>
+                <a href="<?= $v['l'] ?>"><?= $v['t'] ?></a>
+                <?php } else { ?>
+                <span class="hidden-link" data-link="<?= $v['l'] ?>"><?= $v['t'] ?></span>
+                <?php } ?>
+                <span class="index-categories-item-title-count">(<?= $v['items'] ?>)</span>
             </div>
           </div>
         </div>
@@ -35,7 +43,7 @@
   </div>
   <div class="col-md-4">
     <div class="index-banner">
-      <h2 class="index-banner-title"><?= _t('site','Быстро, легко и бесплатно') ?></h2>
+      <div class="index-banner-title"><?= _t('site','Быстро, легко и бесплатно') ?></div>
       <div class="index-banner-btn">
         <a href="<?= BBS::url('item.add') ?>" class="btn btn-success"><i class="fa fa-plus"></i> <?= _t('site','Подать объявление') ?></a>
       </div>
@@ -53,7 +61,13 @@
         foreach ($regions as $k => $reg) {
           if($reg['numlevel'] != Geo::lvlCity) continue;
           if (++$i > 8) break; ?>
-          <li><a href="<?= $reg['l'] ?>"><strong><?= $reg['title'] ?></strong></a></li>
+            <li>
+                <?php if ($reg['items'] > 0) { ?>
+                <a href="<?= $reg['l'] ?>"><strong><?= $reg['title'] ?></strong></a>
+                <?php } else { ?>
+                <span class="hidden-link" data-link="<?= $reg['l'] ?>"><strong><?= $reg['title'] ?></strong></span>
+                <?php } ?>
+            </li>
           <?php unset($regions[$k]);
         } ?>
       </ul>
@@ -62,7 +76,13 @@
         <?php foreach ($regions as $k => $reg) {
           if($reg['numlevel'] != Geo::lvlCity) continue;
           if(++$i > $catCnt) break; ?>
-          <li><a href="<?= $reg['l'] ?>"><?= $reg['title'] ?></a></li>
+          <li>
+                <?php if ($reg['items'] > 0) { ?>
+                <a href="<?= $reg['l'] ?>"><?= $reg['title'] ?></a>
+                <?php } else { ?>
+                <span class="hidden-link" data-link="<?= $reg['l'] ?>"><?= $reg['title'] ?></span>
+                <?php } ?>
+          </li>
         <?php } ?>
       </ul>
       <?php endif; ?>

@@ -22,7 +22,7 @@
     <div class="f-index__mobile__subcategories__title">
         <a href="<?= $parent['link'] ?>" class="img j-parent" data="{id:<?= $parent['id'] ?>,pid:<?= $parent['pid'] ?>}"><img src="<?= $parent['icon'] ?>" alt="<?= $parent['title'] ?>" /></a>
         <div class="subcat">
-            <a href="#" class="backto block j-back" data="{prev:<?= ( $parent['main'] ? 0 : $parent['pid'] ) ?>}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
+            <a href="javascript:void(0);" class="backto block j-back" data="{prev:<?= ( $parent['main'] ? 0 : $parent['pid'] ) ?>}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
             <p class="title"><strong><?= $parent['title'] ?></strong></p>
         </div>
     </div>

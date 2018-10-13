@@ -18,13 +18,14 @@
                     </a>
                     <div class="v-author__info">
                         <span><?= $user['name'] ?></span><br />
+                        <!-- plugin_user_online_do_block -->
                         <? if($user['region_id']){ ?><small><?= $user['region_title'] ?></small><br /><? } ?>
                         <small><?= _t('users', 'на сайте с [date]', array('date'=>tpl::date_format2($user['created']))) ?></small>
                     </div>
                     <div class="clearfix"></div>
                     <? if($user['has_contacts']): ?>
                     <div class="v-author__contact">
-                        <div class="v-author__contact__title"><span><?= _t('users', 'Контакты') ?>:</span> <a href="#" class="ajax j-user-profile-c-toggler"><?= _t('users', 'показать контакты') ?></a></div>
+                        <div class="v-author__contact__title"><span><?= _t('users', 'Контакты') ?>:</span> <a href="javascript:void(0);" class="ajax j-user-profile-c-toggler"><?= _t('users', 'показать контакты') ?></a></div>
                         <? if( ! empty($user['phones']) ): ?>
                         <div class="v-author__contact_items">
                             <div class="v-author__contact_title"><?= _t('users', 'Тел.') ?></div>
@@ -61,6 +62,13 @@
 
             <div class="l-main l-main_maxtablet">
                 <div class="l-main__content">
+                    <?php if (sizeof($tabs) > 1) { ?>
+                    <ul class="nav nav-tabs mrgt20">
+                        <?php foreach($tabs as $v) { ?>
+                            <li<?php if($v['a']){ ?> class="active"<?php } ?>><a href="<?= $v['url'] ?>"><?= $v['t'] ?></a></li>
+                        <?php } ?>
+                    </ul>
+                    <?php } ?>
                     <?= $content ?>
                 </div>
             </div>
@@ -73,13 +81,14 @@
                     </a>
                     <div class="v-author__info">
                         <span><?= $user['name'] ?></span><br />
+                        <!-- plugin_user_online_do_block -->
                         <? if($user['region_id']){ ?><small><?= $user['region_title'] ?></small><br /><? } ?>
                         <small><?= _t('users', 'на сайте с [date]', array('date'=>tpl::date_format2($user['created']))) ?></small>
                     </div>
                     <div class="clearfix"></div>
                     <? if($user['has_contacts']): ?>
                     <div class="v-author__contact">
-                        <div class="v-author__contact__title"><span><?= _t('users', 'Контакты') ?>:</span> <a href="#" class="ajax j-user-profile-c-toggler"><?= _t('users', 'показать контакты') ?></a></div>
+                        <div class="v-author__contact__title"><span><?= _t('users', 'Контакты') ?>:</span> <a href="javascript:void(0);" class="ajax j-user-profile-c-toggler"><?= _t('users', 'показать контакты') ?></a></div>
                         <? if( ! empty($user['phones']) ): ?>
                         <div class="v-author__contact_items">
                             <div class="v-author__contact_title"><?= _t('users', 'Тел.') ?></div>

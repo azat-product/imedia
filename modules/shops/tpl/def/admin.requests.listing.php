@@ -150,13 +150,13 @@ var jShopsRequestsList =
         $listPgn   = $block.find('#ShopsRequestsListPgn');
         filters    = $block.find('#ShopsRequestsListFilters').get(0);
 
-        $list.delegate('a.request-edit', 'click', function(){
+        $list.on('click','a.request-edit', function(){
             var id = intval($(this).data('id'));
             if(id>0) jShopsRequestsFormManager.action('edit',id);
             return false;
         });
 
-        $list.delegate('a.request-toggle', 'click', function(){
+        $list.on('click','a.request-toggle', function(){
             var id = intval($(this).data('id'));
             var type = $(this).data('type');
             if(id>0) {
@@ -166,13 +166,13 @@ var jShopsRequestsList =
             return false;
         });
 
-        $list.delegate('a.request-del', 'click', function(){
+        $list.on('click','a.request-del', function(){
             var id = intval($(this).data('id'));
             if(id>0) del(id, this);
             return false;
         });
 
-        $(window).bind('popstate',function(e){
+        $(window).on('popstate',function(e){
             if('state' in window.history && window.history.state === null) return;
             var loc = document.location;
             var actForm = /act=(add|edit)/.exec( loc.search.toString() );

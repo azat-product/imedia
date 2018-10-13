@@ -34,9 +34,7 @@ if ($is_map) {
 }
 ?>
 
-<?php if (DEVICE_DESKTOP_OR_TABLET) {
-  echo tpl::getBreadcrumbs($cats, true, 'breadcrumb');
-} ?>
+<?= tpl::getBreadcrumbs($cats, true, 'breadcrumb'); ?>
 
 <div id="j-view-container" itemscope itemtype="http://schema.org/Product">
   <?php if ($is_publicated_out): ?>
@@ -177,7 +175,7 @@ if ($is_map) {
         <div class="ad-contact">
           <a name="contact-form"></a>
           <div class="l-blockHeading">
-            <h2 class="l-blockHeading-title"><?= _t('view', 'Свяжитесь с автором объявления') ?></h2>
+            <div class="l-blockHeading-title"><?= _t('view', 'Свяжитесь с автором объявления') ?></div>
           </div>
           <div class="ad-contact-block">
             <div class="ad-contact-name">
@@ -228,11 +226,6 @@ if ($is_map) {
         </div><!-- /.ad-contact -->
       <?php } ?>
 
-      <?php if (DEVICE_PHONE) {
-        /* Author */
-        echo $this->viewPHP($aData, 'item.view.owner');
-      } ?>
-
       <div class="l-comments" id="j-comments-block">
         <?php
         /* Comments */
@@ -240,14 +233,16 @@ if ($is_map) {
         ?>
       </div>
 
-      <div class="ad-similar">
-        <?php
-        /* Similar Listings */
-        if ($is_publicated && !$moderation) {
-          echo $similar;
-        }
-        ?>
-      </div>
+        <?php if (!DEVICE_PHONE) { ?>
+            <div class="ad-similar">
+                <?php
+                /* Similar Listings */
+                if ($is_publicated && !$moderation) {
+                    echo $similar;
+                }
+                ?>
+            </div>
+        <? } ?>
 
       <?php if ($bannerSimilar = Banners::view('bbs_view_similar_bottom', array('cat' => $cat_id, 'region' => $city_id))) { ?>
         <div class="l-banner">
@@ -259,7 +254,6 @@ if ($is_map) {
 
     </div><!-- /.l-mainLayout-content -->
 
-    <?php if (DEVICE_DESKTOP) { ?>
     <!-- Sidebar -->
     <div class="l-mainLayout-sidebar">
 
@@ -383,9 +377,19 @@ if ($is_map) {
         </div>
       <?php } # $bannerRight ?>
 
-      <?php } # ! $is_publicated_out ?>
+      <?php if (DEVICE_PHONE) { ?>
+          <div class="ad-similar">
+                <?php
+                /* Similar Listings */
+                if ($is_publicated && !$moderation) {
+                    echo $similar;
+                }
+                ?>
+            </div>
+      <? } ?>
+
     </div>
-    <?php } # DEVICE_DESKTOP ?>
+    <?php } # ! $is_publicated_out ?>
 
   </div><!-- /.l-mainLayout -->
 

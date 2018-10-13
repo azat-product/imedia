@@ -101,24 +101,13 @@ class UsersSocial_ extends Component
 
         $sProviderKey = mb_strtolower($sProviderKey);
 
-        $hybridConfig = config::file('social');
-        $hybridConfig['base_url'] = Users::url('login.social');
         if (!class_exists('Hybrid_Auth')) {
             $hybridPath = PATH_CORE . 'external'.DS.'hybridauth'.DS;
             require_once modification($hybridPath . 'Hybrid'.DS.'Auth.php');
         } else {
             $hybridPath = PATH_BASE . 'vendor'.DS.'hybridauth'.DS;
         }
-        foreach ($hybridConfig['providers'] as $k=>&$v) {
-            if (!file_exists($hybridPath.'hybridauth/hybridauth/Hybrid/Providers/'.$k.'.php')) {
-                if (!isset($v['wrapper'])) {
-                    $v['wrapper'] = array(
-                        'class' => 'Hybrid_Providers_'.$k,
-                        'path'  => $hybridPath.'hybridauth/additional-providers/hybridauth-'.mb_strtolower($k).'/Providers/'.$k.'.php',
-                    );
-                }
-            }
-        } unset($v);
+        $hybridConfig = Users::socialConfig(array('path'=>$hybridPath));
 
         try {
             if (empty($sProviderKey)) {

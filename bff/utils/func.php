@@ -2,8 +2,9 @@
 
 /**
  * Вспомогательные функции
- * @version 0.54
- * @modified 25.mar.2018
+ * @version 0.57
+ * @modified 15.jul.2018
+ * @copyright Tamaranga
  */
 abstract class func
 {
@@ -207,6 +208,9 @@ abstract class func
         }
         if (empty($encOut)) {
             $encOut = 'utf-8';
+        }
+        if ($encIn === 'utf-8') {
+            TextParser::cleanUtf8($text);
         }
 
         $text = iconv($encIn, 'utf-8', $text);

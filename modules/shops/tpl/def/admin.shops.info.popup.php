@@ -11,7 +11,7 @@
                 <tr>
                     <td class="row1 field-title right" width="134"><?= _t('shops', 'Владелец:'); ?></td>
                     <td class="row2">
-                        <?= ($user_id ? '<a href="#"  class="ajax'.($user['blocked'] ? ' text-error':'').'" onclick="return bff.userinfo('.$user_id.');">'.$user['email'].'</a>' : '<i>'._t('shops', 'не указан').'</i>' ); ?>
+                        <?= ($user_id ? '<a href="javascript:void(0);"  class="ajax'.($user['blocked'] ? ' text-error':'').'" onclick="return bff.userinfo('.$user_id.');">'.$user['email'].'</a>' : '<i>'._t('shops', 'не указан').'</i>' ); ?>
                     </td>
                 </tr>
                 <tr>

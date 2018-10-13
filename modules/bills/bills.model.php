@@ -32,6 +32,9 @@ class BillsModel_ extends BillsModelBase
         if (empty($data)) {
             return array();
         }
+        foreach ($data as &$v) {
+            $v['is_minus'] = in_array($v['type'], array(Bills::TYPE_OUT_ADMIN, Bills::TYPE_OUT_SERVICE));
+        } unset($v);
         # получение данных по item_id
         $itemsData = array();
         foreach (array('bbs', 'shops') as $module) {
@@ -60,5 +63,16 @@ class BillsModel_ extends BillsModelBase
         }
 
         return $data;
+    }
+
+    /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        if (empty($userID)) return;
+        $this->db->update(TABLE_BILLS, array('user_id' => 0), array('user_id' => $userID));
     }
 }

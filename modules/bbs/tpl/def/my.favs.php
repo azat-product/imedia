@@ -54,11 +54,11 @@
             <ul class="dropdown-menu">
                 <? foreach($cats as $v) {
                     if( empty($v['sub']) ) {
-                        ?><li><a href="#" data-value="<?= $v['id'] ?>" class="j-cat-option"><?= $v['title'] ?></a></li><?
+                        ?><li><a href="javascript:void(0);" data-value="<?= $v['id'] ?>" class="j-cat-option"><?= $v['title'] ?></a></li><?
                     } else {
                         ?><li class="nav-header"><?= $v['title'] ?></li><?
                         foreach($v['sub'] as $vv) {
-                            ?><li><a href="#" data-value="<?= $vv['id'] ?>" class="j-cat-option"><?= $vv['title'] ?></a></li><?
+                            ?><li><a href="javascript:void(0);" data-value="<?= $vv['id'] ?>" class="j-cat-option"><?= $vv['title'] ?></a></li><?
                         }
                     }
                 } ?>
@@ -66,7 +66,7 @@
         </li>
     </ul>
     <div class="pull-right">
-        <a href="#" class="ajax ajax-ico pseudo-link-ajax u-cabinet__sub-navigation__clear j-cleanup">
+        <a href="javascript:void(0);" class="ajax ajax-ico pseudo-link-ajax u-cabinet__sub-navigation__clear j-cleanup">
             <i class="fa fa-times"></i>
             <span class="hidden-phone"><?= _t('bbs', 'Очистить избранное') ?></span>
             <span class="visible-phone"><?= _t('bbs', 'Очистить') ?></span>
@@ -75,17 +75,10 @@
     <div class="clearfix"></div>
 </div>
 
-<? # Список объявлений ?>
+<?php # Список объявлений ?>
 <div id="j-my-favs-list">
-    <div class="j-list-<?= bff::DEVICE_DESKTOP ?> j-list-<?= bff::DEVICE_TABLET ?>">
-        <? if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET ) {
-            echo $this->searchList(bff::DEVICE_DESKTOP, $f['lt'], $items);
-        } ?>
-    </div>
-    <div class="j-list-<?= bff::DEVICE_PHONE ?>">
-        <? if( $device == bff::DEVICE_PHONE ) {
-            echo $this->searchList(bff::DEVICE_PHONE, $f['lt'], $items);
-        } ?>
+    <div class="j-list-<?= bff::DEVICE_DESKTOP ?> j-list-<?= bff::DEVICE_TABLET ?> j-list-<?= bff::DEVICE_PHONE ?>">
+        <?= $this->searchList(false, $f['lt'], $items); ?>
     </div>
 </div>
 
@@ -103,7 +96,7 @@
             </a>
             <ul class="dropdown-menu">
                 <? foreach($pgn_pp as $k=>$v): ?>
-                    <li><a href="#" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
+                    <li><a href="javascript:void(0);" class="<? if($k == $f['pp']) { ?>active <? } ?>j-pp-option" data-value="<?= $k ?>"><?= $v['t'] ?></a></li>
                 <? endforeach; ?>
             </ul>
         </li>

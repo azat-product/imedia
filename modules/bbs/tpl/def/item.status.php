@@ -114,11 +114,11 @@ switch($state)
                 </div>
                 <? if($phone_change_allowed) { ?>
                 <div class="u-authorize-form_code_link">
-                    <a href="#" class="ajax j-u-register-phone-change-step1-btn"><?= _t('users', 'Изменить номер телефона') ?></a>
+                    <a href="javascript:void(0);" class="ajax j-u-register-phone-change-step1-btn"><?= _t('users', 'Изменить номер телефона') ?></a>
                 </div>
                 <? } ?>
                 <div class="u-authorize-form_code_link">
-                    <a href="#" class="ajax j-u-register-phone-code-resend-btn"><?= _t('users', 'Выслать новый код подтверждения') ?></a>
+                    <a href="javascript:void(0);" class="ajax j-u-register-phone-code-resend-btn"><?= _t('users', 'Выслать новый код подтверждения') ?></a>
                 </div>
             </div>
         </div>

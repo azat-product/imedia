@@ -28,7 +28,7 @@
     <td class="row2">
         <input maxlength="'.config::sysAdmin('shops.form.title.limit', 50, TYPE_UINT).'" type="text" name="shop_title[<?= $key ?>]" value="<?= HTML::escape($aData[\'title\'][$key]) ?>" class="input-xlarge" />
         '.($edit && bff::$class=='users' && BBS::publisher(BBS::PUBLISHER_USER_TO_SHOP) ? '
-            <a href="#" class="btn btn-small pull-right j-user-shop-delete">'._t('shops', 'удалить магазин').'</a>
+            <a href="javascript:void(0);" class="btn btn-small pull-right j-user-shop-delete">'._t('shops', 'удалить магазин').'</a>
             <div class="clearfix"></div>
         ' : '').'
     </td>
@@ -39,7 +39,7 @@
     <td class="row2">
         <input maxlength="<?= config::sysAdmin('shops.form.title.limit', 50, TYPE_UINT) ?>" type="text" name="shop_title" value="<?= $title ?>" id="shop_title" class="input-xlarge" />
         <? if($edit && bff::$class=='users' && BBS::publisher(BBS::PUBLISHER_USER_TO_SHOP)) { ?>
-            <a href="#" class="btn btn-small pull-right j-user-shop-delete"><?= _t('shops', 'удалить магазин'); ?></a>
+            <a href="javascript:void(0);" class="btn btn-small pull-right j-user-shop-delete"><?= _t('shops', 'удалить магазин'); ?></a>
             <div class="clearfix"></div>
         <? } ?>
     </td>
@@ -52,7 +52,7 @@
         <select class="input-large j-cats-select<? if($edit){ ?> hide<? } ?>"><?= $cats ?></select>
         <div>
             <div class="hide left j-cats-selected"></div>
-            <? if($edit){ ?><a href="#" class="ajax desc j-cats-plus" style="margin-left: 5px;"><?= _t('', '+ добавить'); ?></a><? } ?>
+            <? if($edit){ ?><a href="javascript:void(0);" class="ajax desc j-cats-plus" style="margin-left: 5px;"><?= _t('', '+ добавить'); ?></a><? } ?>
             <div class="clearfix"></div>
         </div>
     </td>
@@ -105,12 +105,12 @@
             <div>
                 <select name="shop_social[<?= $k+1 ?>][t]" class="left" style="margin:3px 5px 0px 0px; width:135px;"><?= Shops::socialLinksTypes(true, $v['t']) ?></select>
                 <input type="text" name="shop_social[<?= $k+1 ?>][v]" value="<?= HTML::escape($v['v']) ?>" class="left input-xxlarge" placeholder="ссылка" maxlength="300" />
-                <div class="left" style="margin: 3px 0 0 4px;"><a href="#" class="but cross"></a></div>
+                <div class="left" style="margin: 3px 0 0 4px;"><a href="javascript:void(0);" class="but cross"></a></div>
                 <div class="clear"></div>
             </div>
             <? } } ?>
         </div>
-        <a class="ajax desc" id="shop-social-add" href="#"><?= _t('shops', '+ добавить ссылку'); ?></a>
+        <a class="ajax desc" id="shop-social-add" href="javascript:void(0);"><?= _t('shops', '+ добавить ссылку'); ?></a>
     </td>
 </tr>
 <tr>
@@ -157,7 +157,7 @@
         <div style="margin: 5px 0;">
             <input type="hidden" name="shop_logo_del" id="shop_logo_delete_flag" value="0" />
             <a href="<?= $logo_view ?>" rel="shop-logo-fancybox"><img id="shop_logo" src="<?= $logo_list ?>" alt="" /></a><br />
-            <a href="#" title="<?= _te('shops', 'удалить логотип'); ?>" class="ajax desc cross but-text" onclick="return jShopInfo.deleteLogo(this);"><?= _t('shops', 'удалить логотип'); ?></a>
+            <a href="javascript:void(0);" title="<?= _te('shops', 'удалить логотип'); ?>" class="ajax desc cross but-text" onclick="return jShopInfo.deleteLogo(this);"><?= _t('shops', 'удалить логотип'); ?></a>
         </div>
         <? } ?>
     </td>
@@ -256,7 +256,7 @@
                             title = $optionParent.text().trim() + ' / ' + title;
                         }
                         $catsSelected.append(
-                            '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="#" class="j-cat-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="shop_cats[]" class="j-selected-id" value="'+id+'" /></span>'
+                            '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="javascript:void(0);" class="j-cat-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="shop_cats[]" class="j-selected-id" value="'+id+'" /></span>'
                         ).removeClass('hide');
                     }
                 }
@@ -273,7 +273,7 @@
                         index++; total++;
                         $block.append('<div class="j-phone">\
                                             <input type="text" maxlength="40" name="shop_phones['+index+']" value="'+(value?value.replace(/"/g, "&quot;"):'')+'" class="left j-value" placeholder="<?= _te('shops', 'Номер телефона'); ?>" />\
-                                            <div class="left" style="margin: 3px 0 0 4px;">'+(total==1 ? '<a class="ajax desc j-plus" href="#"><?= _t('shops', '+ еще телефон'); ?></a>' : '<a href="#" class="but cross j-remove"></a>')+'</div>\
+                                            <div class="left" style="margin: 3px 0 0 4px;">'+(total==1 ? '<a class="ajax desc j-plus" href="javascript:void(0);"><?= _t('shops', '+ еще телефон'); ?></a>' : '<a href="javascript:void(0);" class="but cross j-remove"></a>')+'</div>\
                                             <div class="clear"></div>\
                                         </div>');
                     }
@@ -311,13 +311,13 @@
                     var index = <?= sizeof($social) ?>, lmt = <?= Shops::socialLinksLimit() ?>;
                     var total = index;
 
-                    $plus.click(function(){
+                    $plus.on('click',function(){
                         if(lmt>0 && total>=lmt) return false;
                         index++; total++;
                         $block.append('<div>\
                                             <select name="shop_social['+index+'][t]" class="left" style="margin:3px 5px 0px 0px; width:135px;"><?= Shops::socialLinksTypes(true) ?></select>\
                                             <input type="text" name="shop_social['+index+'][v]" value="" class="left input-xxlarge" placeholder="ссылка" maxlength="300" />\
-                                            <div class="left" style="margin: 3px 0 0 4px;"><a href="#" class="but cross"></a></div>\
+                                            <div class="left" style="margin: 3px 0 0 4px;"><a href="javascript:void(0);" class="but cross"></a></div>\
                                             <div class="clear"></div>\
                                         </div>');
                         if(total === lmt) {
@@ -365,7 +365,7 @@
                             updateAddressIgnoreClass: 'typed'
                         });
 
-                        addr.addr.bind('change keyup input', $.debounce(function(){
+                        addr.addr.on('change keyup input', $.debounce(function(){
                             if( ! $.trim(addr.addr.val()).length ) {
                                 addr.addr.removeClass('typed');
                             } else {

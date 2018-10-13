@@ -7,7 +7,7 @@
 
 <div class="tabsBar" id="j-shops-claims-status-tabs">
     <? foreach($aTabs as $k=>$v) { ?>
-    <span class="tab<?= $k==$status ? ' tab-active' : '' ?>"><a href="#" class="j-tab" data-id="<?= $k ?>"><?= $v ?></a></span>
+    <span class="tab<?= $k==$status ? ' tab-active' : '' ?>"><a href="javascript:void(0);" class="j-tab" data-id="<?= $k ?>"><?= $v ?></a></span>
     <? } ?>
 </div>
 
@@ -33,7 +33,7 @@
 <script type="text/javascript">
     $(function(){
         var $filter = $('#j-shops-claims-filter');
-        $('#j-shops-claims-filter-cancel').click(function(e){ nothing(e);
+        $('#j-shops-claims-filter-cancel').on('click',function(e){ nothing(e);
             var filter = $filter.get(0);
             filter.elements.shop.value = '';
             filter.submit();

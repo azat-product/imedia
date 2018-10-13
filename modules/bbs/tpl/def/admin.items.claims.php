@@ -19,12 +19,12 @@
             </div>
             <div class="info" style="margin:0px;">
                 <ul>
-                    <li><p><? if($v['user_id']){ ?><a href="#" onclick="return bff.userinfo(<?= $v['user_id'] ?>);" class="userlink author<? if($v['ublocked'] || $v['udeleted']){ ?> blocked<? } ?>"><?= ( ! empty($v['name']) ? $v['name'] : $v['login'] ) ?></a><? } else { ?><span class="desc"><?= $v['user_ip'] ?></span><? } ?></p></li>
+                    <li><p><? if($v['user_id'] && ! empty($v['login'])){ ?><a href="javascript:void(0);" onclick="return bff.userinfo(<?= $v['user_id'] ?>);" class="userlink author<? if($v['ublocked'] || $v['udeleted']){ ?> blocked<? } ?>"><?= ( ! empty($v['name']) ? $v['name'] : $v['login'] ) ?></a><? } else { ?><span class="desc"><?= $v['user_ip'] ?></span><? } ?></p></li>
                     <li class="date"><?= tpl::date_format2($v['created'], true); ?></li>
-                    <? if(!$v['viewed']){ ?><li><a href="#" class="ajax text-success" onclick="jItemsClaims.viewed(<?= $claimID ?>, this); return false;"><?= _t('bbs', 'Обработана'); ?></a></li><? } ?>
-                    <li><a href="#" class="text-error delete ajax" onclick="jItemsClaims.del(<?= $claimID ?>); return false;"><?= _t('', 'Delete') ?></a></li>
+                    <? if(!$v['viewed']){ ?><li><a href="javascript:void(0);" class="ajax text-success" onclick="jItemsClaims.viewed(<?= $claimID ?>, this); return false;"><?= _t('bbs', 'Обработана'); ?></a></li><? } ?>
+                    <li><a href="javascript:void(0);" class="text-error delete ajax" onclick="jItemsClaims.del(<?= $claimID ?>); return false;"><?= _t('', 'Delete') ?></a></li>
                     <li><a href="<?= BBS::urlDynamic($v['link']) ?>" class="itemlink" target="_blank"><?= _t('bbs', 'Ссылка'); ?></a></li>
-                    <? if($bCommonListing){ ?><li><a href="#" class="itemlink ajax" onclick="return bff.iteminfo(<?= $v['item_id'] ?>);"><?= _t('bbs', 'ОБ #'); ?><?= $v['item_id'] ?></a></li><? } ?>
+                    <? if($bCommonListing){ ?><li><a href="javascript:void(0);" class="itemlink ajax" onclick="return bff.iteminfo(<?= $v['item_id'] ?>);"><?= _t('bbs', 'ОБ #'); ?><?= $v['item_id'] ?></a></li><? } ?>
                 </ul>
             </div>
         </div>

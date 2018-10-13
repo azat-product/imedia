@@ -1,0 +1,197 @@
+.publicator-element {
+  padding: 20px 0;
+  margin: 15px 0;
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  cursor: move;
+  min-height: 80px;
+}
+.publicator-element .form-group {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.publicator-element .form-control {
+  margin-bottom: 7px;
+}
+.publicator-element:hover {
+  border-top: 2px solid #e5e5e5;
+  border-bottom: 2px solid #e5e5e5;
+}
+.publicator-element:hover .publicator-controls {
+  display: block;
+}
+.publicator-element.moving {
+  background: #f7f7f7;
+}
+.publicator-controls {
+  display: none;
+}
+.publicator-controls ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.publicator-controls ul li {
+  display: inline-block;
+  text-align: right;
+}
+.publicator-controls a {
+  font-size: 12px;
+  display: block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  margin-bottom: 5px;
+  color: #aaa;
+}
+.publicator-controls a:hover {
+  border-color: #7ec26c;
+  color: #7ec26c;
+}
+.publicator-controls a:hover.link-delete {
+  color: #dc3535;
+  border-color: #dc3535;
+}
+@media (max-width: 768px) {
+  .publicator-controls {
+    display: block;
+  }
+}
+@media (max-width: 600px) {
+  .publicator-controls ul li {
+    display: block;
+    text-align: left;
+    float: left;
+    margin-right: 10px;
+  }
+  .publicator-controls a {
+    font-size: 14px;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+  }
+}
+.publicator-controls-move {
+  cursor: move;
+}
+.publicator-add {
+  position: absolute;
+  top: -13px;
+  left: 0;
+  height: 20px;
+  width: 100%;
+  text-align: center;
+}
+.publicator-add span {
+  padding: 5px;
+  background: #eee;
+  font-size: 11px;
+  display: none;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.publicator-add:hover span {
+  display: inline;
+}
+.publicator-photo img {
+  max-width: 120px;
+  max-height: 120px;
+}
+@media (max-width: 767px) {
+  .publicator-photo {
+    margin-bottom: 10px;
+  }
+}
+.publicator-photo-progress {
+  text-align: center;
+  height: 75px;
+  line-height: 70px;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+}
+.publicator-gallery {
+  margin-bottom: 10px;
+}
+.publicator-gallery .row + .row {
+  margin-top: 20px;
+}
+.publicator-gallery img {
+  max-width: 80px;
+  max-height: 80px;
+}
+.publicator-gallery-item {
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: move;
+}
+.publicator-gallery-item:hover {
+  border-color: #e5e5e5;
+}
+.publicator-gallery-item + .btn {
+  margin-top: 10px;
+}
+.publicator-gallery-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 -5px;
+}
+.publicator-gallery-list > li {
+  float: left;
+  width: 80px;
+  height: 80px;
+  padding: 5px;
+}
+.publicator-gallery-list:after {
+  display: block;
+  content: '';
+  clear: both;
+}
+.publicator-photo-description {
+  margin-bottom: 7px;
+}
+.publicator-link-delete {
+  color: #dc3535 !important;
+  text-decoration: none !important;
+}
+.publicator-link-delete span {
+  border-bottom: 1px dotted #dc3535;
+}
+.publicator-link-delete:hover > span,
+.publicator-link-delete:focus > span {
+  border-color: transparent !important;
+}
+.publicator-options {
+  margin: 30px auto 0 auto;
+  text-align: center;
+  position: relative;
+}
+.publicator-options a {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  display: inline-block;
+  margin: 0 5px;
+  border-radius: 3px;
+  background: #428bca;
+  color: #fff;
+}
+.publicator-options a:hover {
+  color: #fff;
+  background: #7ec26c;
+}
+@media (max-width: 767px) {
+  .publicator-options a {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+    font-size: 22px;
+    margin: 0 3px;
+  }
+}

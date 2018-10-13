@@ -16,7 +16,7 @@ $lng_quick = _t('bbs', 'срочно');
       <span class="c-carousel-arrow c-carousel-heading-nav-arrow j-prev"><i class="fa fa-chevron-left"></i></span>
       <span class="c-carousel-arrow c-carousel-heading-nav-arrow j-next"><i class="fa fa-chevron-right"></i></span>
     </div>
-    <h2><?= $title ?></h2>
+    <div class="index__heading__title"><?= $title ?></div>
   </div>
   <div id="j-bbs-index-<?= $type ?>-carousel" class="owl-carousel">
     <?php foreach ($items as &$v) {

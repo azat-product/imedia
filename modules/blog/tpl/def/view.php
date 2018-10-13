@@ -8,7 +8,7 @@
  * @var $content string содержание (HTML)
  * @var $tags array теги
  * @var $share_code string код шаринга в соц. сетях
- * @var $next array ссылка на следущий пост
+ * @var $next array ссылка на следующий пост
  */
 ?>
 <div class="row-fluid">
@@ -21,7 +21,7 @@
                 <div class="l-main l-table-cell">
                     <div class="l-main__content">
                         <div class="b-view">
-                                <div class="b-article_date"><?= tpl::dateFormat($created, '%d.%m.%Y в %H:%M') ?></div>
+                                <div class="b-article_date"><?= tpl::dateFormat($created, _t('blog','%d.%m.%Y в %H:%M')) ?></div>
                                 <h1 class="b-title"><?= $title ?></h1>
 
                                 <?= $content ?>

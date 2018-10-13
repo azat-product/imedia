@@ -91,7 +91,7 @@ var jShopsAbonement = (function(){
             $abonChange.find('.j-abonement-price-block').toggle(!hide_pr);
         });
 
-        $select.change(function(){
+        $select.on('change',function(){
             var id = intval($abonChange.find(':checked').val());
             var v = intval($(this).val());
             var pr = o.prices[id][v];

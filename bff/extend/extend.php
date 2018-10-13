@@ -15,12 +15,12 @@ namespace {
 
 # /base
 namespace {
-    class HTML extends \bff\base\HTML {}
-    class js extends \bff\base\js {}
-    class Request extends \bff\base\Request {}
-    class Response extends \bff\base\Response {}
-    class View extends \bff\base\View {}
-    class Logger extends \bff\logs\Logger {}
+    class HTML extends bff\base\HTML {}
+    class js extends bff\base\js {}
+    class Request extends bff\base\Request {}
+    class Response extends bff\base\Response {}
+    class View extends bff\base\View {}
+    class Logger extends bff\logs\Logger {}
 }
 namespace bff\base {
     class Input extends Input_ {}
@@ -56,7 +56,7 @@ namespace {
 
 # /files
 namespace {
-    class CUploader extends \bff\files\Uploader {}
+    class CUploader extends bff\files\Uploader {}
 }
 namespace bff\files {
     class Attachment extends Attachment_ {}
@@ -81,9 +81,9 @@ namespace bff\logs {
 
 # /utils
 namespace {
-    class CSitemapXML extends \bff\utils\Sitemap {}
-    class func extends \bff\utils\func {}
-    class Pagination extends \bff\utils\Pagination {}
+    class CSitemapXML extends bff\utils\Sitemap {}
+    class func extends bff\utils\func {}
+    class Pagination extends bff\utils\Pagination {}
 }
 namespace bff\utils {
     class Files extends Files_ {}
@@ -94,13 +94,14 @@ namespace bff\utils {
 
 # /
 namespace {
-    class Component extends \bff\Component {}
-    class CronManager extends \bff\CronManager {}
-    class Errors extends \bff\Errors {}
-    class CMenu extends \bff\Menu {}
-    class Model extends \bff\Model {}
-    class Hook extends \bff\extend\Hook {}
-    class Hooks extends \bff\extend\Hooks {}
-    class Plugin extends \bff\extend\Plugin {}
-    class Theme extends \bff\extend\Theme {}
+    class Component extends bff\Component {}
+    class CronManager extends bff\CronManager {}
+    class Errors extends bff\Errors {}
+    class CMenu extends bff\Menu {}
+    class Model extends bff\db\Model {}
+    class Hook extends bff\extend\Hook {}
+    class Hooks extends bff\extend\Hooks {}
+    class Plugin extends bff\extend\Plugin {}
+    class Theme extends bff\extend\theme\Base {}
+    class ThemeAddon extends bff\extend\theme\Addon {}
 }

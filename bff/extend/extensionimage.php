@@ -4,6 +4,7 @@
  * Плагинизация: настройки расширения - загрузка изображений
  * @version 0.11
  * @modified 24.jul.2017
+ * @copyright Tamaranga
  */
 
 class ExtensionImage extends \CImagesUploaderField

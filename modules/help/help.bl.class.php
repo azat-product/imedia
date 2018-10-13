@@ -39,26 +39,7 @@ abstract class HelpBase_ extends Module
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # главная
-            case 'index':
-                $url .= '/help/';
-                break;
-            # поиск вопросов
-            case 'search':
-                $url .= '/help/search/' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # список вопросов по категории
-            case 'cat':
-                $url .= '/help/' . (isset($opts['keyword']) ? $opts['keyword'] . '/' : '');
-                break;
-            # просмотр вопроса
-            case 'view':
-                $url .= '/help/' . mb_substr(mb_strtolower(func::translit($opts['title'])), 0, 100) . '-' . $opts['id'] . '.html';
-                break;
-        }
-        return bff::filter('help.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('help-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'help']);
     }
 
     /**

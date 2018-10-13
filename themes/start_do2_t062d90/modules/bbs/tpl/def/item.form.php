@@ -20,9 +20,7 @@ $aData = HTML::escape($aData, 'html', array('title', 'descr', 'addr_addr', 'name
 $autoTitle = !empty($cat_data['tpl_title_enabled']);
 ?>
 
-<?php if (DEVICE_DESKTOP_OR_TABLET) {
-  echo tpl::getBreadcrumbs($breadcrumbs);
-} ?>
+<?= tpl::getBreadcrumbs($breadcrumbs); ?>
 
 <div class="l-pageHeading">
   <h1 class="l-pageHeading-title">
@@ -530,6 +528,8 @@ if ($edit) { ?>
         'price' => _t('item-form', 'Укажите цену'),
       ),
       'autoTitle' => $autoTitle,
+      'catLastTitle' => ! empty($cat_path) ? end($cat_path) : '',
+      'catPath' => $cat_path,
     );
     if ($city_id) {
       $cityData = Geo::model()->regionData(array('id' => $city_id), true);

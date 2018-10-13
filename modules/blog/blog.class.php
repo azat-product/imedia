@@ -286,6 +286,9 @@ class Blog_ extends BlogBase
         if (empty($data)) {
             $this->errors->error404();
         }
+        View::setPageData([
+            'blog_view_id' => $postID,
+        ]);
 
         # Last Modified
         if (!BFF_DEBUG) {
@@ -337,4 +340,16 @@ class Blog_ extends BlogBase
         return $this->viewPHP($data, 'view');
     }
 
+    /**
+     * Обрабатываем событие изменения порядка формирования ссылок
+     * @param array $params [changed=>prefix.list]
+     */
+    public function cronChangeUrls(array $params)
+    {
+        if (!bff::cron() || empty($params['changed'])) return;
+
+        if ($params['changed'] === 'prefix.list') {
+            $this->model->postsUrlRefresh($this->locale->getDefaultLanguage());
+        }
+    }
 }

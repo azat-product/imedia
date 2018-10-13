@@ -23,7 +23,7 @@ abstract class SitemapBase_ extends SitemapModule
         static $i, $url, $host;
         if (!$i) {
             $i = true;
-            if (!bff::$isBot) {
+            if ( ! bff::isRobot()) {
                 $url = Geo::url(Geo::filter('url'), false, false); # user
             } else {
                 $url = Geo::url(Geo::filterUrl(), false, false); # seo

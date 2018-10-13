@@ -2,8 +2,8 @@
 
 /**
  * Класс вспомогательных HTML методов
- * @version 0.23
- * @modified 23.jan.2018
+ * @version 0.32
+ * @modified 1.aug.2018
  */
 
 abstract class HTML
@@ -99,6 +99,34 @@ abstract class HTML
     }
 
     /**
+     * Формирование простых полей ввода
+     * @param string $tag HTML тег, допустимые: input, hidden, text, number, email, checkbox, radio, textarea, button
+     * @param mixed $value значение
+     * @param array $attributes атрибуты
+     * @return string
+     * @throws Exception
+     */
+    public static function input($tag, $value, array $attributes = array())
+    {
+        if (in_array($tag, ['hidden','text','number','email','checkbox','radio'], true)) {
+            $attributes['type'] = $tag;
+            $tag = 'input';
+        }
+        if ($tag === 'input') {
+            $attributes['value'] = $value;
+            return '<' . $tag . static::attributes($attributes) . ' />';
+        } else if ($tag === 'textarea' || $tag === 'button') {
+            $value = static::escape($value);
+            if (is_array($value)) {
+                $value = join(' ', $value);
+            }
+            return '<' . $tag . static::attributes($attributes) . '>' . $value . '</' . $tag . '>';
+        } else {
+            throw new \Exception(_t('html', '[class]: Unsupported HTML tag "[tag]"', ['class'=>static::class, 'tag'=>strval($tag)]));
+        }
+    }
+
+    /**
      * Формирование <option> тегов для <select>
      * @param array $aData данные
      * @param integer $nSelectedID ID выбранного элемента
@@ -113,9 +141,9 @@ abstract class HTML
         $html = '';
         if (!empty($mEmpty)) {
             if (is_string($mEmpty)) {
-                $html .= '<option' . (0 == $nSelectedID ? ' selected="selected"' : '') . ' value="0">' . $mEmpty . '</option>';
+                $html .= '<option' . (0 == $nSelectedID ? ' selected="selected"' : '') . ' value="0">' . static::escape($mEmpty) . '</option>';
             } elseif (is_array($mEmpty) && count($mEmpty) == 2) {
-                $html .= '<option' . ($mEmpty[0] == $nSelectedID ? ' selected="selected"' : '') . ' value="' . $mEmpty[0] . '">' . $mEmpty[1] . '</option>';
+                $html .= '<option' . ($mEmpty[0] == $nSelectedID ? ' selected="selected"' : '') . ' value="' . $mEmpty[0] . '">' . static::escape($mEmpty[1]) . '</option>';
             }
         }
 
@@ -127,7 +155,7 @@ abstract class HTML
                     if ($k == $nSelectedID) {
                         $attr[] = 'selected';
                     }
-                    $html .= '<option' . static::attributes($attr) . '>' . $v . '</option>';
+                    $html .= '<option' . static::attributes($attr) . '>' . static::escape($v) . '</option>';
                 }
             } else {
                 foreach ($aData as $v) {
@@ -140,7 +168,7 @@ abstract class HTML
                             if (isset($v[$v2])) $attr['data-' . $v2] = $v[$v2];
                         }
                     }
-                    $html .= '<option' . static::attributes($attr) . '>' . $v[$titleKey] . '</option>';
+                    $html .= '<option' . static::attributes($attr) . '>' . static::escape($v[$titleKey]) . '</option>';
                 }
             }
         }
@@ -225,12 +253,11 @@ abstract class HTML
      */
     public static function attributes($attributes, array $defaults = array(), array $except = array())
     {
-        $html = array();
         if (empty($attributes) || !is_array($attributes)) {
             return '';
         }
 
-        # наполняем значениями по-умолчанию
+        # наполняем значениями по умолчанию
         if (!empty($defaults)) {
             foreach ($defaults as $key=>$v) {
                 if (!isset($attributes[$key])) {
@@ -239,6 +266,7 @@ abstract class HTML
             }
         }
 
+        $html = array();
         foreach ($attributes as $key => $value) {
             # пропускаем по ключу
             if (!empty($except) && in_array($key, $except, true)) {
@@ -267,7 +295,7 @@ abstract class HTML
      */
     public static function attributeAdd(array & $attributes, $key, $value)
     {
-        if (isset($attributes[$key])) {
+        if (array_key_exists($key, $attributes)) {
             if ( ! is_array($attributes[$key])) {
                 $attributes[$key] = array($attributes[$key]);
             }

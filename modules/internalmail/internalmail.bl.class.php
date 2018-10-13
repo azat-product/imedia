@@ -84,22 +84,33 @@ abstract class InternalMailBase_ extends Module
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # сообщения пользователя
-            case 'my.messages':
-                $url .= '/cabinet/messages' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # переписка
-            case 'my.chat':
-                $url .= '/cabinet/messages/chat' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # сообщения пользователя с фильтрацией по ID объявления
-            case 'item.messages':
-                $url .= '/cabinet/messages' . (!empty($opts['item']) ? '?qq=item:' . $opts['item'] : '');
-                break;
+        return bff::router()->url('internalmail-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'internalmail']);
+    }
+
+    /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        if (static::attachmentsEnabled()) {
+            $attach = $this->attach();
+
+            $filter = array(
+                ':u' => array('(author = :user OR recipient = :user)', ':user' => $userID),
+                ':a' => array('attach != :empty', ':empty' => ''),
+            );
+            $data = $this->model->messagesByFilter($filter, array('attach'), array('oneArray' => false));
+            foreach ($data as $v) {
+                $path = $attach->getAttachPath($v['attach']);
+                if (file_exists($path)) {
+                    @unlink($path);
+                }
+            }
         }
-        return bff::filter('internalmail.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+
+        $this->model->onUserDeleted($userID, $options);
     }
 
     /**

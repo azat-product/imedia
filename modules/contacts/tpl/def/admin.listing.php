@@ -8,7 +8,7 @@ tplAdmin::adminPageSettings(array(
 ?>
 <div class="tabsBar pills">
     <? foreach($ctypes as $k=>$v) { ?>
-        <span class="tab <? if($ctype==$k) { ?>tab-active<? } ?>"><a href="#" onclick="return jContacts.onContactType(<?= $k ?>, this);"><?= $v['title'] ?><? if($v['cnt'] > 0){ ?> (<?= $v['cnt'] ?>)<? } ?></a></span>
+        <span class="tab <? if($ctype==$k) { ?>tab-active<? } ?>"><a href="javascript:void(0);" onclick="return jContacts.onContactType(<?= $k ?>, this);"><?= $v['title'] ?><? if($v['cnt'] > 0){ ?> (<?= $v['cnt'] ?>)<? } ?></a></span>
     <? } ?>
     <div class="right"><div class="progress" style="display:none;" id="progress-contacts"></div></div>
     <div class="clear"></div>

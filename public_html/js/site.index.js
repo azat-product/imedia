@@ -18,7 +18,7 @@ var jSiteIndex = (function(){
                 $r.css({'fill': 'rgb('+k+', '+k+', '+k+')'});
             }
         }
-        $('.index-map g').mouseover(function (e) {
+        $('.index-map g').on('mouseover',function (e) {
             var region_data = $(this).data('region');
             $('<div class="' + o.infoClass + '"><div>'+
                 region_data.title + '<br>' +
@@ -27,10 +27,10 @@ var jSiteIndex = (function(){
             )
             .appendTo('body');
         })
-        .mouseleave(function () {
+        .on('mouseleave',function () {
             $('.'+o.infoClass).remove();
         })
-        .mousemove(function(e) {
+        .on('mousemove',function(e) {
             var mouseX = e.pageX, //X coordinates of mouse
                 mouseY = e.pageY; //Y coordinates of mouse
             var $mapInfo = $('.'+o.infoClass);
@@ -38,14 +38,13 @@ var jSiteIndex = (function(){
                 top: mouseY+30,
                 left: mouseX - ($mapInfo.width()/2)
             });
-        }).click(function(e){
+        }).on('click',function(e){
             var region_data = $(this).data('region');
             window.location.href = region_data.l;
         });
     }
 
     return {
-
         initMap: function(options, data)
         {
             o = $.extend(o, options || {});

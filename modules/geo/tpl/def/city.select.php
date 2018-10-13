@@ -55,7 +55,7 @@ if ($covering_type == Geo::COVERING_CITY && ($city_id == $covering_city_id)) { ?
             }, function(){ api = this; });
             <? if($bSelectCountry): ?>
             var cache = {};
-            $('#j-geo-country-select-id<?= $U ?>').change(function(){
+            $('#j-geo-country-select-id<?= $U ?>').on('change',function(){
                 var country = intval($(this).val());
                 if (country) {
                     $ac.show();
@@ -64,7 +64,7 @@ if ($covering_type == Geo::COVERING_CITY && ($city_id == $covering_city_id)) { ?
                     if (cache.hasOwnProperty(country)) {
                         api.setSuggest(cache[country], true);
                     } else {
-                        bff.ajax(bff.ajaxURL('geo', 'country-presuggest'), {country: country}, function (data) {
+                        bff.ajax(bff.ajaxURL('geo','country-presuggest'), {country: country}, function (data) {
                             cache[country] = data;
                             api.setSuggest(data, true);
                         });
