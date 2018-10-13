@@ -85,7 +85,7 @@ tpl::includeJS('bbs.my.import', false, 6);
     </div>
   </div>
   <?php if(BBS::importUrlEnabled()) { ?>
-  <div class="form-group j-url-import">
+  <div class="form-group j-url-import hide">
     <label for="import-url" class="col-sm-3 control-label"><?= _t('', 'URL') ?><span class="required-mark">*</span></label>
     <div class="col-md-6 col-sm-9">
       <div class="input-group">
@@ -94,7 +94,7 @@ tpl::includeJS('bbs.my.import', false, 6);
       </div>
     </div>
   </div>
-  <div class="form-group j-url-import">
+  <div class="form-group j-url-import hide">
     <label for="j-url-import-period" class="col-sm-3 control-label"><?= _t('', 'Период обработки') ?><span class="required-mark">*</span></label>
     <div class="col-md-3 col-sm-6">
       <select id="j-url-import-period" name="period" class="form-control"><?= BBSItemsImport::importPeriodOptions(true) ?></select>

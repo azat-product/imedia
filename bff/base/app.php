@@ -3,20 +3,19 @@
 /**
  * Базовый класс приложения
  * @abstract
- * @version 2.77
- * @modified 20.mar.2018
+ * @version 3.31
+ * @modified 5.sep.2018
+ * @copyright Tamaranga
  */
 
-use \config;
-use \Logger;
+use config, Logger, SEO;
 use bff\utils\Files;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use bff\exception\NotFoundException;
 
 class app extends \bff\Singleton
 {
-    /** @var \Pimple DI-контейнер */
-    protected static $di;
     /** @var integer|bool ID текущего авторизованного пользователя или FALSE (0) */
     public static $userID = false;
     /** @var bool является ли текущий пользователь поисковым ботом */
@@ -59,16 +58,13 @@ class app extends \bff\Singleton
         # Иницииализируем компонент работы с хуками
         static::hooks();
 
-        # Загружаем настройки сайта
-        config::load();
-
         # Панель администратора
         $adminPanel = static::adminPanel();
 
         # Параметры запроса
         static::$isBot = (empty($_COOKIE) && preg_match("#(google|googlebot|yandex|rambler|msnbot|bingbot|yahoo! slurp|facebookexternalhit)#si", \Request::userAgent()));
-        static::$class = static::DI('input')->getpost('s', TYPE_STR, array('len' => 250));
-        static::$event = static::DI('input')->getpost('ev', TYPE_STR, array('len' => 250));
+        static::$class = static::input()->getpost('s', TYPE_STR, array('len' => 250));
+        static::$event = static::input()->getpost('ev', TYPE_STR, array('len' => 250));
 
         # Хуки
         # modules hooks:
@@ -91,8 +87,8 @@ class app extends \bff\Singleton
                 (static::isMobile() ? DIRECTORY_SEPARATOR . 'mobile' : '')));
 
         # Инициализируем работу с сессией
-        static::DI('security')->init();
-        static::DI('security')->checkExpired();
+        static::security()->init();
+        static::security()->checkExpired();
 
         # Настройки админ. панели
         if ($adminPanel && config::sys('admin.smarty.enabled', false)) {
@@ -113,7 +109,19 @@ class app extends \bff\Singleton
             $oSm->assign_by_ref('config', config::$data);
         }
 
-        config::set('bot', static::$isBot);
+        config::set('bot', static::isRobot());
+
+        # Роутинг
+        static::router()->init();
+        foreach ($this->getModulesList() as $k=>$v) {
+            $file = (!empty($v['path']) ? $v['path'] : PATH_MODULES . $k . DIRECTORY_SEPARATOR ) . 'routes.php';
+            if (is_file($file)) {
+                $routes = include modification($file, false);
+                if (is_array($routes)) {
+                    static::router()->addMany($routes);
+                }
+            }
+        }
 
         # Плагины
         static::dev()->pluginsLoad();
@@ -147,17 +155,22 @@ class app extends \bff\Singleton
      */
     public function run(array $routes = array(), $respond = true)
     {
+        # Инициализация дополнительных роутов
+        if (static::hooksAdded('routes')) {
+            $routes = static::filter('routes', $routes, []);
+        }
+        if ( ! empty($routes)) {
+            foreach ($routes as $id => &$route) {
+                static::router()->add($id, $route);
+            } unset($route);
+        }
+
         if ( ! static::$class) {
-            # Собираем роуты
-            foreach ($this->getModulesList() as $module=>$moduleParams) {
-                $file = (!empty($moduleParams['path']) ? $moduleParams['path'] : PATH_MODULES . $module . DIRECTORY_SEPARATOR ) . 'routes.php';
-                if (is_file($file)) {
-                    $routes = array_merge($routes, include modification($file, false));
-                }
-            }
             # Выполняем поиск подходящего роута
-            $route = static::route($routes, array(
-                'landing-pages' => config::sys('seo.landing.pages.enabled', false, TYPE_BOOL),
+            $route = static::router()->search(array(
+                'init-class-event'  => true,
+                'seo-landing-pages' => SEO::landingPagesEnabled(),
+                'seo-redirects'     => SEO::redirectsEnabled(),
             ));
         } else {
             $route = array(
@@ -184,7 +197,13 @@ class app extends \bff\Singleton
                     } else {
                         $newResponse = call_user_func($route['route']['callback'], $request);
                     }
+                    if (static::hooksAdded('app.run.route.after.'.$route['route']['id'])) {
+                        $newResponse = static::filter('app.run.route.after.'.$route['route']['id'], $newResponse, $route, $request);
+                    }
                 } else {
+                    if ($route['class'] === false && $route['event'] === false) {
+                        throw NotFoundException::init($request);
+                    }
                     $newResponse = $this->callModule([$route['class'], $route['event']]);
                 }
                 if ($newResponse instanceof ResponseInterface) {
@@ -193,7 +212,7 @@ class app extends \bff\Singleton
                     if (is_string($newResponse)) {
                         $layout = \View::getLayout();
                         if (!empty($layout)) {
-                            $data = array('centerblock' => $newResponse);
+                            $data = array('centerblock' => static::tagsProcess($newResponse));
                             $newResponse = \View::renderLayout($data, $layout);
                         }
                     } else if (is_array($newResponse)) {
@@ -204,6 +223,8 @@ class app extends \bff\Singleton
                         $response->getBody()->write($newResponse);
                     }
                 }
+            } catch (NotFoundException $e) {
+                static::errors()->error404($e->getResponse());
             } catch (\Throwable $e) {
                 if (BFF_DEBUG) {
                     static::errors()->set($e->getMessage() . ', ' . $e->getFile() . ' [' . $e->getCode() . ']', true);
@@ -372,55 +393,15 @@ class app extends \bff\Singleton
 
     /**
      * Dependency Injection Container
-     * @param bool $key ключ требуемого "сервиса", false - объект \Pimple
-     * @return mixed|\Pimple
+     * @param bool $key ключ требуемого "сервиса"
+     * @return mixed
      */
     public static function DI($key = false)
     {
-        if (!isset(static::$di)) {
-            static::$di = new \Pimple(array(
-                'errors'         => function ($c) {
-                        return $c['errors_class']::i();
-                    },
-                'errors_class'   => '\Errors',
-                'security'       => function ($c) {
-                        return new $c['security_class']();
-                    },
-                'security_class' => '\Security',
-                'locale'         => function ($c) {
-                        return new $c['locale_class']();
-                    },
-                'locale_class'   => '\bff\base\Locale',
-                'input'          => function ($c) {
-                        return new $c['input_class']();
-                    },
-                'input_class'    => '\bff\base\Input',
-                'database'       => function ($c) {
-                        $db = new $c['database_class']();
-                        $db->connectionConfig('db');
-                        $db->connect();
-
-                        return $db;
-                    },
-                'database_class' => '\bff\db\Database',
-                'hooks'          => function ($c) {
-                        return new $c['hooks_class']();
-                    },
-                'hooks_class'    => '\Hooks',
-                'request'        => function () {
-                        return \Request::fromGlobals();
-                    },
-            ));
-            static::$di['database_factory'] = static::$di->factory(function ($c) {
-                    return new $c['database_class']();
-                }
-            );
+        if ($key === false) {
+            return \bff\DI::container();
         }
-        if (!empty($key)) {
-            return static::$di[$key];
-        }
-
-        return static::$di;
+        return \bff\DI::get($key);
     }
 
     /**
@@ -532,106 +513,142 @@ class app extends \bff\Singleton
 
     /**
      * Возвращаем объект модуля, имя модуля и имя вызванного метода
-     * @param string $moduleName название модуля
+     * @param string $name название модуля
      * @param bool $onlyObject true - возвращать только объект модуля; false - array(объект, название, название метода, bool-первое обращение к модулю)
      * @return \Module|array
      */
-    public function getModule($moduleName, $onlyObject = true)
+    public function getModule($name, $onlyObject = true)
     {
-        $moduleName = mb_strtolower(str_replace(array('.',DS), '', $moduleName));
+        $name = mb_strtolower(str_replace(array('.',DS), '', $name));
 
         $firstRun = true;
-        if (isset($this->_m[$moduleName])) {
-            $moduleObject = $this->_m[$moduleName];
+        if (isset($this->_m[$name])) {
+            $object = $this->_m[$name];
             $firstRun = false;
         } else {
-            if (!empty($this->_m_registered[$moduleName]['path'])) {
-                $moduleObject = $this->moduleInit($moduleName, $this->_m_registered[$moduleName]['path']);
+            if ( ! empty($this->_m_registered[$name]['path'])) {
+                $object = $this->moduleInit($name, $this->_m_registered[$name]['path'], $this->_m_registered[$name]['class']);
             } else {
-                $moduleObject = $this->moduleInit($moduleName, false);
+                $object = $this->moduleInit($name, false);
             }
         }
 
-        return ($onlyObject ? $moduleObject : array($moduleObject, $moduleName, $firstRun));
+        return ($onlyObject ? $object : array($object, $name, $firstRun));
     }
 
     /**
      * Регистрируем дополнительный модуль
-     * @param string $moduleName название модуля
-     * @param string $modulePath путь к директории модуля
+     * @param string $name название модуля
+     * @param string $path путь к директории модуля
+     * @param array $opts [
+     *      boolean 'routes' => инициировать роуты модуля
+     *      string 'class' => название класса модуля или false => $name
+     * ]
      * @return boolean
      */
-    public function moduleRegister($moduleName, $modulePath)
+    public function moduleRegister($name, $path, array $opts = [])
     {
-        $moduleName = mb_strtolower(str_replace(array('.',DS), '', strval($moduleName)));
-        if (empty($moduleName)
-            || in_array($moduleName, $this->_m_core)
-            || isset($this->_m[$moduleName])
-            || isset($this->_m_registered[$moduleName])
-            || !is_dir($modulePath)
-            || is_dir(PATH_MODULES.$moduleName)) {
+        $name = mb_strtolower(str_replace(array('.',DS), '', strval($name)));
+        if (empty($name)
+            || in_array($name, $this->_m_core)
+            || isset($this->_m[$name])
+            || isset($this->_m_registered[$name])
+            || !is_dir($path)
+            || is_dir(PATH_MODULES.$name)) {
             return false;
         }
-        $this->_m_registered[$moduleName] = array(
-            'name' => $moduleName,
-            'path' => rtrim($modulePath, DS.' ').DS,
+        \func::array_defaults($opts, array(
+            'routes' => true,
+            'class' => $name,
+        ));
+        $path = rtrim($path, DS.' ').DS;
+        $this->_m_registered[$name] = array(
+            'name' => $name,
+            'class' => $opts['class'],
+            'path' => $path,
         );
+        if ($opts['routes']) {
+            $routesFile = $path . 'routes.php';
+            if (is_file($routesFile)) {
+                $routes = include modification($routesFile, false);
+                if (is_array($routes)) {
+                    static::router()->addMany($routes);
+                }
+            }
+        }
         return true;
     }
 
     /**
      * Инициализируем модуль
-     * @param string $moduleName название модуля
-     * @param string|boolean $modulePath путь к директории модуля или false (/modules/{name}/)
+     * @param string $name название модуля
+     * @param string|boolean $path путь к директории модуля или false (/modules/{name}/)
+     * @param string|boolean $class название класса модуля или false => $name
      * @return \Module
      */
-    protected function moduleInit($moduleName, $modulePath = false)
+    protected function moduleInit($name, $path = false, $class = false)
     {
-        $moduleName = mb_strtolower(str_replace(array('.',DS), '', $moduleName));
+        $name = mb_strtolower(str_replace(array('.',DS), '', $name));
 
-        if (isset($this->_m[$moduleName])) {
-            return $this->_m[$moduleName];
+        if (isset($this->_m[$name])) {
+            return $this->_m[$name];
         }
 
+        $app = false;
         $adm = static::adminPanel();
-        $core = in_array($moduleName, $this->_m_core);
+        $core = in_array($name, $this->_m_core);
         if ($core) {
-            # подключаем [ModuleName]ModuleBase
-            require modification(PATH_CORE . 'modules' . DS . $moduleName . DS . 'base.php', true, false);
-            # подключаем [ModuleName]Model
-            require modification(PATH_CORE . 'modules' . DS . $moduleName . DS . 'model.php', true, false);
-            # подключаем [ModuleName]Module
-            require modification(PATH_CORE . 'modules' . DS . $moduleName . DS . ($adm ? 'admin' : 'frontend') . '.php', true, false);
+            # подключаем [Name]ModuleBase
+            require modification(PATH_CORE . 'modules' . DS . $name . DS . 'base.php', true, false);
+            # подключаем [Name]Model
+            require modification(PATH_CORE . 'modules' . DS . $name . DS . 'model.php', true, false);
+            # подключаем [Name]Module
+            require modification(PATH_CORE . 'modules' . DS . $name . DS . ($adm ? 'admin' : 'frontend') . '.php', true, false);
         }
 
-        $path = (!empty($modulePath) ? rtrim($modulePath, DS).DS : PATH_MODULES . $moduleName . DS); # ищем в модулях приложения (/modules)
-        $pathConroller = modification($path . $moduleName . ($adm ? '.adm' : '') . '.class.php', true, false);
-        if (file_exists($pathConroller)) {
-            # подключаем [ModuleName]Base
-            require modification($path . $moduleName . '.bl.class.php', true, false);
-            # подключаем [ModuleName]Model
-            require modification($path . $moduleName . '.model.php', true, false);
-            # подключаем [ModuleName][_]
+        $path = (!empty($path) ? rtrim($path, DS).DS : PATH_MODULES . $name . DS); # ищем в модулях приложения (/modules)
+        $pathConroller = modification($path . $name . ($adm ? '.adm' : '') . '.class.php', true, false);
+        if (is_file($pathConroller)) {
+            $app = true;
+            # подключаем [Name]Base
+            require modification($path . $name . '.bl.class.php', true, false);
+            # подключаем [Name]Model
+            require modification($path . $name . '.model.php', true, false);
+        } else {
+            $pathConroller = modification($path . ($adm ? 'admin' : 'frontend') . '.php', true, false);
+            if (is_file($pathConroller)) {
+                $app = true;
+                # подключаем [Name]Base
+                require modification($path . 'base.php', true, false);
+                # подключаем [Name]Model
+                require modification($path . 'model.php', true, false);
+            }
+        }
+
+        if ($app) {
+            # подключаем [Name][_]
             require $pathConroller;
             # псевдоним класса модуля
-            static::classAlias($moduleName);
-
+            if (empty($class)) {
+                $class = $name;
+            }
+            static::classAlias($class);
             # cоздаем объект модуля приложения
-            $moduleObject = $this->_m[$moduleName] = new $moduleName();
+            $moduleObject = $this->_m[$name] = new $class();
             $moduleObject->setSettings('module_dir', $path);
-            $moduleObject->initModule($moduleName);
+            $moduleObject->initModule($name, $class);
             $moduleObject->init();
-            static::hook($moduleName.'.init', $moduleObject);
+            static::hook($name.'.init', $moduleObject);
         } else {
             if ($core) {
                 # cоздаем объект модуля ядра
-                $moduleCore = $moduleName . 'Module';
-                $moduleObject = $this->_m[$moduleName] = new $moduleCore();
-                $moduleObject->initModule($moduleName);
+                $moduleCore = $name . 'Module';
+                $moduleObject = $this->_m[$name] = new $moduleCore();
+                $moduleObject->initModule($name);
                 $moduleObject->init();
-                static::hook($moduleName.'.init', $moduleObject);
+                static::hook($name.'.init', $moduleObject);
             } else {
-                throw new \Exception(_t('system', 'Неудалось найти модуль "[module]"', array('module' => $moduleName)));
+                throw new \Exception(_t('system', 'Неудалось найти модуль "[module]"', array('module' => $name)));
             }
         }
 
@@ -805,7 +822,7 @@ class app extends \bff\Singleton
      */
     public static function errors()
     {
-        return static::DI('errors');
+        return \bff\DI::get('errors');
     }
 
     /**
@@ -813,7 +830,7 @@ class app extends \bff\Singleton
      */
     public static function request()
     {
-        return static::DI('request');
+        return \bff\DI::get('request');
     }
 
     /**
@@ -821,7 +838,15 @@ class app extends \bff\Singleton
      */
     public static function input()
     {
-        return static::DI('input');
+        return \bff\DI::get('input');
+    }
+
+    /**
+     * @return \View
+     */
+    public static function view()
+    {
+        return \bff\DI::get('view');
     }
 
     /**
@@ -829,7 +854,7 @@ class app extends \bff\Singleton
      */
     public static function locale()
     {
-        return static::DI('locale');
+        return \bff\DI::get('locale');
     }
 
     /**
@@ -837,7 +862,7 @@ class app extends \bff\Singleton
      */
     public static function security()
     {
-        return static::DI('security');
+        return \bff\DI::get('security');
     }
 
     /**
@@ -845,7 +870,7 @@ class app extends \bff\Singleton
      */
     public static function database()
     {
-        return static::DI('database');
+        return \bff\DI::get('database');
     }
 
     /**
@@ -853,7 +878,7 @@ class app extends \bff\Singleton
      */
     public static function hooks()
     {
-        return static::DI('hooks');
+        return \bff\DI::get('hooks');
     }
 
     /**
@@ -959,6 +984,48 @@ class app extends \bff\Singleton
     }
 
     /**
+     * Менеджер тегов
+     * @return \bff\extend\Tags
+     */
+    public static function tags()
+    {
+        return \bff\DI::get('tags');
+    }
+
+    /**
+     * Добавление тега
+     * @param string $id ID тега
+     * @param callable $callable функция обработчик
+     * @return boolean
+     */
+    public static function tagAdd($id, callable $callable)
+    {
+        return static::tags()->add($id, $callable);
+    }
+
+    /**
+     * Удаление тега
+     * @param string $id ID тега
+     * @return boolean
+     */
+    public static function tagRemove($id)
+    {
+        return static::tags()->remove($id);
+    }
+
+    /**
+     * Обработка тегов в тексте
+     * @param string $text текст
+     * @param boolean|array $ids теги true - добавленные ранее, array - указанные, false - поиск по тексту
+     * @param boolean $replace заменять теги в тексте, false - вернуть найденные теги без изменения текста
+     * @return mixed
+     */
+    public static function tagsProcess($text, $ids = true, $replace = true)
+    {
+        return static::tags()->process($text, $ids, $replace);
+    }
+
+    /**
      * Возвращаем объект плагина
      * @param string $pluginName название плагина
      * @return \Plugin|boolean
@@ -1037,7 +1104,7 @@ class app extends \bff\Singleton
         }
 
         # проверяем наличие куки для принудительного отображения полной версии
-        $bForceFull = static::DI('input')->cookie($sForceCookieName, TYPE_BOOL);
+        $bForceFull = static::input()->cookie($sForceCookieName, TYPE_BOOL);
         if (!empty($bForceFull)) {
             # кука есть => показываем полную версию
             return ($isMobile = false);
@@ -1091,7 +1158,7 @@ class app extends \bff\Singleton
      */
     public static function httpsOnly()
     {
-        return config::sys('https.only', false, TYPE_BOOL);
+        return config::sysAdmin('https.only', false, TYPE_BOOL);
     }
 
     /**
@@ -1260,7 +1327,7 @@ class app extends \bff\Singleton
         $url = \Request::scheme() . '://' . \Request::host(); # proto + host
         $extra = \Site::urlExtra(array(), array('locale'=>$languageKey)); # extra
         if (!empty($extra)) { $url.= '/'.join('/', $extra).'/'; } else { $url .= '/'; }
-        $url.= static::route(array(), array('return-request-uri'=>true)); # uri
+        $url.= static::router()->getUri(); # uri
         $query = array();
         if ($addQuery) {
             parse_str(\Request::getSERVER('QUERY_STRING'), $query);
@@ -1307,28 +1374,18 @@ class app extends \bff\Singleton
      */
     public static function themeFile($file = '', $asUrl = false)
     {
-        static $theme, $path, $pathPublic, $urlPublic;
-        if ( ! isset($theme)) {
-            $theme = static::theme();
-            if ( ! empty($theme)) {
-                $path       = PATH_THEMES.$theme->getName();
-                $pathPublic = PATH_PUBLIC.'themes'.DIRECTORY_SEPARATOR.$theme->getName();
-                $urlPublic  = SITEURL_STATIC.'/themes/'.$theme->getName();
-            }
+        if (($theme = static::theme()) !== false) {
+            return $theme->fileThemed($file, $asUrl);
         }
-        if (empty($theme)) {
-            return false;
-        }
-        if ($asUrl) {
-            if ( ! file_exists($pathPublic.$file)) {
-                return false;
-            }
-            return $urlPublic;
-        }
-        if ( ! file_exists($path.$file)) {
-            return false;
-        }
-        return $path;
+        return false;
+    }
+
+    /**
+     * @return \bff\Router
+     */
+    public static function router()
+    {
+        return \bff\DI::get('router');
     }
 
     /**
@@ -1384,7 +1441,7 @@ class app extends \bff\Singleton
 
         # landing pages
         if ($options['landing-pages']) {
-            $reqNew = \SEO::landingPage($req);
+            $reqNew = SEO::landingPage($req);
             if ($reqNew !== false && $req !== $reqNew) {
                 $reqOriginal = $req; $req = ltrim($reqNew, '/ ');
                 $query = mb_stripos($req, '?');
@@ -1477,7 +1534,7 @@ class app extends \bff\Singleton
 
         # redirects
         if ($options['redirects'] && empty($reqNew) && \Request::isGET()) {
-            \SEO::redirectsProcess($req);
+            SEO::redirectsProcess($req);
         }
 
         return $result;
@@ -1555,12 +1612,12 @@ class app extends \bff\Singleton
         if (!empty($title)) $data['mtitle'] = $title;
         if (!empty($keywords)) $data['mkeywords'] = $keywords;
         if (!empty($description)) $data['mdescription'] = $description;
-        $data = \SEO::i()->metaTextPrepare($data, $macrosData);
+        $data = SEO::i()->metaTextPrepare($data, $macrosData);
 
         # устанавливаем meta теги
         foreach ($data as $k => &$v) {
             if (empty($v)) continue;
-            \SEO::i()->metaSet($k, $v);
+            SEO::i()->metaSet($k, $v);
             config::set($k . '_' . LNG, trim($v, ' -|,')); # old version compability
         }
         unset($v);
@@ -1661,13 +1718,13 @@ class app extends \bff\Singleton
                 include modification(PATH_BASE . $path, true, false);
                 static::classAlias($className);
                 return class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false);
-            }
-            $pathLower = mb_strtolower($path);
-            if (is_file(PATH_BASE . $pathLower)) {
-                include modification(PATH_BASE . $pathLower, true, false);
-                static::classAlias($className);
-
-                return class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false);
+            } else {
+                $pathLower = mb_strtolower($path);
+                if (is_file(PATH_BASE . $pathLower)) {
+                    include modification(PATH_BASE . $pathLower, true, false);
+                    static::classAlias($className);
+                    return class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false);
+                }
             }
             # ищем требуемый класс среди модулей (ядра/приложения)
             if (class_exists('bff', false)) {
@@ -1748,12 +1805,14 @@ class app extends \bff\Singleton
         'Parsedown'             => array('core', 'external/parsedown/parsedown.php'),
         'Minifier'              => array('core', 'external/minifier.php'),
         # core
-        'Model'                 => array('core', 'model.php', 'aliasof'=>'\bff\Model'),
+        'Model'                 => array('core', 'db/model.php', 'aliasof'=>'\bff\db\Model'),
         'Errors'                => array('core', 'errors.php', 'aliasof'=>'\bff\Errors'),
+        'Router'                => array('core', 'router.php', 'aliasof'=>'\bff\Router'),
         'Hook'                  => array('core', 'extend/hook.php', 'aliasof'=>'\bff\extend\Hook'),
         'Hooks'                 => array('core', 'extend/hooks.php', 'aliasof'=>'\bff\extend\Hooks'),
         'Plugin'                => array('core', 'extend/plugin.php', 'aliasof'=>'\bff\extend\Plugin'),
-        'Theme'                 => array('core', 'extend/theme.php', 'aliasof'=>'\bff\extend\Theme'),
+        'Theme'                 => array('core', 'extend/theme/base.php', 'aliasof'=>'\bff\extend\theme\Base'),
+        'ThemeAddon'            => array('core', 'extend/theme/addon.php', 'aliasof'=>'\bff\extend\theme\Addon'),
         'func'                  => array('core', 'utils/func.php', 'aliasof'=>'\bff\utils\func'),
         'Pagination'            => array('core', 'utils/pagination.php', 'aliasof'=>'\bff\utils\Pagination'),
         'config'                => array('core', 'config.php'),

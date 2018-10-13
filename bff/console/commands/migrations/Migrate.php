@@ -3,7 +3,13 @@
 /**
  * Консоль: команда миграции БД ядра/расширения
  * @version 0.1
- * @modified 5.sep.2017
+ * @modified 9.may.2018
+ * Examples:
+ * Core:
+ *   php bffc migrations/migrate -t 2.4.0
+ * Extensions:
+ *   php bffc migrations/migrate -x plugin/name -t 2.4.0
+ *   php bffc migrations/migrate -x theme/name -t 2.4.0
  */
 
 use bff\console\commands\Command;

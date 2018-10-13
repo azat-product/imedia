@@ -44,7 +44,7 @@
         <div class="l-table-cell u-sc hidden-phone">
             <? foreach($providers as $v) {
 
-            ?><a href="#" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a><br /><?
+            ?><a href="javascript:void(0);" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a><br /><?
 
             } ?>
         </div>
@@ -56,7 +56,7 @@
     <? foreach($providers as $v) {
 
             ?>
-                <a href="#" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a>
+                <a href="javascript:void(0);" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a>
             <?
 
     } ?>

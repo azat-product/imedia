@@ -36,6 +36,58 @@ abstract class SiteBase_ extends SiteModule
                 return $list;
             });
         }
+
+        # Позиции счетчиков и кода
+        if (bff::adminPanel()) {
+            bff::hookAdd('site.admin.counters.position.list', function($list){
+                if (sizeof($list) === 1) {
+                    array_unshift($list,
+                        ['id' => static::COUNTERS_POS_HEAD, 'title' => _t('site', 'в блоке head')],
+                        ['id' => static::COUNTERS_POS_BODY_START, 'title' => _t('site', 'после открывающего body')],
+                        ['id' => static::COUNTERS_POS_BODY_FINISH, 'title' => _t('site', 'перед закрывающим body')]
+                    );
+                }
+                return $list;
+            });
+        } else {
+            if ($this->isGET()) {
+                $countersList = $this->model->countersViewByPosition();
+                if ( ! empty($countersList[static::COUNTERS_POS_HEAD])) {
+                    bff::hooks()->viewBlock('head', function ($content) use (&$countersList) {
+                        foreach ($countersList[static::COUNTERS_POS_HEAD] as $data) {
+                            $content .= $data['code'];
+                        }
+                        return $content;
+                    });
+                }
+                bff::hooks()->viewBlock('body', function($content) use (&$countersList) {
+                    if ( ! empty($countersList[static::COUNTERS_POS_BODY_START])) {
+                        foreach ($countersList[static::COUNTERS_POS_BODY_START] as $data) {
+                            $content = $data['code'].$content;
+                        }
+                    }
+                    if ( ! empty($countersList[static::COUNTERS_POS_BODY_FINISH])) {
+                        foreach ($countersList[static::COUNTERS_POS_BODY_FINISH] as $data) {
+                            $content .= $data['code'];
+                        }
+                    }
+                    return $content;
+                });
+            }
+        }
+
+        # Название сайта
+        SiteHooks::title(function($title, $position, $language, $default){
+            switch ($position) {
+                case 'seo.template.macros': {
+                    $title = config::get('title_seo_'.$language, $title);
+                } break;
+                case 'sendmail.template.macros': {
+                    $title = config::get('title_sendmail_'.$language, $title);
+                } break;
+            }
+            return $title;
+        }, 4);
     }
 
     /**
@@ -67,30 +119,13 @@ abstract class SiteBase_ extends SiteModule
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
         switch ($key) {
-            # главная страница
-            case 'index':
-                $url .= '/';
-                break;
-            # главная страница
+            # главная страница + geo
             case 'index-geo':
-                $url = Geo::url($opts, $dynamic);
-                break;
-            # статическая страница
-            case 'page':
-                $url .= '/' . $opts['filename'] . static::$pagesExtension;
-                break;
-            # карта сайта
-            case 'sitemap':
-                $url .= '/sitemap/';
-                break;
-            # страница "Услуги"
-            case 'services':
-                $url .= '/services/';
+                return Geo::url($opts, $dynamic);
                 break;
         }
-        return bff::filter('site.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url($key, $opts, ['dynamic'=>$dynamic,'module'=>'site']);
     }
 
     /**
@@ -104,7 +139,10 @@ abstract class SiteBase_ extends SiteModule
         if (Geo::urlType() == Geo::URL_SUBDIR) {
             $options['region'] = array(
                 'value' => function($key, $options) use ($settings) {
-                    return Geo::filterUrl('keyword');
+                    if ( ! isset($settings[$key])) {
+                        $settings[$key] = Geo::filterUrl('keyword');
+                    }
+                    return $settings[$key];
                 },
                 'position' => 2,
             );
@@ -115,28 +153,49 @@ abstract class SiteBase_ extends SiteModule
 
     /**
      * Описание index шаблонов страниц
-     * @param string $templateKey ключ шаблона tpl
+     * @param string|array $templateKey ключ шаблона tpl (string) или список имплементированных шаблонов
      * @return array
      */
     public static function indexTemplates($templateKey = '')
     {
-        $aTemplates = bff::filter('site.index.templates', array(
+        $templatesList = bff::filter('site.index.templates', array(
             'index.default' => array('title' => _t('site', 'Обычный'), 'map' => false, 'regions' => false),
             'index.regions' => array('title' => _t('site', 'Обычный + регионы'), 'map' => false, 'regions' => true),
             'index.map1'    => array('title' => _t('site', 'Карта №1'), 'map' => true, 'regions' => true),
             'index.map2'    => array('title' => _t('site', 'Карта №2'), 'map' => true, 'regions' => false),
-            'index.map3'    => array('title' => _t('site', 'Карта №3'), 'map' => true, 'regions' => true)
+            'index.map3'    => array('title' => _t('site', 'Карта №3'), 'map' => true, 'regions' => true),
         ));
-        $i = 0;
-        foreach ($aTemplates as $k=>&$v) {
-            $v['id'] = $i++;
-            $v['tpl'] = $k;
-        } unset($v);
-        if ($templateKey && isset($aTemplates[$templateKey])) {
-            return $aTemplates[$templateKey];
+        if (is_array($templateKey) && ! empty($templateKey)) {
+            $finalList = array();
+            foreach ($templateKey as $key=>$params) {
+                if (is_integer($key) && is_string($params)) {
+                    $key = $params;
+                }
+                if (is_array($params)) {
+                    $finalList[$key] = $params;
+                } else if (array_key_exists($key, $templatesList)) {
+                    $finalList[$key] = $templatesList[$key];
+                }
+            }
+            $templatesList = $finalList;
+            $templateKey = '';
+        }
+        foreach ($templatesList as $key=>&$template) {
+            $template['key'] = $key;
+            if (empty($template['file'])) {
+                $template['file'] = $key;
+            }
+        } unset($template);
+
+        if ( ! empty($templateKey)) {
+            if (empty($templatesList[$templateKey])) {
+                reset($templatesList);
+                $templateKey = key($templatesList);
+            }
+            return $templatesList[$templateKey];
         }
 
-        return $aTemplates;
+        return $templatesList;
     }
 
     /**
@@ -180,7 +239,7 @@ abstract class SiteBase_ extends SiteModule
                             'type' => 'wy',
                         )
                     ),
-                    'visible' => !config::sysAdmin('bbs.index.region.search', false, TYPE_BOOL),
+                    'visible' => !config::sysAdmin('bbs.index.region.search', true, TYPE_BOOL),
                 ),
                 'page-view'     => array(
                     't'       => _t('site','Статические страницы'),

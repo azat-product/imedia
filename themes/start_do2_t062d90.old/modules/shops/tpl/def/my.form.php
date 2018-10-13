@@ -210,9 +210,6 @@ $show_titles = $is_open;
       <div class="col-sm-9 col-sm-offset-3">
         <input type="submit" class="btn btn-success j-submit"
                value="<?= ($is_edit ? _t('shops', 'Сохранить') : _t('shops', 'Открыть магазин')) ?>"/>
-        <?php if ($is_open) { ?>
-          <span class="btn btn-default" onclick="history.back();"><?= _t('', 'Отмена') ?></span>
-        <?php } ?>
         <div
           class="help-inline j-abonement-help j-abonement-expire-block <?php if (!Shops::abonementEnabled() || !empty($user_abonement) || !$reset['m']) { ?>hide<?php } ?>">
           <?= _t('shops', 'тариф "[title]" до [expire]', array(

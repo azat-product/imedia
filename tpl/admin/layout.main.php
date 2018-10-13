@@ -69,7 +69,7 @@ $(function(){ bff.error(false, {init: true}); /* init err block */ });
                                 </a>
                             <? endforeach; ?>
                             <!-- start: User Dropdown -->
-                            <a href="#" data-toggle="dropdown" class="btn<?= (FORDEV ? ' btn-info' : '') ?> dropdown-toggle">
+                            <a href="javascript:void(0);" data-toggle="dropdown" class="btn<?= (FORDEV ? ' btn-info' : '') ?> dropdown-toggle">
                                 <i class="<?= (!FORDEV ? 'icon-user' : 'icon-wrench') ?>"></i><span class="hidden-phone hidden-tablet"> <?= $user_login ?></span>
                                 <span class="caret"></span>
                             </a>

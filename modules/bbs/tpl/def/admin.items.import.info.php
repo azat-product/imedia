@@ -36,7 +36,7 @@
                     <td class="row1 field-title right"><?= _t('users', 'Пользователь:'); ?></td>
                     <td></td>
                     <td class="row2">
-                        <a href="#" onclick="return bff.userinfo(<?= $user_id ?>);" class="ajax<? if($user['blocked']){ ?> clr-error<? } ?>"><?= $user['email'] ?></a>
+                        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $user_id ?>);" class="ajax<? if($user['blocked']){ ?> clr-error<? } ?>"><?= $user['email'] ?></a>
                     </td>
                 </tr>
                 <tr>
@@ -48,6 +48,7 @@
                         <? if($items_ignored > 0){ ?><span class="desc"><?= _t('bbs', 'пропущено:'); ?>&nbsp;</span><span class="text-error"><?= $items_ignored ?></span><? } ?>
                     </td>
                 </tr>
+                <? bff::hook('bbs.admin.import.info.header', $aData); ?>
                 <tr>
                     <td colspan="3"><hr class="cut" /></td>
                 </tr>
@@ -60,7 +61,7 @@
                     <td class="row1 field-title right"><?= _t('users', 'Пользователь:'); ?></td>
                     <td></td>
                     <td class="row2">
-                        <a href="#" onclick="return bff.userinfo(<?= $sett_user['user_id'] ?>);" class="ajax"><?= $sett_user['email'] ?></a>
+                        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $sett_user['user_id'] ?>);" class="ajax"><?= $sett_user['email'] ?></a>
                     </td>
                 </tr>
                 <? if ( ! empty($sett_shop)) { ?>
@@ -68,7 +69,7 @@
                     <td class="row1 field-title right"><?= _t('bbs', 'Магазин:'); ?></td>
                     <td></td>
                     <td class="row2">
-                        <a href="#" onclick="return bff.shopInfo(<?= $sett_shop['id'] ?>);" class="ajax"><?= $sett_shop['title'] ?></a>
+                        <a href="javascript:void(0);" onclick="return bff.shopInfo(<?= $sett_shop['id'] ?>);" class="ajax"><?= $sett_shop['title'] ?></a>
                     </td>
                 </tr>
                 <? } ?>
@@ -98,6 +99,7 @@
                         </td>
                     </tr>
                 <?}?>
+                <? bff::hook('bbs.admin.import.info.settings', $aData); ?>
             </table>
             <div class="ipopup-content-bottom">
                 <ul class="right">

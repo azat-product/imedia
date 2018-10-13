@@ -3,8 +3,9 @@
 /**
  * Плагинизация: расширение
  * @abstract
- * @version 1.71
- * @modified 8.mar.2018
+ * @version 2.43
+ * @modified 31.aug.2018
+ * @copyright Tamaranga
  */
 
 const EXTENSION_TYPE_PLUGIN = 1;
@@ -12,6 +13,7 @@ const EXTENSION_TYPE_THEME  = 2;
 const EXTENSION_TYPE_MODULE = 3;
 
 use \Logger;
+use bff\utils\Files;
 
 trait Extension
 {
@@ -37,6 +39,7 @@ trait Extension
      * Поля настроек расширения
      */
     protected $extension_config = array();
+    protected $extension_config_templates = array();
     protected $extension_config_options = array();
 
     /**
@@ -67,7 +70,7 @@ trait Extension
      * Статус наличия всех необходимых зависимостей подходящих версий
      * @var bool true - все зависимости в требуемых версиях присутствуют
      */
-    protected $extension_dependencies_status = false;
+    protected $extension_dependencies_status = true;
 
     /**
      * Объект логгера
@@ -88,14 +91,39 @@ trait Extension
     protected $extension_warnings = array();
 
     /**
+     * CSS файлы стилей доступные для редактирования в настройках
+     * @var array
+     */
+    protected $extension_css_edit = [];
+
+    /**
+     * Расширение является аддоном, если указано одно и более расширение
+     * @var array
+     */
+    protected $extension_addon_for = [];
+
+    /**
+     * Список объектов аддонов данного расширения
+     * @var \SplObjectStorage
+     */
+    protected $extension_addons = [];
+
+    /**
      * Получение идентификатора расширения
      * @param boolean $fallbackToName возвращать имя в случае если идентификатор не указан
+     * @param boolean $fallbackParent поиск идентификаторав у parent-расширений
      * @return string
      */
-    public function getExtensionId($fallbackToName = false)
+    public function getExtensionId($fallbackToName = false, $fallbackParent = false)
     {
         if (!empty($this->extension_id)) {
             return $this->extension_id;
+        }
+        if ($fallbackParent) {
+            if ($this->isTheme() && $this->isChildTheme()) {
+                # Идентификатор исходной темы:
+                return $this->getParentTheme()->getExtensionId($fallbackToName, $fallbackParent);
+            }
         }
         return ($fallbackToName ? $this->getName() : '');
     }
@@ -134,6 +162,24 @@ trait Extension
             return '';
         }
         return $this->extension_type;
+    }
+
+    /**
+     * Является ли расширение темой
+     * @return bool
+     */
+    public function isTheme()
+    {
+        return $this->extension_type === EXTENSION_TYPE_THEME;
+    }
+
+    /**
+     * Является ли расширение плагином
+     * @return bool
+     */
+    public function isPlugin()
+    {
+        return $this->extension_type === EXTENSION_TYPE_PLUGIN;
     }
 
     /**
@@ -201,6 +247,54 @@ trait Extension
     }
 
     /**
+     * Расширение является аддоном
+     * @return boolean
+     */
+    public function isAddon()
+    {
+        return ! empty($this->extension_addon_for);
+    }
+
+    /**
+     * Заявляем аддон для расширения
+     * @param string $id идентификатор расширения или THEME_BASE
+     * @param string $version версия расширения
+     */
+    public function setAddonFor($id, $version)
+    {
+        if ( ! empty($id) && ! empty($version)) {
+            $this->extension_addon_for[$id] = array('version'=>$version);
+        }
+    }
+
+    /**
+     * Поддерживает ли аддон указанное расширение
+     * @param \bff\extend\Extension $extension объект расширения
+     * @return boolean
+     */
+    public function isAddonFor($extension)
+    {
+        return array_key_exists((is_object($extension) ? $extension->getExtensionId(true) : $extension), $this->extension_addon_for);
+    }
+
+    /**
+     * Закрепляем связь расширения с аддоном
+     * @param \bff\extend\Extension $addon
+     * @return boolean
+     */
+    public function addAddon($addon)
+    {
+        if (is_array($this->extension_addons)) {
+            $this->extension_addons = new \SplObjectStorage();
+        }
+        if ( ! $this->extension_addons->contains($addon)) {
+            $this->extension_addons->attach($addon, $addon->getName());
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Добавление предупреждений
      * @param string|array $message
      */
@@ -259,6 +353,18 @@ trait Extension
     }
 
     /**
+     * Метод вызываемый при старте расширения
+     */
+    public function extensionStart()
+    {
+        foreach ($this->extension_config_templates as $id => &$template) {
+            if ($template['onStart'] !== null && ! empty($template['settings'])) {
+                call_user_func($template['onStart'], $template['settings']);
+            }
+        } unset($template);
+    }
+
+    /**
      * Поля настроек расширения
      * @param array $settings настройки
      * 'уникальный ключ' => [
@@ -278,9 +384,109 @@ trait Extension
      */
     protected function configSettings(array $settings, array $options = array())
     {
+        if ( ! array_key_exists('tabs', $options)) {
+            $options['tabs'] = array();
+        }
+        if ( ! empty($this->extension_config_templates)) {
+            $tabsPlus = [];
+            $settingsCount = sizeof($settings);
+            foreach ($this->extension_config_templates as $id=>$template) {
+                if (empty($template['settings'])) continue;
+                if ( ! empty($template['keys.overrideBy']) && $settingsCount > 0) {
+                    foreach ($template['keys.overrideBy'] as $k) {
+                        if (array_key_exists($k, $settings)) {
+                            continue 2;
+                        }
+                    }
+                }
+                foreach ($template['settings'] as &$sett) {
+                    $sett = \config::merge($template['template'], $sett);
+                    if (empty($sett['tab'])) { $settingsCount++; }
+                    $settings[$sett['config.key']] = &$sett;
+                } unset($sett);
+                if ( ! empty($template['tab']['key'])) {
+                    $tabsPlus[$template['tab']['key']] = $template['tab'];
+                }
+            }
+            if ($settingsCount > 0 && sizeof($tabsPlus) > 0 && empty($options['tabs'])) {
+                $options['tabs']['def'] = ['title'=>_t('ext', 'Общие')];
+                foreach ($tabsPlus as $k=>$v) {
+                    $options['tabs'][$k] = $v;
+                }
+            }
+        }
         $this->extension_config = $settings;
-        $this->extension_config_options = $options;
+        $this->extension_config_options = array_merge($this->extension_config_options, $options);
         \config::extension($this->extension_name, $this->extension_config, $this);
+    }
+
+    /**
+     * Регистрация шаблона настроек расширения
+     * @param string $id уникальный ключ шаблона
+     * @param array $config настройки шаблона: [
+     *      string 'key' - ключ настройки по умолчанию
+     *      array 'keys.overrideBy' - ключи настроек расширения, подавляющие данную шаблонную настройку
+     *      array 'template' - шаблон [
+     *          string 'title' - название настройки
+     *          string 'input' - тип поля: 'select', 'checkbox', 'number', ...
+     *          int 'type' - тип данных: TYPE_NOTAGS, TYPE_UINT, TYPE_BOOL ...
+     *          ...
+     *      ]
+     *      array 'tab' - таб настройки [
+     *          string 'key' - ключ таба
+     *          string 'title' - название таба
+     *      ]
+     * ]
+     * @param \Closure $onStart функция вызываемая в момент старта плагина/темы
+     * @param array $settings шаблонные настройки по умолчанию: [
+     *      //
+     * ]
+     */
+    protected function configSettingsTemplateRegister($id, array $config, \Closure $onStart = null, array $settings = [])
+    {
+        $this->extension_config_templates[$id] = array_merge([
+            'template'        => [],
+            'key'             => '_'.$id,
+            'tab'             => [],
+            'keys.overrideBy' => [],
+            'onStart'         => $onStart,
+            'settings'        => [],
+        ], $config);
+        if ( ! empty($settings)) {
+            $this->configSettingsTemplate($id, $settings, false);
+        }
+    }
+
+    /**
+     * Определяем шаблонные настройки
+     * @param string $id уникальный ключ шаблона
+     * @param array $settings настройки
+     * @param bool $extend дополнить
+     * @return boolean
+     */
+    protected function configSettingsTemplate($id, array $settings, $extend = false)
+    {
+        if ( ! array_key_exists($id, $this->extension_config_templates)) {
+            return false;
+        }
+        $template = &$this->extension_config_templates[$id]['settings'];
+        if ( ! $extend) {
+            $template = array();
+        }
+        foreach ($settings as $key=>$params) {
+            if (empty($key) || !is_string($key) || !is_array($params)) {
+                continue;
+            }
+            if ($extend && array_key_exists($key, $template)) {
+                $template[$key] = \config::merge($template[$key], $params);
+            } else {
+                $template[$key] = $params;
+            }
+            if (empty($template[$key]['config.key'])) {
+                $template[$key]['config.key'] = $this->extension_config_templates[$id]['key'].'.'.$key;
+            }
+        }
+        return true;
     }
 
     /**
@@ -302,12 +508,13 @@ trait Extension
             $hookPrefix.'tabs' => function($tabs) use ($name, $tabKey, $options) {
                 $tabs[$tabKey] = array(
                     'title' => $name,
+                    'custom' => true,
                     'priority' => (isset($options['priority']) ? $options['priority'] : 1),
                 );
                 return $tabs;
             },
             $hookPrefix.'tabs.content' => function($data) use ($content, $tabKey, $options) {
-                echo '<div class="j-tab j-tab-'.$tabKey.' hidden">';
+                echo '<div class="j-tab j-tab-'.$tabKey.($data['tabActive'] !== $tabKey ? ' hidden':'').'">';
                 if (is_callable($content)) {
                     echo call_user_func($content, $data, $options);
                 } else if (is_string($content)) {
@@ -342,7 +549,7 @@ trait Extension
                 if (isset($setting['dynamic'])) {
                     return call_user_func($setting['dynamic'], $setting, $default, $language);
                 }
-                if ($setting['lang']) {
+                if ( ! empty($setting['lang'])) {
                     if (!is_null($language)) {
                         return (isset($setting['data_edit'][$language]) && $setting['data_edit'][$language] !== '' ? $setting['data_edit'][$language] : $default);
                     } else {
@@ -421,6 +628,7 @@ trait Extension
      */
     public function configImages($key, $size = false)
     {
+        /** @var \bff\extend\ExtensionImage $obj */
         $obj = false;
         if ( isset($this->extension_config[$key]['object']) &&
               is_a($this->extension_config[$key]['object'], '\bff\extend\ExtensionImage')) {
@@ -459,6 +667,9 @@ trait Extension
         }
         if ($data === false) {
             return $obj;
+        }
+        if ($obj === false) {
+            return array();
         }
         return $obj->loadData();
     }
@@ -524,6 +735,22 @@ trait Extension
     }
 
     /**
+     * Формирование абсолютного пути к файлу в public директории расширения
+     * @param string $file относительный путь к файлу
+     * @param boolean $mod разрешать модифицикацию
+     * @param boolean $custom путь к custom версии файла
+     * @return string
+     */
+    public function pathPublic($file, $mod = true, $custom = false)
+    {
+        $file = PATH_PUBLIC.(!$mod && $custom ? 'custom'.DS : '').static::dir($this->extension_type).DS.$this->getName().DS.ltrim($file, DS.' ');
+        if ($mod) {
+            return modification($file);
+        }
+        return $file;
+    }
+
+    /**
      * Формирование абсолютного пути к директории хранения файлов загружаемых расширением
      * @param boolean $public true - директория доступная по ссылке, false - недоступная, для хранения системных файлов
      * @param boolean $asUrl в формате URL (public only)
@@ -545,9 +772,10 @@ trait Extension
     /**
      * Формирование структуры файлов по указанному пути
      * @param string $path относительный путь
+     * @param array|boolean $filesOnly только файлы, список доступных расширений
      * @return array
      */
-    public function pathStructure($path = '/')
+    public function pathStructure($path = '/', $filesOnly = false)
     {
         $path = $this->extension_path . ltrim($path, DS.' ');
         $structure = array();
@@ -559,8 +787,11 @@ trait Extension
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveCallbackFilterIterator(
                 new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS),
-                function ($v) use ($filter) {
+                function ($v) use ($filter, $filesOnly) {
                   if ($v->isFile()) {
+                      if (is_array($filesOnly) && ! in_array($v->getExtension(), $filesOnly)) {
+                          return false;
+                      }
                       return !in_array($v->getFilename(), $filter['file']);
                   }
                   if ($v->isDir()) {
@@ -572,7 +803,9 @@ trait Extension
             \RecursiveIteratorIterator::SELF_FIRST
         );
         foreach ($iterator as $v) {
-            if ($v->isDir() || $v->isFile()) {
+            if ($v->isFile()) {
+                $structure[] = $iterator->getSubPathName();
+            } else if ($v->isDir() && $filesOnly === false) {
                 $structure[] = $iterator->getSubPathName();
             }
         }
@@ -605,6 +838,41 @@ trait Extension
     }
 
     /**
+     * Регистрация автозагрузки по алиасу расширения /(plugins|themes)/{alias}/
+     * @param Extension $extension объект расширения
+     * @param string $alias алиас расширения
+     * @return boolean
+     */
+    public static function registerAliasAutoloader($extension, $alias)
+    {
+        $sep = '\\';
+        $classPrefix = static::dir($extension->getExtensionType()).$sep.trim($alias, $sep);
+        return spl_autoload_register(function($className) use ($classPrefix, $sep, $extension) {
+            $className = ltrim($className, $sep);
+            if (mb_stripos($className, $classPrefix) === 0) {
+                $className = str_replace($sep, DS, str_replace($classPrefix.$sep, $extension->path(DS), $className));
+                if (file_exists($className.'.php')) {
+                    require_once $className.'.php';
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Регистрируем дополнительный модуль
+     * @param string $name название модуля (латиницей)
+     * @param string $path путь к директории модуля, относительно директории расширения
+     * @param array $opts дополнительные параметры
+     * @return boolean удалось ли зарегистрировать модуль
+     */
+    public function moduleRegister($name, $path = '', array $opts = array())
+    {
+        return \bff::i()->moduleRegister($name, $this->path($path), $opts);
+    }
+
+    /**
      * Формирование URL файла
      * @param string $file название файла
      * @param mixed $version версия файла или false
@@ -629,7 +897,11 @@ trait Extension
                 }
             }
         }
-        return \bff::url('/'.static::dir($this->extension_type).'/'.$this->getName().'/'.ltrim($file, '/ '), $version);
+        if ($this->extension_type === EXTENSION_TYPE_THEME) {
+            return \bff::url('/' . ltrim($file, '/ '), $version);
+        } else {
+            return \bff::url('/' . static::dir($this->extension_type) . '/' . $this->getName() . '/' . ltrim($file, '/ '), $version);
+        }
     }
 
     /**
@@ -687,6 +959,137 @@ trait Extension
     }
 
     /**
+     * Устанавливаем/получаем CSS файлы стилей доступные для редактирования в настройках
+     * @param array|null $files список файлов, или вернуть текущие (null)
+     *  [
+     *      'key' => [
+     *          'path'  => '/static/css/main.css',
+     *          'save'  => false(readonly) | true(src+custom) | 'custom'(custom only),
+     *          'title' => 'main.css',
+     *      ],
+     *      ...
+     *  ]
+     * @param boolean $extend дополнить текущий список
+     * @return array
+     */
+    public function cssEdit($files = null, $extend = false)
+    {
+        if (is_array($files)) {
+            $update = [];
+            foreach ($files as $key=>$file) {
+                if (!is_string($key) || !is_array($file) || empty($file['path'])) {
+                    continue;
+                }
+                # key
+                $file['key'] = $key;
+                # save
+                if ( ! isset($file['save']) || ! in_array($file['save'], [false, true, 'custom'], true)) {
+                    $file['save'] = true;
+                }
+                # readonly
+                $file['readonly'] = ($file['save'] === false);
+                # path: custom
+                if ( ! $file['readonly'] && ! isset($file['path_custom'])) {
+                    $file['path_custom'] = $this->pathPublic(strtr($file['path'], [
+                        $this->extension_path . 'static' . DS => DS,
+                        $this->extension_path                 => DS,
+                    ]), false, true);
+                }
+                $update[$key] = $file;
+            }
+            if ($extend) {
+                $this->extension_css_edit = array_merge($this->extension_css_edit, $update);
+            } else {
+                $this->extension_css_edit = $update;
+            }
+        } else {
+            if ($this->isTheme() && $this->isChildTheme()) {
+                $parentCSS = $this->getParentTheme()->cssEdit();
+                $mainKey = static::CSS_FILE_MAIN;
+                if (isset($parentCSS[$mainKey])) {
+                    $this->extension_css_edit[$mainKey] = array_merge($parentCSS[$mainKey], [
+                        'priority' => -1,
+                        'readonly' => true,
+                        'save'     => false,
+                    ]);
+                }
+            }
+        }
+        return $this->extension_css_edit;
+    }
+
+    /**
+     * Загружаем/сохраняем содержимое CSS файла для редактирования
+     * @param string $fileKey ключ файла
+     * @param string|bool $content содержимое для сохранения, false - получить текущее содержимое
+     * @return string|bool содержимое файла или false ошибка
+     */
+    public function cssEditContent($fileKey, $save = false)
+    {
+        if ($save !== false && is_string($save))
+        {
+            if (empty($this->extension_css_edit[$fileKey]['path'])) {
+                return false;
+            }
+            $file = $this->extension_css_edit[$fileKey];
+            if ($file['readonly']) {
+                return false;
+            }
+            $paths = [];
+            $paths[] = $file['path_custom'];
+            if ($file['save'] === true) {
+                $paths[] = $file['path'];
+            }
+            if (is_string($save)) {
+                \bff\utils\TextParser::cleanUtf8($save);
+            }
+            $success = false;
+            foreach ($paths as $path) {
+                if ( ! file_exists($path)) {
+                    $pathDir = dirname($path);
+                    if ( ! is_dir($pathDir)) {
+                        if ( ! Files::makeDir($pathDir, 0775, true)) {
+                            continue;
+                        }
+                    }
+                }
+                if (file_put_contents($path, $save) !== false) {
+                   $success = true;
+                }
+            }
+            return $success;
+        } else {
+            $content = '';
+            do {
+                if (empty($this->extension_css_edit[$fileKey]['path'])) {
+                    break;
+                }
+                $file = $this->extension_css_edit[$fileKey];
+                $path = $file['path'];
+                if (!$file['readonly'] && !empty($file['path_custom']) && file_exists($file['path_custom'])) {
+                    $path = $file['path_custom'];
+                }
+                if (file_exists($path)) {
+                    if ($save === -1) {
+                        header('Content-disposition: attachment; filename="'.pathinfo($path, PATHINFO_BASENAME).'"');
+                        header('Content-type: text/plain');
+                        header('Content-Length: '.filesize($path));
+                        readfile($path);
+                        \bff::shutdown();
+                    }
+                    $content = file_get_contents($path);
+                    if ($content !== false) {
+                        \bff\utils\TextParser::cleanUtf8($content);
+                    } else {
+                        $content = '';
+                    }
+                }
+            } while (false);
+            return $content;
+        }
+    }
+
+    /**
      * Объявление модов
      * @return array [
      *   array 'list' - список модов
@@ -696,9 +1099,15 @@ trait Extension
     {
         $file = $this->path('mods.php');
         if (file_exists($file)) {
-            $list = include $file;
-            if (empty($list) || !is_array($list)) {
-                $list = array();
+            try {
+                $list = include $file;
+                if (empty($list) || !is_array($list)) {
+                    $list = array();
+                }
+            } catch(\Throwable $e) {
+                $this->log($e->getMessage() . ', ' . $e->getFile() . ' [' . $e->getCode() . ']');
+            } catch(\Exception $e) {
+                $this->log($e->getMessage() . ', ' . $e->getFile() . ' [' . $e->getCode() . ']');
             }
         }
         return array(
@@ -713,7 +1122,7 @@ trait Extension
     public function refreshStatic($install)
     {
         $src = $this->extension_path.'static'.DS;
-        $dst = PATH_PUBLIC.static::dir($this->extension_type).DS.$this->getName().DS;
+        $dst = $this->pathPublic('', false);
         if ($install) {
             $this->installStatic($src, $dst, true);
         } else {
@@ -902,12 +1311,13 @@ trait Extension
      * @param array $params подстановочные данные
      * @param boolean $escape выполнять квотирование, false - не выполнять, 'html' (true), 'js'
      * @param string $language язык локализации, null - текущий
+     * @param array $opts дополнительные настройки
      * @return string
      */
-    public function lang($message, array $params = array(), $escape = false, $language = null)
+    public function lang($message, array $params = array(), $escape = false, $language = null, array $opts = array())
     {
         # translate
-        $message = $this->locale->translate($this->extension_name, $message, $params, $language);
+        $message = $this->locale->translate($this->extension_name, $message, $params, $language, $opts);
 
         # escape
         if ($escape === false) {
@@ -917,17 +1327,18 @@ trait Extension
     }
 
     /**
-     * Поиск перевода для фразы интерфейса дополнения в админ. панели
+     * Поиск перевода для фразы интерфейса расширения в админ. панели
      * @param string $message фраза
      * @param array $params подстановочные данные
      * @param boolean $escape выполнять квотирование, false - не выполнять, 'html' (true), 'js'
      * @param string $language язык локализации, null - текущий
+     * @param array $opts дополнительные настройки
      * @return string
      */
-    public function langAdmin($message, array $params = array(), $escape = false, $language = null)
+    public function langAdmin($message, array $params = array(), $escape = false, $language = null, array $opts = array())
     {
         # translate
-        $message = $this->locale->translate($this->extension_name.'/admin', $message, $params, $language);
+        $message = $this->locale->translate($this->extension_name.'/admin', $message, $params, $language, $opts);
 
         # escape
         if ($escape === false) {
@@ -964,7 +1375,8 @@ trait Extension
      * Добавление роута
      * @param string $id идентификатор роута
      * @param array $settings параметры роута
-     * @return \Hook|boolean
+     * @param array $opts доп. настройки
+     * @return boolean
      */
     public function routeAdd($id, array $settings = array())
     {
@@ -974,10 +1386,7 @@ trait Extension
             ) {
             return false;
         }
-        return \bff::hooks()->routes(function ($routes) use ($id, $settings) {
-            $routes[$id] = $settings;
-            return $routes;
-        });
+        return \bff::router()->add($id, $settings);
     }
 
     /**

@@ -24,6 +24,7 @@ $lng_st_messages = _t('bbs.my', 'сообщения');
 $lng_blocked = _t('bbs.my', 'ЗАБЛОКИРОВАНО');
 $lng_up_auto_edit = _t('bbs.my', 'Настроить автоподнятие');
 $lng_up_auto_on = _t('bbs.my', 'Включить автоподнятие');
+$lng_active_svc = _t('bbs.my', 'Активные рекламные услуги');
 
 if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET || $device == bff::DEVICE_PHONE )
 {
@@ -49,10 +50,10 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET || $device =
       <div class="sr-list-item-body-in">
         <div class="sr-list-item-content">
           <div class="sr-list-item-heading">
-            <h3 class="sr-list-item-heading-title">
+            <div class="sr-list-item-heading-title">
               <a href="<?= $v['link'].'?from=my' ?>"><?= $v['title'] ?></a>
               <?php if($v['status'] == BBS::STATUS_BLOCKED) { ?><span class="text-danger">(<?= $lng_blocked ?>)</span><?php } ?>
-            </h3>
+            </div>
           </div>
           <div class="sr-glItem-subtext">
             <span class="sr-glItem-subtext-i"><?= $v['cat_title'] ?></span>
@@ -92,7 +93,7 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET || $device =
           <a href="<?= BBS::url('item.edit', array('id'=>$ID,'from'=>'my')) ?>" class="link-ico"><i class="fa fa-edit"></i> <span><?= $lng_a_edit ?></span></a>
           <?php if($v['status'] == BBS::STATUS_PUBLICATED && $moderated) { ?>
           <a href="#" data-id="<?= $ID ?>" data-act="unpublicate" class="link-ico link-red j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_unpublicate ?></span></a>
-          <?php } else if($v['status'] == BBS::STATUS_PUBLICATED_OUT) { ?>
+          <?php } else if($v['status'] == BBS::STATUS_PUBLICATED_OUT || $v['status'] == BBS::STATUS_BLOCKED) { ?>
           <a href="#" data-id="<?= $ID ?>" data-act="delete" class="link-ico link-red j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_delete ?></span></a>
           <?php } ?>
         </div>
@@ -109,6 +110,26 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET || $device =
         <li><i class="fa fa-eye"></i> <?= $lng_st_views ?>: <b><?= $v['views_item_total'] ?></b></li>
         <li> <?= $lng_st_contacts ?>: <b><?= $v['views_contacts_total'] ?></b></li>
         <li><i class="fa fa-comment"></i> <?= $lng_st_messages ?>: <b><?= $v['messages_total'] ?></b></li>
+        <? if ($v['svc_dd']) { ?>
+	      <li class="dropdown usr-ads-list-dropdown pull-right">
+		      <a class="dropdown-toggle" id="pay-services" role="button" data-toggle="dropdown" href="#">
+			      <i class="fa fa-bullhorn" aria-hidden="true"></i>
+			      <span><?= $lng_active_svc ?> </span><b class="caret"></b>
+		      </a>
+		      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="pay-services">
+                <? foreach($svc as $kk => $vv) { if ( ! ($kk & $v['svc_dd'])) continue; ?>
+			      <li role="presentation">
+				      <a role="menuitem" tabindex="-1" href="<?= $svc_url($kk, $v) ?>">
+					      <div class="usr-ads-list-dropdown-ico">
+						      <img src="<?= $vv['icon_s'] ?>" alt="">
+					      </div>
+					      <span><?= $vv['title'] ?></span><small class="usr-ads-list-dropdown-time"><?= $svc_to_date($kk, $v) ?></small>
+				      </a>
+			      </li>
+                <? } ?>
+		      </ul>
+	      </li>
+        <? } ?>
       </ul>
     </div><!-- /.sr-list-item-body -->
     

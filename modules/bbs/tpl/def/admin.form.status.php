@@ -73,6 +73,7 @@ var jItemStatus = (function(){
                     $buttons.hide();
                 } break;
                 case 1: { // сохранить
+                    data['topup'] = ($block.find('#i_refresh_topup').is(':checked') ? 1 : 0);
                     bff.ajax(url+'item-refresh', data, function(resp){
                         if (resp && resp.success) {
                             refreshBlock(resp);
@@ -135,14 +136,14 @@ var jItemStatus = (function(){
                 } break;
                 case 5: { // выбор причины
                     var blID = intval($blocked_id.val());
-                    if(blID == <?= BBS::BLOCK_OTHER ?>){
+                    if(blID == <?= BBS::BLOCK_OTHER ?> || blID == <?= BBS::BLOCK_FOREVER ?>){
                         $block.find('#i_blocking_reas').show(0, function(){
                             $blocked_reason.focus();
                         });
                     }else{
                         $block.find('#i_blocking_reas').hide();
                     }
-                }
+                } break;
             }
             return false;
         }
@@ -161,7 +162,7 @@ var jItemStatus = (function(){
                 } else {
                     switch($status) {
                         case BBS::STATUS_NOTACTIVATED: { echo _t('bbs', 'Неактивировано'); } break;
-                        case BBS::STATUS_PUBLICATED: { echo ($moderated == 0?_t('bbs', 'Ожидает проверки (было отредактировано)'):_t('bbs', 'Публикуется')); } break;
+                        case BBS::STATUS_PUBLICATED: { echo ($moderated == 0?_t('bbs', 'Ожидает проверки'):_t('bbs', 'Публикуется')); } break;
                         case BBS::STATUS_PUBLICATED_OUT: { echo _t('bbs', 'Период публикации завершился'); } break;
                         case BBS::STATUS_BLOCKED: { echo ($moderated == 0?_t('bbs', 'Ожидает проверки (было заблокировано)'):_t('bbs', 'Заблокировано')); } break;
                         case BBS::STATUS_DELETED: { echo _t('bbs', 'Удалено пользователем'); } break;
@@ -190,7 +191,7 @@ var jItemStatus = (function(){
                     </div>
                     <div class="clear"></div>
                     <div id="i_blocked">
-                        <span id="i_blocked_text"><?= $blocked_id == BBS::BLOCK_OTHER && !empty($blocked_reason) ? $blocked_reason : (isset($reasons[$blocked_id]) ? $reasons[$blocked_id] : '?') ?></span> - <a href="#" onclick="jItemStatus.changeBlocked(1,0); return false;" class="ajax desc"><?= _t('', 'изменить'); ?></a>
+                        <span id="i_blocked_text"><?= ($blocked_id == BBS::BLOCK_OTHER || $blocked_id == BBS::BLOCK_FOREVER) && !empty($blocked_reason) ? $blocked_reason : (isset($reasons[$blocked_id]) ? $reasons[$blocked_id] : '?') ?></span> - <a href="javascript:void(0);" onclick="jItemStatus.changeBlocked(1,0); return false;" class="ajax desc"><?= _t('', 'изменить'); ?></a>
                     </div>
                     <div id="i_blocking_id" style="display: none; margin: 5px 0;">
                         <select name="blocked_id" class="j-i-blocked-id" onchange="jItemStatus.changeBlocked(5);" style="width: auto;"><?= HTML::selectOptions($reasons, $blocked_id) ?></select>
@@ -199,9 +200,9 @@ var jItemStatus = (function(){
                         <textarea name="blocked_reason" class="autogrow j-i-blocked-reason" style="height:60px; min-height:60px;"><?= htmlspecialchars($blocked_reason, ENT_QUOTES, 'UTF-8', false); ?></textarea>
                     </div>
                     <div id="i_blocking" style="display: none;">
-                        <a onclick="return jItemStatus.changeBlocked(3, 1);" class="btn btn-mini btn-success" href="#"><?= (!$blocked ? _t('', 'продолжить'):_t('bbs', 'изменить причину')) ?></a>
-                        <? if($blocked) { ?><a onclick="return jItemStatus.changeBlocked(4);" class="btn btn-mini btn-success" href="#"><?= _t('bbs', 'разблокировать') ?></a><? } ?>
-                        <a onclick="return jItemStatus.changeBlocked(2);" class="btn btn-mini" href="#"><?= _t('', 'отмена'); ?></a>
+                        <a onclick="return jItemStatus.changeBlocked(3, 1);" class="btn btn-mini btn-success" href="javascript:void(0);"><?= (!$blocked ? _t('', 'продолжить'):_t('bbs', 'изменить причину')) ?></a>
+                        <? if($blocked) { ?><a onclick="return jItemStatus.changeBlocked(4);" class="btn btn-mini btn-success" href="javascript:void(0);"><?= _t('bbs', 'разблокировать') ?></a><? } ?>
+                        <a onclick="return jItemStatus.changeBlocked(2);" class="btn btn-mini" href="javascript:void(0);"><?= _t('', 'отмена'); ?></a>
                     </div>
                 </div>
                 <div class="hidden alert alert-info" id="i_refresh">
@@ -219,8 +220,13 @@ var jItemStatus = (function(){
                         </tr>
                         <tr class="row1">
                             <td>
-                                <a onclick="return jItemStatus.refresh(1);" class="btn btn-mini btn-success" href="#"><?= _t('bbs', 'продлить'); ?></a>
-                                <a onclick="return jItemStatus.refresh(2);" class="btn btn-mini" href="#"><?= _t('', 'отменить'); ?></a>
+                                <label class="checkbox"><input type="checkbox" checked="checked" id="i_refresh_topup" /><?= _t('bbs', 'Поднять объявление в списке'); ?></label>
+                            </td>
+                        </tr>
+                        <tr class="row1">
+                            <td>
+                                <a onclick="return jItemStatus.refresh(1);" class="btn btn-mini btn-success" href="javascript:void(0);"><?= _t('bbs', 'продлить'); ?></a>
+                                <a onclick="return jItemStatus.refresh(2);" class="btn btn-mini" href="javascript:void(0);"><?= _t('', 'отменить'); ?></a>
                             </td>
                         </tr>
                     </table>
@@ -232,10 +238,10 @@ var jItemStatus = (function(){
             <td class="row1" colspan="2" style="padding-left: <?= ($is_popup ? 90 : 110) ?>px;">
                <?
                if ($moderated == 0) { ?>
-                    <input class="btn btn-mini btn-success success button" type="button" onclick="jItemStatus.approve();" value="<?= ($blocked ? _t('bbs', 'проверено, все впорядке') : _t('bbs', 'проверено')) ?>" />
+                    <input class="btn btn-mini btn-success success button" type="button" onclick="jItemStatus.approve();" value="<?= ($blocked ? _te('bbs', 'проверено, все впорядке') : _te('bbs', 'проверено')) ?>" />
                <? } else {
                    if ( $moderated == 2 ) {
-                        ?><input class="btn btn-mini btn-success success button" type="button" onclick="jItemStatus.approve();" value="<?= ($blocked ? _t('bbs', 'проверено, все впорядке') : _t('bbs', 'проверено')) ?>" /> <?
+                        ?><input class="btn btn-mini btn-success success button" type="button" onclick="jItemStatus.approve();" value="<?= ($blocked ? _te('bbs', 'проверено, все впорядке') : _te('bbs', 'проверено')) ?>" /> <?
                    }
                    if ($status == BBS::STATUS_PUBLICATED_OUT) {
                         ?><input class="btn btn-mini submit button" type="button" onclick="jItemStatus.refresh(0);" value="<?= _te('bbs', 'опубликовать'); ?>" /> <?

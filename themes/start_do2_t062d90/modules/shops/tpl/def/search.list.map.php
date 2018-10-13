@@ -23,9 +23,9 @@ if (empty($items)) {
     <div class="sh-map-list-item j-maplist-item" data-index="<?= $k ?>">
       <div class="sh-map-list-item-num"><?= $v['num'] ?>.</div>
       <div class="sh-map-list-item-content">
-        <h3 class="sh-map-list-item-title">
+        <div class="sh-map-list-item-title">
           <a href="<?= $v['link'] ?>"><?= $v['title'] ?></a>
-        </h3>
+        </div>
         <div class="sh-map-list-item-descr">
           <?= tpl::truncate($v['descr'], 150, '...', true) ?>
         </div>

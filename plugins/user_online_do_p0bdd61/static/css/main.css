@@ -1,0 +1,39 @@
+.c-status-wrap {
+  display: inline-block;
+  line-height: 17px;
+  font-size: 13px;
+  cursor: default; }
+
+.c-status-wrap span {
+    line-height: 1; }
+
+.c-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+  display: inline-block;
+  -webkit-transform: translateY(1px);
+          transform: translateY(1px); }
+
+.c-status-lg {
+  width: 12px;
+  height: 12px; }
+
+.c-status-inline {
+  display: inline-block;
+  position: relative;
+  margin-right: 2px;
+  top: -1px; }
+
+.c-status-online {
+  background: #6BCD1C; }
+
+.c-status-text-online {
+  color: #6BB134 !important; }
+
+.c-status-offline {
+  background: #ccc; }
+
+.c-status-text-offline {
+  color: #999 !important; }

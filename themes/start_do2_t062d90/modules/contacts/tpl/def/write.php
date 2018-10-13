@@ -12,9 +12,9 @@ $user = HTML::escape($user);
 $captcha_url = ( $captcha_on ? tpl::captchaURL('math', array('bg'=>'FFFFFF')) : '' );
 ?>
 
-<?php if (DEVICE_DESKTOP_OR_TABLET) {
+<?php
   echo tpl::getBreadcrumbs(array( array('title'=>(!empty($breadcrumb) ? $breadcrumb : config::get('contacts_form_title_'.LNG, _t('contacts', 'Контакты'))), 'active'=>true) ));
-} ?>
+?>
 
 <div class="l-mainLayout">
 

@@ -29,7 +29,7 @@ $lng = array(
  * @param bool $visible false - скрыть кнопку
  */
 $drawButton = function($title, array $meta, $active = false, $value = '', $value_plus = false, $visible = true) use ($lng, $filter_seek) {
-    ?><a href="#" class="f-catfilter__item custom-btn-filter j-button<? if($active) { ?> selected<? } if( ! $visible || ( $filter_seek && ! $meta['seek']) ) { ?> hide<? } ?>" data="{id:<?= $meta['id'] ?>,key:'<?= $meta['key'] ?>',type:'<?= $meta['type'] ?>',parent:<?= $meta['parent'] ?>,seek:<?= ($meta['seek']?'true':'false') ?>}">
+    ?><a href="javascript:void(0);" class="f-catfilter__item custom-btn-filter j-button<? if($active) { ?> selected<? } if( ! $visible || ( $filter_seek && ! $meta['seek']) ) { ?> hide<? } ?>" data="{id:<?= $meta['id'] ?>,key:'<?= $meta['key'] ?>',type:'<?= $meta['type'] ?>',parent:<?= $meta['parent'] ?>,seek:<?= ($meta['seek']?'true':'false') ?>}">
             <span class="f-catfilter__item__content">
                 <strong><?= $title ?></strong>
                 <em class="j-value"><?= ( ! empty($value) ? $value : $lng['btn_reset'] ) ?> <i class="fa fa-plus-square extra<? if(!$value_plus){ ?> hide<? } ?>"></i></em>
@@ -107,7 +107,10 @@ if (!empty($extra['cat']['subs_filter']))
                 $btn_value = $i['title'];
                 $class = ' active';
             }
-            return '<li><a href="'. $i['link'] .'" data-id="'.$i['id'].'" class="j-catLink'. $class .'">'. $i['title'] .'</a></li>';
+            if ($i['items'] > 0) {
+                return '<li><a href="' . $i['link'] . '" data-id="' . $i['id'] . '" class="j-catLink' . $class . '">' . $i['title'] . '</a></li>';
+            }
+            return '';
         }, array(2=>7,3=>15,5=>40));
 
         ?><div class="clearfix"></div><?

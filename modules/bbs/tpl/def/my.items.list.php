@@ -24,6 +24,7 @@ $lng_st_messages = _t('bbs.my', 'сообщения');
 $lng_blocked = _t('bbs.my', 'ЗАБЛОКИРОВАНО');
 $lng_up_auto_edit = _t('bbs.my', 'Настроить автоподнятие');
 $lng_up_auto_on = _t('bbs.my', 'Включить автоподнятие');
+$lng_active_svc = _t('bbs.my', 'Активные рекламные услуги');
 
 if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET )
 {
@@ -52,9 +53,9 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET )
                                 <span class="rel inlblk">
                                     <a href="<?= $v['link'].'?from=my' ?>" class="thumb stack rel inlblk">
                                         <? if( $v['imgs'] ) { ?>
-                                        <img src="<?= $v['img_s'] ?>" alt="<?= $v['title'] ?>" class="rel br2 zi3 shadow" />
+                                            <img src="<?= $v['img_s'] ?>" alt="<?= $v['title'] ?>" class="rel br2 zi3 shadow" />
                                         <? } else { ?>
-                                        <img src="<?= $img_default ?>" alt="<?= $v['title'] ?>" class="rel br2 zi3 shadow" />
+                                            <img src="<?= $img_default ?>" alt="<?= $v['title'] ?>" class="rel br2 zi3 shadow" />
                                         <? } ?>
                                     </a>
                                 </span>
@@ -83,32 +84,32 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET )
                                     <? } ?>
                                     <a href="<?= BBS::url('item.edit', array('id'=>$ID,'from'=>'my')) ?>" class="ico"><i class="fa fa-edit"></i> <span><?= $lng_a_edit ?></span></a>
                                     <? if($v['status'] == BBS::STATUS_PUBLICATED && $moderated) { ?>
-                                        <a href="#" data-id="<?= $ID ?>" data-act="unpublicate" class="ico red j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_unpublicate ?></span></a>
-                                    <? } else if($v['status'] == BBS::STATUS_PUBLICATED_OUT) { ?>
-                                        <a href="#" data-id="<?= $ID ?>" data-act="delete" class="ico red j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_delete ?></span></a>
+                                        <a href="javascript:void(0);" data-id="<?= $ID ?>" data-act="unpublicate" class="ico red j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_unpublicate ?></span></a>
+                                    <? } else if($v['status'] == BBS::STATUS_PUBLICATED_OUT || $v['status'] == BBS::STATUS_BLOCKED) { ?>
+                                        <a href="javascript:void(0);" data-id="<?= $ID ?>" data-act="delete" class="ico red j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_delete ?></span></a>
                                     <? } ?>
                                 </div>
                                 <div class="u-ads__list__item__content__block_nav_buttons">
                                     <? if( ! $v['messages_total']) { ?>
-                                        <a href="#" onclick="return false;" class="btn btn-small disabled"><i class="fa fa-envelope"></i> 0&nbsp;</a>
+                                        <a href="javascript:void(0);" onclick="return false;" class="btn btn-small disabled"><i class="fa fa-envelope"></i> 0&nbsp;</a>
                                     <? } else {
-                                         if($v['messages_new']) { ?><a href="<?= $messages_url ?>" class="btn btn-small btn-success"><i class="fa fa-envelope white"></i> +<?= $v['messages_new'] ?></a><? }
-                                         else { ?><a href="<?= $messages_url ?>" class="btn btn-small"><i class="fa fa-envelope"></i> <?= $v['messages_total'] ?></a><? }
-                                       } ?>
+                                        if($v['messages_new']) { ?><a href="<?= $messages_url ?>" class="btn btn-small btn-success"><i class="fa fa-envelope white"></i> +<?= $v['messages_new'] ?></a><? }
+                                        else { ?><a href="<?= $messages_url ?>" class="btn btn-small"><i class="fa fa-envelope"></i> <?= $v['messages_total'] ?></a><? }
+                                    } ?>
                                     <? if($v['status'] == BBS::STATUS_PUBLICATED && $moderated && bff::servicesEnabled()) { ?>
                                         <a href="<?= BBS::url('item.promote', array('id'=>$ID,'from'=>'my')) ?>" class="btn btn-small btn-success"><?= $lng_a_promote ?></a>
                                         <? if ($upfree_days) { ?>
-                                            <a href="#" data-id="<?= $ID ?>" class="btn btn-small btn-info <?= strtotime($v['svc_up_free']) >= $upfree_to ? 'disabled' : '' ?> j-i-up-free" ><i class="fa fa-arrow-up"></i> <?= $lng_a_up_free ?></a>
+                                            <a href="javascript:void(0);" data-id="<?= $ID ?>" class="btn btn-small btn-info <?= strtotime($v['svc_up_free']) >= $upfree_to ? 'disabled' : '' ?> j-i-up-free" ><i class="fa fa-arrow-up"></i> <?= $lng_a_up_free ?></a>
                                         <? } ?>
                                     <? } else if($v['status'] == BBS::STATUS_PUBLICATED_OUT && $moderated) { ?>
-                                        <a href="#" data-id="<?= $ID ?>" data-act="publicate" class="btn btn-small btn-info j-i-status"><i class="fa fa-arrow-up white"></i> <?= $lng_a_publicate ?></a>
+                                        <a href="javascript:void(0);" data-id="<?= $ID ?>" data-act="publicate" class="btn btn-small btn-info j-i-status"><i class="fa fa-arrow-up white"></i> <?= $lng_a_publicate ?></a>
                                     <? } ?>
 
                                 </div>
                                 <? if (BBS::svcUpAutoEnabled()) { ?>
                                     <div class="clearfix"></div>
                                     <div>
-                                        <a href="#" class="j-i-up-auto" data-id="<?= $ID ?>">
+                                        <a href="javascript:void(0);" class="j-i-up-auto" data-id="<?= $ID ?>">
                                             <i class="fa fa-refresh <?= $v['svc_upauto_on'] ? 'text-blue' : '' ?>"></i> <span><?= $v['svc_upauto_on'] ? $lng_up_auto_edit : $lng_up_auto_on ?></span>
                                         </a>
                                     </div>
@@ -119,6 +120,28 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET )
                             <td colspan="3">
                                 <div class="u-ads__list__item__content__block_stat">
                                     <div class="spacer"></div>
+                                    <? if ($v['svc_dd']) { ?>
+                                        <div class="dropdown u-ads__list__dropdown pull-right">
+                                            <a class="dropdown-toggle" id="pay-services" role="button" data-toggle="dropdown" href="#">
+                                                <i class="fa fa-bullhorn" aria-hidden="true"></i>
+                                                <?= $lng_active_svc ?> <b class="caret"></b>
+                                            </a>
+                                            <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="pay-services">
+                                                <? foreach($svc as $kk => $vv) { if ( ! ($kk & $v['svc_dd'])) continue; ?>
+                                                    <li role="presentation">
+                                                        <a role="menuitem" tabindex="-1" href="<?= $svc_url($kk, $v) ?>">
+                                                            <div class="u-ads__list__dropdown__ico">
+                                                                <img src="<?= $vv['icon_s'] ?>" alt="">
+                                                            </div>
+                                                            <span><?= $vv['title'] ?></span>
+                                                            <small class="mrgla"><?= $svc_to_date($kk, $v) ?></small>
+                                                        </a>
+                                                    </li>
+                                                <? } ?>
+                                            </ul>
+                                        </div>
+                                    <? } ?>
+
                                     <span><?= $lng_st ?>:</span>
                                     <span><i class="fa fa-eye"></i> <?= $lng_st_views ?>: <b><?= $v['views_item_total'] ?></b></span>
                                     <span> <?= $lng_st_contacts ?>: <b><?= $v['views_contacts_total'] ?></b></span>
@@ -166,25 +189,25 @@ if( $device == bff::DEVICE_PHONE )
                                 <div>
                                     <a href="<?= BBS::url('item.edit', array('id'=>$ID,'from'=>'my')) ?>" class="btn"><i class="fa fa-edit"></i> <span><?= $lng_a_edit_phone ?></span></a>
                                     <? if($v['status'] == BBS::STATUS_PUBLICATED && $moderated) { ?>
-                                        <a href="#" data-id="<?= $ID ?>" data-act="unpublicate" class="btn j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_unpublicate ?></span></a>
+                                        <a href="javascript:void(0);" data-id="<?= $ID ?>" data-act="unpublicate" class="btn j-i-status"><i class="fa fa-times"></i> <span><?= $lng_a_unpublicate ?></span></a>
                                     <? } else if($v['status'] == BBS::STATUS_PUBLICATED_OUT) { ?>
-                                        <a href="#" data-id="<?= $ID ?>" data-act="delete" class="btn btn-danger j-i-status"><i class="fa fa-times white"></i> <span><?= $lng_a_delete ?></span></a>
+                                        <a href="javascript:void(0);" data-id="<?= $ID ?>" data-act="delete" class="btn btn-danger j-i-status"><i class="fa fa-times white"></i> <span><?= $lng_a_delete ?></span></a>
                                     <? } ?>
                                 </div>
                                 <div>
                                     <? if( ! $v['messages_total']) { ?>
                                         <button class="btn disabled"><i class="fa fa-envelope"></i> 0</button>
                                     <? } else {
-                                         if($v['messages_new']) { ?><a href="<?= $messages_url ?>" class="btn btn-success"><i class="fa fa-envelope white"></i> +<?= $v['messages_new'] ?></a><? }
-                                         else { ?><a href="<?= $messages_url ?>" class="btn"><i class="fa fa-envelope"></i> <?= $v['messages_total'] ?></a><? }
-                                       } ?>
+                                        if($v['messages_new']) { ?><a href="<?= $messages_url ?>" class="btn btn-success"><i class="fa fa-envelope white"></i> +<?= $v['messages_new'] ?></a><? }
+                                        else { ?><a href="<?= $messages_url ?>" class="btn"><i class="fa fa-envelope"></i> <?= $v['messages_total'] ?></a><? }
+                                    } ?>
                                     <? if($v['status'] == BBS::STATUS_PUBLICATED && $moderated && bff::servicesEnabled()) { ?>
                                         <a href="<?= BBS::url('item.promote', array('id'=>$ID,'from'=>'my')) ?>" class="btn btn-success"><?= $lng_a_promote ?></a>
                                         <? if($upfree_days) { ?>
-                                            <a href="#" data-id="<?= $ID ?>" class="btn btn-small btn-info <?= strtotime($v['svc_up_free']) >= $upfree_to ? 'disabled' : '' ?> j-i-up-free" ><i class="fa fa-arrow-up"></i> <?= $lng_a_up_free ?></a>
+                                            <a href="javascript:void(0);" data-id="<?= $ID ?>" class="btn btn-small btn-info <?= strtotime($v['svc_up_free']) >= $upfree_to ? 'disabled' : '' ?> j-i-up-free" ><i class="fa fa-arrow-up"></i> <?= $lng_a_up_free ?></a>
                                         <? } ?>
                                     <? } else if($v['status'] == BBS::STATUS_PUBLICATED_OUT) { ?>
-                                        <a href="#" data-id="<?= $ID ?>" data-act="publicate" class="btn btn-info j-i-status"><i class="fa fa-arrow-up white"></i> <?= $lng_a_publicate ?></a>
+                                        <a href="javascript:void(0);" data-id="<?= $ID ?>" data-act="publicate" class="btn btn-info j-i-status"><i class="fa fa-arrow-up white"></i> <?= $lng_a_publicate ?></a>
                                     <? } ?>
                                 </div>
                             </td>
@@ -197,6 +220,27 @@ if( $device == bff::DEVICE_PHONE )
                                         <span><i class="fa fa-eye"></i> <b><?= $v['views_item_total'] ?></b> / <b><?= $v['views_contacts_total'] ?></b></span>
                                         <span><i class="fa fa-comment"></i> <b><?= $v['messages_total'] ?></b></span>
                                     </small>
+                                    <? if ($v['svc_dd']) { ?>
+                                        <div class="dropdown u-ads__list__dropdown pull-right">
+                                            <a class="dropdown-toggle" id="pay-services" role="button" data-toggle="dropdown" href="#">
+                                                <i class="fa fa-bullhorn" aria-hidden="true"></i>
+                                                <?= $lng_active_svc ?> <b class="caret"></b>
+                                            </a>
+                                            <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="pay-services">
+                                                <? foreach($svc as $kk => $vv) { if ( ! ($kk & $v['svc_dd'])) continue; ?>
+                                                    <li role="presentation">
+                                                        <a role="menuitem" tabindex="-1" href="<?= $svc_url($kk, $v) ?>">
+                                                            <div class="u-ads__list__dropdown__ico">
+                                                                <img src="<?= $vv['icon_s'] ?>" alt="">
+                                                            </div>
+                                                            <span><?= $vv['title'] ?></span>
+                                                            <small class="mrgla"><?= $svc_to_date($kk, $v) ?></small>
+                                                        </a>
+                                                    </li>
+                                                <? } ?>
+                                            </ul>
+                                        </div>
+                                    <? } ?>
                                 </div>
                             </td>
                         </tr>

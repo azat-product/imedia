@@ -12,7 +12,7 @@
         </form>
     </td>
     <td>
-        <a class="but j-form-submit" title="<?= _te('', 'Submit') ?>" href="#" style="margin-top: -7px;"><i class="icon icon-ok disabled"></i></a>
-        <a class="but j-form-cancel" title="<?= _te('', 'Cancel') ?>" href="#" style="margin-top: -7px;"><i class="icon icon-remove disabled"></i></a>
+        <a class="but j-form-submit" title="<?= _te('', 'Submit') ?>" href="javascript:void(0);" style="margin-top: -7px;"><i class="icon icon-ok disabled"></i></a>
+        <a class="but j-form-cancel" title="<?= _te('', 'Cancel') ?>" href="javascript:void(0);" style="margin-top: -7px;"><i class="icon icon-remove disabled"></i></a>
     </td>
 </tr>

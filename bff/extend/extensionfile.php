@@ -4,6 +4,7 @@
  * Плагинизация: настройки расширения - загрузка файлов
  * @version 0.24
  * @modified 28.mar.2018
+ * @copyright Tamaranga
  */
 
 use \bff\files\Attachment;

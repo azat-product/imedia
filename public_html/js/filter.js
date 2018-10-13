@@ -4,7 +4,13 @@ $(function(){
     {
         if( submit ) {
             var $form = $('#j-f-form');
-            $form.attr('action', $form.attr('action').replace(app.hostSearch, data.link) );
+            var url = $form.attr('action').replace(app.hostSearch, data.link);
+            if (typeof jBBSSearch === 'object') {
+                var query = jBBSSearch.prepareQuery($form, true);
+                window.location.href = url + (query.length > 0 ? '?'+query : '');
+                return;
+            }
+            $form.attr('action', url);
             $form.append('<input type="hidden" name="region" value="'+data.id+'" />');
             $form.submit();
         }
@@ -16,9 +22,17 @@ $(function(){
     var $confirmDesktop = $('#j-f-region-desktop-confirm');
     if ($confirmDesktop.length) {
         $confirmDesktop.on('click', '.j-confirm-yes', function(){
-            bff.ajax(bff.ajaxURL('geo','filter-confirm-region'),{region_id:$(this).data('id')},function(data){
-                if(data && data.success){
-                    location.reload();
+            var $link = $(this);
+            bff.ajax(bff.ajaxURL('geo','filter-confirm-region'),{region_id:$link.data('id')},function(data){
+                if (data && data.success) {
+                    var redirect = $link.data('redirect');
+                    if (redirect) {
+                        bff.redirect(redirect);
+                    } else if (data.hasOwnProperty('redirect')) {
+                        bff.redirect(data.redirect)
+                    } else {
+                        location.reload();
+                    }
                 }
                 $confirmDesktop.hide();
             });
@@ -36,14 +50,15 @@ $(function(){
     app.popup('f-region-desktop', '#j-f-region-desktop-popup', '#j-f-region-desktop-link', {onInit: function($p){
         var _this = this;
         var $st1 = $p.find('#j-f-region-desktop-st1');
-        var $st2 = $p.find('#j-f-region-desktop-st2'), st2cache = {}, st2citySel = '.f-navigation__region_change__links a';
+        var $st2 = $p.find('#j-f-region-desktop-st2'), st2cache = {}, st2citySel = '.f-navigation__region_change__links a, .f-navigation__region_change__links .hidden-link';
         function doFilter(type, $link)
         {
-            var f = $link.metadata(); f['type'] = type; f['link'] = $link.attr('href');
+            var f = $link.metadata(); f['type'] = type;
+            f['link'] = ($link.hasClass('hidden-link') ? $link.data('link') : $link.attr('href'));
             _this.getLink().text(f.title);
             onFilterRegion(f, true);
         }
-        $st1.on('click', '.f-navigation__region_change__links a', function(){
+        $st1.on('click', st2citySel, function(){
             var region = $(this).metadata();
             if( st2cache.hasOwnProperty(region.id) ) {
                 $st2.html(st2cache[region.id].html).add($st1).toggleClass('hide');
@@ -57,7 +72,7 @@ $(function(){
             return false;
         });
         var $st1q = $st1.find('#j-f-region-desktop-st1-q'), $st1v = false;
-        $st1q.keyup(function(){ // filter regions by 'title'
+        $st1q.on('keyup',function(){ // filter regions by 'title'
             if( $st1v == false) $st1v = $st1.find('#j-f-region-desktop-st1-v');
             var q = $st1q.val().toLowerCase();
             $st1v.find('ul, li').show();
@@ -105,7 +120,8 @@ $(function(){
         var _this = this;
         function doFilter(type, $link)
         {
-            var f = $link.metadata(); f['type'] = type; f['link'] = $link.attr('href');
+            var f = $link.metadata(); f['type'] = type;
+            f['link'] = ($link.hasClass('hidden-link') ? $link.data('link') : $link.attr('href'));
             _this.getLink().text(f.title);
             onFilterRegion(f, true);
         }
@@ -166,7 +182,7 @@ $(function(){
         });
         var $st1q = $st1.find('#j-f-region-desktop-st1-q');
         var $st1qf = $st1q.closest('form');
-        $st1q.keyup(function(){ // filter regions by 'title'
+        $st1q.on('keyup',function(){ // filter regions by 'title'
             var q = $st1q.val().toLowerCase();
             $st1v.find('ul, li').show();
             if( q == '' ) return false;
@@ -181,8 +197,8 @@ $(function(){
             });
             return false;
         });
-        var $st2 = $p.find('#j-f-region-desktop-st2'), st2cache = {}, st2citySel = '.f-navigation__region_change__links a';
-        $st1.on('click', '.f-navigation__region_change__links a', function(){
+        var $st2 = $p.find('#j-f-region-desktop-st2'), st2cache = {}, st2citySel = '.f-navigation__region_change__links a, .f-navigation__region_change__links .hidden-link';
+        $st1.on('click', st2citySel, function(){
             var region = $(this).metadata();
             if( st2cache.hasOwnProperty(region.id) ) {
                 $st2.html(st2cache[region.id].html).add($st1).toggleClass('hide');
@@ -246,7 +262,7 @@ $(function(){
                 $qList.html(data).show();
             }
         }
-        $q.keyup(function(){
+        $q.on('keyup',function(){
             var q = this.value.toLowerCase();
             if( ! q.length) {
                 qList(qListPresuggest, '');
@@ -257,8 +273,8 @@ $(function(){
                     }
                 });
             }
-        }).next().click(function(e){ nothing(e);
-            $q.keyup();
+        }).next().on('click',function(e){ nothing(e);
+            $q.trigger('keyup');
         });
         $qList.on('click', 'li', function(e){ nothing(e);
             _this.hide(); // search in "region/city/all"

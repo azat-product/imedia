@@ -54,7 +54,7 @@ if ($covering_type == Geo::COVERING_CITY && ($city_id == $covering_city_id)) { ?
             }, function(){ api = this; });
             <?php if($bSelectCountry): ?>
             var cache = {};
-            $('#j-geo-country-select-id<?= $U ?>').change(function(){
+            $('#j-geo-country-select-id<?= $U ?>').on('change',function(){
                 var country = intval($(this).val());
                 if (country) {
                     $ac.show();

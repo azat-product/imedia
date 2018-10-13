@@ -1,9 +1,10 @@
 <?php
 
 # Таблицы
-define('TABLE_BANNERS',      DB_PREFIX . 'banners'); # баннеры
-define('TABLE_BANNERS_POS',  DB_PREFIX . 'banners_pos'); # позиции баннеров
-define('TABLE_BANNERS_STAT', DB_PREFIX . 'banners_stat'); # статистика по баннерам
+define('TABLE_BANNERS',         DB_PREFIX . 'banners');         # баннеры
+define('TABLE_BANNERS_REGIONS', DB_PREFIX . 'banners_regions'); # регионы
+define('TABLE_BANNERS_POS',     DB_PREFIX . 'banners_pos');     # позиции баннеров
+define('TABLE_BANNERS_STAT',    DB_PREFIX . 'banners_stat');    # статистика по баннерам
 
 class BannersModel_ extends Model
 {
@@ -43,7 +44,18 @@ class BannersModel_ extends Model
         if (!bff::adminPanel()) {
             return $this->bannersData(array('id' => $nBannerID));
         } else {
-            return $this->db->one_array('SELECT * FROM ' . TABLE_BANNERS . ' WHERE id=:id', array(':id' => $nBannerID));
+            $data = $this->db->one_array('SELECT * FROM ' . TABLE_BANNERS . ' WHERE id=:id', array(':id' => $nBannerID));
+            $regions = $this->db->select('SELECT reg1_country, reg2_region, reg3_city FROM '.TABLE_BANNERS_REGIONS.' WHERE banner_id = :id', array(':id' => $nBannerID));
+            $data['regions'] = array();
+            foreach($regions as $v) {
+                $regionID = $v['reg3_city'] ? $v['reg3_city'] : ( $v['reg2_region'] ? $v['reg2_region'] : $v['reg1_country']);
+                $r = Geo::regionData($regionID);
+                if ( ! empty($r)) {
+                    $v = array_merge($r, $v);
+                }
+                $data['regions'][$regionID] = $v;
+            }
+            return $data;
         }
     }
 
@@ -62,10 +74,13 @@ class BannersModel_ extends Model
                 )
             );
 
+            $regions = $this->db->select('SELECT banner_id, reg1_country, reg2_region, reg3_city FROM '.TABLE_BANNERS_REGIONS);
+            $regions = func::array_transparent($regions, 'banner_id', false);
+
             foreach ($aData as &$v) {
                 # данные о регионе
-                if ($v['region_id']) {
-                    $v['region'] = Geo::regionData($v['region_id']);
+                if ( isset($regions[ $v['id'] ])) {
+                    $v['regions'] = $regions[ $v['id'] ];
                 }
                 # данные о разделах
                 $v['sitemap'] = (!empty($v['sitemap_id']) ? explode(',', $v['sitemap_id']) : array());
@@ -110,16 +125,39 @@ class BannersModel_ extends Model
      */
     public function bannersListing(array $aFilter = array())
     {
+        $from = ' FROM ' . TABLE_BANNERS . ' B
+                     INNER JOIN ' . TABLE_BANNERS_POS . ' P ON B.pos = P.id
+                     LEFT JOIN ' . TABLE_BANNERS_STAT . ' S ON S.banner_id = B.id ';
+        if (isset($aFilter['region'])) {
+            $regions = Geo::regionData($aFilter['region']);
+            if ( ! empty($regions)) {
+                $from .= ', '.TABLE_BANNERS_REGIONS.' R ';
+                switch ($regions['numlevel']) {
+                    case Geo::lvlCountry: $field = 'reg1_country'; break;
+                    case Geo::lvlRegion:  $field = 'reg2_region'; break;
+                    case Geo::lvlCity:    $field = 'reg3_city'; break;
+                }
+                $aFilter[':reg'] = array('B.id = R.banner_id AND '.$field.' = :reg', ':reg' => $aFilter['region']);
+            }
+            unset($aFilter['region']);
+        }
         $aFilter = $this->prepareFilter($aFilter, 'B');
 
-        return $this->db->select('SELECT B.*, SUM(S.shows) as shows, SUM(S.clicks) as clicks
-                               FROM ' . TABLE_BANNERS . ' B
-                                 INNER JOIN ' . TABLE_BANNERS_POS . ' P ON B.pos = P.id
-                                 LEFT JOIN ' . TABLE_BANNERS_STAT . ' S ON S.banner_id = B.id
-                               ' . $aFilter['where'] . '
-                               GROUP BY B.id',
-            $aFilter['bind']
-        );
+        $data = $this->db->select('SELECT B.*, SUM(S.shows) as shows, SUM(S.clicks) as clicks ' .
+                                  $from . $aFilter['where'] . ' GROUP BY B.id', $aFilter['bind']);
+        $regions = $this->db->select('SELECT banner_id, reg1_country, reg2_region, reg3_city FROM '.TABLE_BANNERS_REGIONS);
+        $regions = func::array_transparent($regions, 'banner_id', false);
+        foreach ($data as & $v) {
+            if ( ! isset($regions[ $v['id'] ])) continue;
+            $v['regions'] = array();
+            foreach($regions[ $v['id'] ] as $vv) {
+                $regionID = $vv['reg3_city'] ? $vv['reg3_city'] : ( $vv['reg2_region'] ? $vv['reg2_region'] : $vv['reg1_country']);
+                $r = Geo::regionData($regionID);
+                $v['regions'][$regionID] = array_merge($r, $vv);
+            }
+        } unset($v);
+
+        return $data;
     }
 
     /**
@@ -130,16 +168,65 @@ class BannersModel_ extends Model
      */
     public function bannerSave($nBannerID, array $aData = array())
     {
+        $regions = isset($aData['regions']) ? $aData['regions'] : false;
+        unset($aData['regions']);
+
         if ($nBannerID) {
             $res = $this->db->update(TABLE_BANNERS, $aData, array('id' => $nBannerID));
-
+            $this->bannerSaveRegions($nBannerID, $regions);
             return !empty($res);
         } else {
             $aData['created'] = $this->db->now();
             if( ! isset($aData['num'])){
                 $aData['num'] = (int)$this->db->one_data('SELECT MAX(num) FROM '.TABLE_BANNERS) + 1;
             }
-            return $this->db->insert(TABLE_BANNERS, $aData, 'id');
+            $nBannerID = $this->db->insert(TABLE_BANNERS, $aData, 'id');
+            $this->bannerSaveRegions($nBannerID, $regions);
+            return $nBannerID;
+        }
+    }
+
+    /**
+     * Сохранение регионов банера
+     * @param $bannerID
+     * @param $regions
+     */
+    protected function bannerSaveRegions($bannerID, $regions)
+    {
+        if (empty($bannerID)) return;
+        if ( ! is_array($regions)) return;
+
+        $exist = $this->db->select_key('SELECT * FROM '.TABLE_BANNERS_REGIONS.' WHERE banner_id = :id', 'id', array(':id' => $bannerID));
+        $fields = array('reg1_country', 'reg2_region', 'reg3_city');
+
+        $isEqual = function($a, $b) use ($fields) {
+            $res = true;
+            foreach($fields as $v) {
+                if ( ! isset($a[$v]) || ! isset($b[$v])) return false;
+                $res = $res && $a[$v] == $b[$v];
+            }
+            return $res;
+        };
+
+        foreach($regions as $k => $v) {
+            foreach($exist as $kk => $vv) {
+                if ($isEqual($v, $vv)) {
+                    unset($regions[$k]);
+                    unset($exist[$kk]);
+                    continue 2;
+                }
+            }
+        }
+
+        if ( ! empty($regions)) {
+            foreach($regions as & $v) {
+                $v['banner_id'] = $bannerID;
+            } unset($v);
+            $this->db->multiInsert(TABLE_BANNERS_REGIONS, $regions);
+        }
+
+        if ( ! empty($exist)) {
+            $this->db->delete(TABLE_BANNERS_REGIONS, array('id' => array_keys($exist)));
         }
     }
 
@@ -150,6 +237,7 @@ class BannersModel_ extends Model
     public function bannerDelete($nBannerID)
     {
         $this->db->delete(TABLE_BANNERS, array('id' => $nBannerID));
+        $this->db->delete(TABLE_BANNERS_REGIONS, array('banner_id' => $nBannerID));
         $this->db->delete(TABLE_BANNERS_STAT, array('banner_id' => $nBannerID));
         $this->cacheReset($nBannerID);
     }

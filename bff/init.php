@@ -69,22 +69,30 @@ if (file_exists(PATH_BASE . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php')) {
     }
 }
 spl_autoload_register(array('bff\base\app', 'autoload'));
+bff\DI::init();
 
 # Загрузка системных настроек
 config::sys(false);
 
+# Константы таблиц базы данных
+define('DB_PREFIX', config::sys('db.prefix'));
+config::file('db.tables');
+
 # Общие константы
 define('BFF_DEBUG', config::sys('debug'));
+define('BFF_TEST', config::sys('test', false));
 define('BFF_LOCALHOST', config::sys('localhost', false));
 error_reporting(config::sys('php.errors.reporting'));
 ini_set('display_errors', config::sys('php.errors.display'));
 header('Content-type: text/html; charset=UTF-8');
 mb_internal_encoding('UTF-8');
-date_default_timezone_set(config::sys('date.timezone'));
 define('SITEHOST', config::sys('site.host'));
+
+# Загружаем настройки сайта
+config::load();
+date_default_timezone_set(config::sysAdmin('date.timezone'));
 define('SITEURL', Request::scheme() . '://' . SITEHOST);
 define('SITEURL_STATIC', rtrim(config::sys('site.static'), '/ '));
-define('DB_PREFIX', config::sys('db.prefix'));
 if (!defined('BFF_SESSION_START')) {
     define('BFF_SESSION_START', 1);
 }
@@ -93,9 +101,6 @@ if (!defined('BFF_SESSION_START')) {
 define('USERS_GROUPS_SUPERADMIN', 'x71');
 define('USERS_GROUPS_MODERATOR', 'c60');
 define('USERS_GROUPS_MEMBER', 'z24');
-
-# Константы таблиц базы данных
-config::file('db.tables');
 
 if (BFF_DEBUG) {
     ini_set('display_startup_errors', 1);

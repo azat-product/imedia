@@ -180,7 +180,7 @@ class Users_ extends UsersBase
                             array('link_activate'=>'href="'.static::url('register', array('step' => 'phone')).'"')));
                     } else {
                         $this->errors->set(_t('users', 'Данный аккаунт неактивирован, перейдите по ссылке отправленной вам в письме.<br /><a [link_resend]>Получить письмо повторно</a>',
-                            array('link_resend'=>'href="#" class="ajax j-resend-activation"')));
+                            array('link_resend'=>'href="javascript:void(0);" class="ajax j-resend-activation"')));
                     }
                     break;
                 }
@@ -1095,6 +1095,10 @@ class Users_ extends UsersBase
         $user['has_contacts'] = ($user['phones'] || !empty($user['contacts']));
         $user['profile_link'] = static::urlProfile($login);
         $user['profile_link_dynamic'] = static::urlProfile($login, '', array(), true);
+        View::setPageData([
+            'users_profile_id'   => $userID,
+            'users_profile_data' => &$user,
+        ]);
 
         # Разделы профиля
         $tab = trim($this->input->getpost('tab', TYPE_NOTAGS), ' /');
@@ -1121,7 +1125,7 @@ class Users_ extends UsersBase
         $tabs[$tab]['a'] = true;
 
         $data = array(
-            'content'  => call_user_func((is_array($tabs[$tab]['ev']) ? $tabs[$tab]['ev'] : array(bff::module($tabs[$tab]['m']), $tabs[$tab]['ev'])), $userID, $user),
+            'content'  => call_user_func((is_array($tabs[$tab]['ev']) ? $tabs[$tab]['ev'] : array(bff::module($tabs[$tab]['m']), $tabs[$tab]['ev'])), $userID, $user, ['tabs'=>&$tabs]),
             'tabs'     => &$tabs,
             'user'     => &$user,
             'is_owner' => User::isCurrent($userID),
@@ -1144,6 +1148,10 @@ class Users_ extends UsersBase
         $shopID = User::shopID();
         $publisher = BBS::publisher();
         $tabs = array();
+        View::setPageData([
+            'cabinet_user_id' => $userID,
+            'cabinet_shop_id' => $shopID,
+        ]);
 
         # Магазин
         if (isset($header['menu']['shop'])) {
@@ -1320,7 +1328,7 @@ class Users_ extends UsersBase
         $on_contacts = config::sysAdmin('users.settings.contacts', true, TYPE_BOOL); # контактные данные
         $on_email = config::sysAdmin('users.settings.email.change', true, TYPE_BOOL); # смена email-адреса
         $on_phone = static::registerPhone(); # смена номера телефона
-        $on_destroy = config::sys('users.settings.destroy', false, TYPE_BOOL); # удаление аккаунта
+        $on_destroy = config::sysAdmin('users.settings.destroy', 'none', TYPE_STR); # удаление аккаунта
 
         # скрываем настройки контактов пользователя при включенном обязательном магазине (не в статусе заявки)
         if ($nShopID && ($nPublisher == BBS::PUBLISHER_SHOP || $nPublisher == BBS::PUBLISHER_USER_TO_SHOP)) {
@@ -1580,7 +1588,7 @@ class Users_ extends UsersBase
                     $user = $this->model->userData($nUserID, array('extra', 'name'));
                     $info = $this->getActivationInfo(array(), func::generator(32));
                     $info['email'] = $email;
-                    $info['link'] = static::url('email.change', array('key' => $info['key'], 'step'=>$nUserID));
+                    $info['link'] = static::url('email_change', array('key' => $info['key'], 'step'=>$nUserID));
                     $user['extra']['email_change'] = $info;
 
                     $res = $this->model->userSave($nUserID, array('extra' => serialize($user['extra'])));
@@ -1602,19 +1610,60 @@ class Users_ extends UsersBase
                 break;
                 case 'destroy': # удаление аккаунта
                 {
-                    if (!$on_destroy) {
+                    if ($on_destroy == 'none') {
                         $this->errors->reloadPage();
                         break;
                     }
                     $pass = $this->input->post('pass', TYPE_NOTRIM);
-                    if (!User::isCurrentPassword($pass)) {
+                    if ( ! User::isCurrentPassword($pass)) {
                         $this->errors->set(_t('users', 'Текущий пароль указан некорректно'), 'pass');
                         break;
                     }
+                    $user = $this->model->userData($nUserID, array('admin', 'login', 'email', 'admin_comment'));
+                    if ( ! empty($user['admin'])) {
+                        $this->errors->impossible();
+                        return false;
+                    }
 
-                    # TODO
+                    switch($on_destroy) {
+                        case 'delete': # полное удаление
+                            $saved = $this->model->userSave($nUserID, array(
+                                'deleted' => static::DESTROY_BY_OWNER,
+                                'blocked' => 1,
+                                'blocked_reason' => _t('users', 'Учетная запись будет удалена в течение суток'),
+                            ));
+                            if ($saved) {
+                                bff::cronManager()->executeOnce('users', 'cronDeleteUsers');
+                            }
+                            break;
+                        case 'block': # блокировка
 
-                    $aResponse['redirect'] = bff::urlBase();
+                            # Триггер блокировки/разблокировки аккаунта
+                            bff::i()->callModules('onUserBlocked', array($nUserID, true));
+
+                            $comments = $user['admin_comment'];
+                            if ( ! empty($comments)) $comments .= "\n";
+                            $comments .= _t('users', 'Пользователь удалил свой аккаунт и был помечен как заблокированный, исходный email -  [email], логин - [login]', array(
+                                'email' => $user['email'],
+                                'login' => $user['login'],
+                            ));
+
+                            $save = array(
+                                'blocked' => 1,
+                                'blocked_reason' => _t('users', 'Учетная запись удалена'),
+                                'email' => 'deleted'.func::generator(15).'@'.SITEHOST,
+                                'login' => 'd'.mt_rand(123456789, 987654321),
+                                'admin_comment' => $comments,
+                            );
+                            $this->model->userSave($nUserID, $save);
+                            break;
+                    }
+
+                    if ($this->errors->no()) {
+                        $this->security->sessionDestroy(-1, true);
+                        $aResponse['redirect'] = Site::url('index');
+                        $aResponse['message_success'] = _t('users', 'Ваша учетная запись будет удалена в течение суток');
+                    }
                 }
                 break;
                 default:
@@ -1641,7 +1690,8 @@ class Users_ extends UsersBase
                 'addr_addr',
                 'addr_lat',
                 'addr_lon',
-                'region_id'
+                'region_id',
+                'admin',
             ), true
         );
         if (empty($aData)) {
@@ -1683,11 +1733,15 @@ class Users_ extends UsersBase
         }
         $aData['tab'] = & $tab;
 
+        if ($aData['admin']) {
+            $on_destroy = 'none';
+        }
+
         $aData['on'] = array(
             'contacts' => $on_contacts,
             'phone'    => $on_phone,
             'email'    => $on_email,
-            'destroy'  => $on_destroy,
+            'destroy'  => $on_destroy != 'none',
         );
 
         $aData['shop_opened'] = ($nShopID && ! BBS::publisher(BBS::PUBLISHER_USER));
@@ -1883,8 +1937,7 @@ class Users_ extends UsersBase
             $this->ajaxResponseForm($response);
         }
 
-        $isRefresh = Request::isRefresh();
-        if ($hashValid && ($userData['enotify'] & static::ENOTIFY_NEWS) && !$isRefresh) {
+        if ($hashValid && ($userData['enotify'] & static::ENOTIFY_NEWS) && !Request::isRefresh()) {
             # Отписываем от рассылки
             $userData['enotify'] -= static::ENOTIFY_NEWS;
             $this->model->userSave($userID, array('enotify'=>$userData['enotify']));
@@ -1971,7 +2024,7 @@ class Users_ extends UsersBase
 
             $message = $this->input->post('message', TYPE_TEXT, array('len'=>1000));
             if (mb_strlen($message) < 10) {
-                $this->errors->set(_t('view', 'Сообщение слишком короткое'), 'message');
+                $this->errors->set(_t('users', 'Сообщение слишком короткое'), 'message');
                 break;
             }
 
@@ -1987,6 +2040,12 @@ class Users_ extends UsersBase
                             break;
                         }
                     }
+                }
+
+                # Функция доступна только авторизованным пользователям
+                if (static::writeFormLogined()) {
+                    $this->errors->set(_t('', 'Авторизуйтесь для возможности отправить сообщение'));
+                    break;
                 }
 
                 $userData = $this->model->userDataByFilter(array('email' => $email), array(
@@ -2113,6 +2172,14 @@ class Users_ extends UsersBase
         $this->model->usersCronDeleteNotActivated();
     }
 
+    public function cronDeleteUsers()
+    {
+        if (!bff::cron()) {
+            return;
+        }
+        $this->model->usersCronDelete();
+    }
+
     /**
      * Расписание запуска крон задач
      * @return array
@@ -2122,6 +2189,7 @@ class Users_ extends UsersBase
 
         return array(
             'cron' => array('period' => '10 0 * * *'),
+            'cron' => array('cronDeleteUsers' => '13 1 * * *'),
         );
     }
 

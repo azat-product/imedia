@@ -75,7 +75,7 @@ var jShopsSearch = (function(){
         // history
         if(o.ajax) {
             var queryInitial = prepareQuery();
-            $(window).bind('popstate',function(e){
+            $(window).on('popstate',function(e){
                 var loc = history.location || document.location;
                 var query = loc.search.substr(1);
                 if( query.length == 0 ) query = queryInitial;
@@ -389,7 +389,7 @@ var jShopsSearch = (function(){
                 }
 
                 // items: list
-                $mapItems = $list.find('.j-maplist .j-maplist-item').bind('click', function (e) {
+                $mapItems = $list.find('.j-maplist .j-maplist-item').on('click', function (e) {
                     var $item = $(this);
                     var itemIndex = $item.data('index');
                     if (!o.items.hasOwnProperty(itemIndex) || $(e.target).is('a') || $(e.target).parents('a').length) return;

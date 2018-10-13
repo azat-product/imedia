@@ -18,6 +18,7 @@
       <img src="<?= $i['avatar'] ?>" alt="" />
       <span><?= $i['url_title'] ?></span>
     </a>
+    <!-- plugin_user_online_do_block -->
   </div>
   <div class="usr-chat-nav-r">
     <a href="<?= $url_back ?>" class="btn btn-default btn-sm"><i class="fa fa-chevron-left"></i> <?= _t('internalmail', 'Все сообщения') ?></a>

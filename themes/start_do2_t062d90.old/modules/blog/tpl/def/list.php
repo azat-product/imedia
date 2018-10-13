@@ -10,10 +10,10 @@ $lang_more = _t('blog', 'Читать дальше');
 
   <?php foreach ($list as $v) { $v['link'] = Blog::urlDynamic($v['link']); ?>
   <div class="bl-list-item">
-    <div class="bl-date"><?= tpl::dateFormat($v['created'], '%d.%m.%Y в %H:%M') ?></div>
+    <div class="bl-date"><?= tpl::dateFormat($v['created'], _t('blog','%d.%m.%Y в %H:%M')) ?></div>
     <?php if ($v['preview']) { ?>
         <a href="<?= $v['link'] ?>" class="bl-list-item-img">
-          <img src="<?= BlogPostPreview::url($v['id'], $v['preview'], BlogPostPreview::szList) ?>">
+          <img src="<?= BlogPostPreview::url($v['id'], $v['preview'], BlogPostPreview::szList) ?>" />
         </a>
     <?php } ?>
     <h3 class="bl-list-item-title">

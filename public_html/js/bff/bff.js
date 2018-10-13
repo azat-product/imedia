@@ -1,9 +1,9 @@
 /**
  * Bff.Utilites.js
  * @author Tamaranga | tamaranga.com
- * @version 0.71
+ * @version 0.74
  * @owr 71368931f096c93f9c8d1d34980a60dd
- * @modified 18.apr.2018
+ * @modified 23.jul.2018
  */
 
 var bff = {
@@ -59,6 +59,10 @@ ajax_utils: (function(){
                         progressIsButton = true;
                     }
                 }
+            } else {
+                if (app.hasOwnProperty('adm') && app.adm && app.$progress){
+                    progress = app.$progress;
+                }
             }
             if(progress) {
                 if(progressIsFunc) { progress.call(this, true); }
@@ -100,6 +104,7 @@ ajax: function(url, params, callback, progressSelector, o)
             }
 
             if (resp.errors && (($.isArray(resp.errors) && resp.errors.length) || $.isPlainObject(resp.errors)) ) {
+                if (o.formChecker) { var checker = o.formChecker(); if(checker && checker.showErrors) { checker.showErrors(resp.errors); }}
                 if (o.hasOwnProperty('onError') && o.onError !== false) {
                     o.onError(resp.errors);
                 } else {
@@ -121,28 +126,29 @@ ajax: function(url, params, callback, progressSelector, o)
 iframeSubmit: function(form, callback, o)
 {
     var $form = $(form); if( ! $form.length ) return;
-    o = $.extend({json:true, button:'', prefix:'bff_ajax_iframe', url:$form.attr('action'), progress:false, beforeSubmit:$.noop}, o||{});
+    o = $.extend({json:true, button:'', prefix:'bff_ajax_iframe', url:$form.attr('action'), progress:false, beforeSubmit:$.noop, formChecker:false}, o||{});
     if( $form.hasClass(o.prefix+'_inited') ) return;
-    var iframeID = parseInt((Math.random()*(999 - 1)+1));
+    var iframeID = parseInt((Math.random()*(9999 - 1)+1));
     $form.before('<iframe name="'+o.prefix+iframeID+'" class="'+o.prefix+'" id="'+o.prefix+iframeID+'" style="display:none;"></iframe>');
     var $iframe = $('#'+o.prefix+iframeID);
     $form.attr({target:$iframe.attr('name'), action:o.url, method:'POST', enctype:'multipart/form-data'});
     $form.addClass(o.prefix+'_inited');
     var _process = false, $button = $(o.button); if (!$button.length) $button = false;
-    $form.submit(function(){
+    $form.on('submit',function(){
         if(_process) return false;
         if($.isFunction(o.beforeSubmit)) if( o.beforeSubmit.apply(this, [$form]) === false ) return false;
         if(bff.filter('bff.iframeSubmit', false, form, callback, o)) return false;
         _process = true; if($button) $button.button('loading');
         var progress = bff.ajax_utils.progress(o.progress);
-        $iframe.load(function(){
+        $iframe.on('load',function(){
             progress.finish(true); _process = false;
             var response = $iframe.contents().find('body');
             if( o.json ) {
                 var responseContent = response.text();
-                responseContent = (responseContent !== '' ? $.parseJSON(responseContent) : {} );
+                responseContent = (responseContent !== '' ? JSON.parse(responseContent) : {} );
                 var data = $.extend({data:'',errors:[]}, responseContent || {});
-                bff.ajax_utils.errors(data.errors, false);
+                if (o.formChecker) { var checker = o.formChecker(); if(checker && checker.showErrors) { checker.showErrors(data.errors); }}
+                else bff.ajax_utils.errors(data.errors, false);
                 callback.apply(this, [data.data, data.errors]);
                 bff.hook('bff.iframeSubmit.data', form, [data.data, data.errors]);
             } else {
@@ -150,15 +156,15 @@ iframeSubmit: function(form, callback, o)
                 bff.hook('bff.iframeSubmit.data', form, [response.html()]);
             }
             if($button) $button.button('reset');
-            $iframe.unbind('load');
+            $iframe.off('load');
             setTimeout(function(){ response.html(''); }, 1);
         });
     });
 },
 
-ajaxURL: function(sModule, sActionQuery)
+ajaxURL: function(module, action)
 {
-    return '/index.php?bff=ajax&s='+sModule+'&lng='+app.lng+'&act='+sActionQuery;
+    return location.pathname+'?bff=ajax&s='+module+'&act='+action;
 },
 
 ymaps: function(container, center, centerZoom, callback, o)
@@ -404,12 +410,12 @@ placeholder: (function(){
             binded_fields = [];
             label
                 .data(fields_key, binded_fields)
-                .click(focusOnField);
+                .on('click',focusOnField);
         }
 
         binded_fields.push(field[0]);
         field.data(data_key, label)
-            .bind('focus blur', placeholderSwitcher) 
+            .on('focus blur', placeholderSwitcher)
             .blur();             
     }
 
@@ -814,7 +820,7 @@ jQuery.fn.slideFadeToggle=function(speed,easing,callback){return this.animate({o
  * Copyright (c) 2008 Chrys Bader (www.chrysbader.com)
  * Dual licensed under the MIT (MIT-LICENSE.txt) and GPL (GPL-LICENSE.txt) licenses.
  */
-(function(b){b.fn.autogrow=function(a){return this.each(function(){new b.autogrow(this,a)})};b.autogrow=function(a,c){this.options=c||{};this.interval=this.dummy=null;this.line_height=this.options.lineHeight||parseInt(b(a).css("line-height"));this.min_height=this.options.minHeight||parseInt(b(a).css("min-height"));this.max_height=this.options.maxHeight||parseInt(b(a).css("max-height"));this.textarea=b(a);if(this.line_height==NaN)this.line_height=0;if(this.min_height==NaN||this.min_height==0)this.min_height= this.textarea.height();this.init()};b.autogrow.fn=b.autogrow.prototype={autogrow:"1.2.2"};b.autogrow.fn.extend=b.autogrow.extend=b.extend;b.autogrow.fn.extend({init:function(){var a=this;this.textarea.css({overflow:"hidden",display:"block"});this.textarea.bind("focus",function(){a.startExpand()}).bind("blur",function(){a.stopExpand()});this.checkExpand()},startExpand:function(){var a=this;this.interval=window.setInterval(function(){a.checkExpand()},400)},stopExpand:function(){clearInterval(this.interval)}, checkExpand:function(){if(this.dummy==null){this.dummy=b("<div></div>");this.dummy.css({"font-size":this.textarea.css("font-size"),"font-family":this.textarea.css("font-family"),width:this.textarea.css("width"),padding:this.textarea.css("padding"),"line-height":this.line_height+"px","overflow-x":"hidden",position:"absolute",top:0,left:-9999}).appendTo("body")}var a=this.textarea.val().replace(/(<|>)/g,"");a=bff.browser.msie?a.replace(/\n/g,"<BR>new"):a.replace(/\n/g,"<br>new");if(this.dummy.html()!= a){this.dummy.html(a);if(this.max_height>0&&this.dummy.height()+this.line_height>this.max_height)this.textarea.css("overflow-y","auto");else{this.textarea.css("overflow-y","hidden");if(this.textarea.height()<this.dummy.height()+this.line_height||this.dummy.height()<this.textarea.height())this.textarea.animate({height:this.dummy.height()+this.line_height+"px"},100)}}}})})(jQuery);
+(function(b){b.fn.autogrow=function(a){return this.each(function(){new b.autogrow(this,a)})};b.autogrow=function(a,c){this.options=c||{};this.interval=this.dummy=null;this.line_height=this.options.lineHeight||parseInt(b(a).css("line-height"));this.min_height=this.options.minHeight||parseInt(b(a).css("min-height"));this.max_height=this.options.maxHeight||parseInt(b(a).css("max-height"));this.textarea=b(a);if(this.line_height==NaN)this.line_height=0;if(this.min_height==NaN||this.min_height==0)this.min_height= this.textarea.height();this.init()};b.autogrow.fn=b.autogrow.prototype={autogrow:"1.2.2"};b.autogrow.fn.extend=b.autogrow.extend=b.extend;b.autogrow.fn.extend({init:function(){var a=this;this.textarea.css({overflow:"hidden",display:"block"});this.textarea.on("focus",function(){a.startExpand()}).on("blur",function(){a.stopExpand()});this.checkExpand()},startExpand:function(){var a=this;this.interval=window.setInterval(function(){a.checkExpand()},400)},stopExpand:function(){clearInterval(this.interval)}, checkExpand:function(){if(this.dummy==null){this.dummy=b("<div></div>");this.dummy.css({"font-size":this.textarea.css("font-size"),"font-family":this.textarea.css("font-family"),width:this.textarea.css("width"),padding:this.textarea.css("padding"),"line-height":this.line_height+"px","overflow-x":"hidden",position:"absolute",top:0,left:-9999}).appendTo("body")}var a=this.textarea.val().replace(/(<|>)/g,"");a=bff.browser.msie?a.replace(/\n/g,"<BR>new"):a.replace(/\n/g,"<br>new");if(this.dummy.html()!= a){this.dummy.html(a);if(this.max_height>0&&this.dummy.height()+this.line_height>this.max_height)this.textarea.css("overflow-y","auto");else{this.textarea.css("overflow-y","hidden");if(this.textarea.height()<this.dummy.height()+this.line_height||this.dummy.height()<this.textarea.height())this.textarea.animate({height:this.dummy.height()+this.line_height+"px"},100)}}}})})(jQuery);
 
 /**
  * Copyright (c) 2007 Ariel Flesler - aflesler@gmail.com | https://github.com/flesler

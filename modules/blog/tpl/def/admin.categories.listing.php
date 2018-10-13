@@ -134,13 +134,13 @@ var jBlogCategoriesList =
         $listTable = $block.find('#BlogCategoriesListTable');
         filters    = $block.find('#BlogCategoriesListFilters').get(0);
 
-        $list.delegate('a.category-edit', 'click', function(){
+        $list.on('click','a.category-edit', function(){
             var id = intval($(this).data('id'));
             if(id>0) jBlogCategoriesFormManager.action('edit',id);
             return false;
         });
 
-        $list.delegate('a.category-toggle', 'click', function(){
+        $list.on('click','a.category-toggle', function(){
             var id = intval($(this).data('id'));
             var type = $(this).data('type');
             if(id>0) {
@@ -150,13 +150,13 @@ var jBlogCategoriesList =
             return false;
         });
 
-        $list.delegate('a.category-del', 'click', function(){
+        $list.on('click','a.category-del', function(){
             var id = intval($(this).data('id'));
             if(id>0) bff.redirect('<?= $this->adminLink('categories_delete&id=') ?>'+id);
             return false;
         });
 
-        $(window).bind('popstate',function(e){
+        $(window).on('popstate',function(e){
             if('state' in window.history && window.history.state === null) return;
             var loc = document.location;
             var actForm = /act=(add|edit)/.exec( loc.search.toString() );

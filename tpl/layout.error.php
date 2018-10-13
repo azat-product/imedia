@@ -8,10 +8,13 @@
 <!DOCTYPE html>
 <html class="no-js">
 <head>
+<?php View::blockStart('head'); ?>
 <?= SEO::i()->metaRender(array('content-type'=>true, 'mtitle'=>$title)) ?>
 <?= View::template('css'); ?>
+<?php View::blockEnd(); ?>
 </head>
-<body data-dbq="<?= bff::database()->statQueryCnt(); ?>">
+<body>
+<?php View::blockStart('body'); ?>
 <?= View::template('alert'); ?>
 <div id="wrap">
     <?= View::template('header.short'); ?>
@@ -31,5 +34,6 @@
     <div id="push"></div>
 </div>
 <?= View::template('footer'); ?>
+<?php View::blockEnd(); ?>
 </body>
 </html>

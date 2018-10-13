@@ -7,7 +7,7 @@ class RememberMe
 {
     public function __invoke(ServerRequestInterface $request, $next)
     {
-        if( ! \bff::$isBot && \Users::loginRemember()) {
+        if( ! \bff::isRobot() && \Users::loginRemember()) {
             \bff::security()->checkRememberMe();
         }
 

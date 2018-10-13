@@ -13,7 +13,7 @@ if (!Request::isAJAX()) {
         <td></td>
         <td>
             <a href="javascript:void(0);" class="but"></a>
-            <a class="but sett" onclick="return bbsCatAct(<?= BBS::CATS_ROOTID ?>, 'dyn');" href="#" title="<?= _te('bbs', 'Дин. свойства'); ?>"></a>
+            <a href="javascript:void(0);" class="but sett" onclick="return bbsCatAct(<?= BBS::CATS_ROOTID ?>, 'dyn');" title="<?= _te('bbs', 'Дин. свойства'); ?>"></a>
             <a href="javascript:void(0);" class="but"></a>
             <a href="javascript:void(0);" class="but"></a>
             <a href="javascript:void(0);" class="but"></a>
@@ -36,8 +36,8 @@ foreach($cats as $v)
     <td><a href="<?= $urlItemsListing.$id ?>"><?= $v['items'] ?></a></td>
     <td><? if( $v['addr'] ) { ?> <i class="icon-ok disabled"></i><? } ?></td>
     <td><? if( $v['price'] ) { ?> <i class="icon-ok disabled"></i><? } ?></td>
-    <td><a class="but <? if( $v['enabled']) { ?>un<? } ?>block" href="#" onclick="return bbsCatAct(<?= $id ?>, 'toggle', this);" title="<?= _te('', 'Вкл/выкл'); ?>"></a>
-        <a class="but sett" onclick="return bbsCatAct(<?= ($isVirtual ? $v['virtual_ptr'] : $id) ?>, 'dyn');" href="#" title="<?= _te('bbs', 'Дин. свойства'); ?>"></a>
+    <td><a class="but <? if( $v['enabled']) { ?>un<? } ?>block" href="javascript:void(0);" onclick="return bbsCatAct(<?= $id ?>, 'toggle', this);" title="<?= _te('', 'Вкл/выкл'); ?>"></a>
+        <a class="but sett" onclick="return bbsCatAct(<?= ($isVirtual ? $v['virtual_ptr'] : $id) ?>, 'dyn');" href="javascript:void(0);" title="<?= _te('bbs', 'Дин. свойства'); ?>"></a>
         <a class="but edit" href="<?= $urlCatEdit.$id ?>" title="<?= _te('','Edit') ?>"></a>
         <? if($v['numlevel'] >= $deep) : ?>
             <a href="javascript:void(0);" class="but"></a>
@@ -46,8 +46,8 @@ foreach($cats as $v)
         <? else: ?>
             <a class="but add" href="<?= $urlCatAdd.$id ?>" title="<?= _te('','Add') ?>"></a>
         <? endif ?>
-        <? if($isNode && ! FORDEV) { ?><a class="but" href="#"></a><? } else { ?>
-            <a class="but del" href="#" onclick="return bbsCatAct(<?= $id ?>, 'del', this);" title="<?= _te('', 'Delete') ?>"></a>
+        <? if($isNode && ! FORDEV) { ?><a class="but" href="javascript:void(0);"></a><? } else { ?>
+            <a class="but del" href="javascript:void(0);" onclick="return bbsCatAct(<?= $id ?>, 'del', this);" title="<?= _te('', 'Delete') ?>"></a>
         <? } ?>
     </td>
 </tr>

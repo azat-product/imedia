@@ -21,8 +21,10 @@ class M_Site_
         ));
 
         # системные настройки
-        if (config::sysAdminEnabled() && $security->isSuperAdmin()) {
-            $menu->assign($menuTitle, _t('site', 'Системные настройки'), 'site', 'settingsSystemManager', true, 11);
+        if (config::sysAdminEnabled()) {
+            $menu->assign($menuTitle, _t('site', 'Системные настройки'), 'site', 'settingsSystemManager', true, 11, array(
+                'access' => 'settings-system',
+            ));
         }
 
         # дополнения (плагины и темы)
@@ -32,7 +34,7 @@ class M_Site_
 
         # обновления
         $menu->assign($menuTitle, _t('dev', 'Обновления'), 'dev', 'updatesManager', true, 15, array(
-            'access' => 'updates',
+            'access' => array('site','updates'),
         ));
 
         # seo
@@ -44,7 +46,7 @@ class M_Site_
         //$menu->assign($menuTitle, 'Инструкции', 'site', 'instructions', true, 50);
 
         # счетчики
-        $menu->assign($menuTitle, _t('site','Счетчики'), 'site', 'counters', true, 60,
+        $menu->assign($menuTitle, _t('site','Счетчики и код'), 'site', 'counters', true, 60,
             array('rlink' => array('event' => 'counters&act=add'), 'access' => 'counters')
         );
 
@@ -52,5 +54,11 @@ class M_Site_
         $menu->assign($menuTitle, _t('site', 'Валюты'), 'site', 'currencies', true, 70, array(
             'access' => 'currencies',
         ));
+
+        # локализация
+        $menu->assign($menuTitle, _t('dev','Локализация'), 'dev', 'locale_data', true, 80, array(
+            'access' => array('site','localization'),
+        ));
+
     }
 }

@@ -9,9 +9,9 @@
  */
 ?>
 
-<?php if (DEVICE_DESKTOP_OR_TABLET) {
+<?php
   echo tpl::getBreadcrumbs(array(array('title'=>(!empty($breadcrumb) ? $breadcrumb : _t('', 'Карта сайта')), 'link'=>'#', 'active'=>true)));
-} ?>
+?>
 
 <div class="l-mainLayout">
 
@@ -30,11 +30,21 @@
           </div>
           <div class="l-sitemap-item-content">
             <div class="l-sitemap-item-title">
+              <?php if ($c['items'] > 0) { ?>
               <a href="<?= $c['link'] ?>"><?= $c['title'] ?></a>
+              <?php } else { ?>
+              <span class="hidden-link" data-link="<?= $c['link'] ?>"><?= $c['title'] ?></span>
+              <?php } ?>
             </div>
             <ul class="l-sitemap-item-subcats">
               <?php foreach($c['subs'] as &$cc) { ?>
-              <li><a href="<?= $cc['link'] ?>"><?= $cc['title'] ?></a></li>
+              <li>
+                <?php if ($cc['items'] > 0) { ?>
+                <a href="<?= $cc['link'] ?>"><?= $cc['title'] ?></a>
+                <?php } else { ?>
+                <span class="hidden-link" data-link="<?= $cc['link'] ?>"><?= $cc['title'] ?></span>
+                <?php } ?>
+              </li>
               <?php } unset($cc); ?>
             </ul>
           </div>

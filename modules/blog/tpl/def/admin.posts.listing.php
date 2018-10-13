@@ -160,13 +160,13 @@ var jBlogPostsList =
         $listPgn   = $block.find('#BlogPostsListPgn');
         filters    = $block.find('#BlogPostsListFilters').get(0);
 
-        $list.delegate('a.post-edit', 'click', function(){
+        $list.on('click','a.post-edit', function(){
             var id = intval($(this).data('id'));
             if(id>0) jBlogPostsFormManager.action('edit',id);
             return false;
         });
 
-        $list.delegate('a.post-toggle', 'click', function(){
+        $list.on('click','a.post-toggle', function(){
             var id = intval($(this).data('id'));
             var type = $(this).data('type');
             if(id>0) {
@@ -176,13 +176,13 @@ var jBlogPostsList =
             return false;
         });
 
-        $list.delegate('a.post-del', 'click', function(){
+        $list.on('click','a.post-del', function(){
             var id = intval($(this).data('id'));
             if(id>0) del(id, this);
             return false;
         });
 
-        $list.delegate('a.post-category', 'click', function(){
+        $list.on('click','a.post-category', function(){
             var id = intval($(this).data('id'));
             if(id>0) {
                 filters['cat'].value = id;
@@ -196,7 +196,7 @@ var jBlogPostsList =
             return false;
         });
 
-        $(window).bind('popstate',function(e){
+        $(window).on('popstate',function(e){
             if('state' in window.history && window.history.state === null) return;
             var loc = document.location;
             var actForm = /act=(add|edit)/.exec( loc.search.toString() );

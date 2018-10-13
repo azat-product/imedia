@@ -15,7 +15,7 @@ var jBBSMyImport = (function(){
         $templateButton = $form.find('.j-template');
         cat.$id = $form.find('.j-cat-value');
         
-        $templateButton.click(function(){
+        $templateButton.on('click',function(){
             var query = "&act=importTemplate&" + $form.serialize()+'&sAction=template&extension=' + $(this).data('ext');
             bff.redirect(o.url+'?'+query);
         });

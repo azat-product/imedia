@@ -98,11 +98,11 @@ var jBannersPositionsForm =
         var $posRot = $('#position-rotation');
         var $filPos = $('#position-filter_list_pos');
 
-        $posRot.change(function(){
+        $posRot.on('change',function(){
             toggleRotVis();
         });
 
-        $filPos.change(function(){
+        $filPos.on('change',function(){
             toggleRotVis();
         });
 

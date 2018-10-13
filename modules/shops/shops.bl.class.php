@@ -219,46 +219,7 @@ abstract class ShopsBase_ extends Module
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # список магазинов (geo)
-            case 'search':
-                # формируем ссылку с учетом указанной области (region), [города (city)]
-                # либо с учетом текущих настроек фильтра по региону
-                $url = Geo::url($opts, $dynamic) . 'shops/' . (!empty($opts['keyword']) ? $opts['keyword'] . '/' : '');
-                break;
-            # просмотр страницы магазина (geo)
-            case 'shop.view':
-                # формируем ссылку с учетом указанной области (region), [города (city)]
-                # либо с учетом текущих настроек фильтра по региону
-                $url = Geo::url($opts, $dynamic) . 'shop/';
-                break;
-            # страница продвижения магазина
-            case 'shop.promote':
-                $url .= '/shop/promote?' . http_build_query($opts);
-                break;
-            # заявка на закрепление магазина за пользователем
-            case 'request':
-                $url = '/shop/request' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # форма открытия магазина
-            case 'my.open':
-                $url .= '/cabinet/shop/open' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # форма открытия магазина
-            case 'my.shop':
-                $url .= '/cabinet/shop' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # форма смены абонемента
-            case 'my.abonement':
-                $url .= '/cabinet/shop/abonement' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # купленные услуги платного расширения лимитов
-            case 'my.limits.payed':
-                $url = BBS::url('my.limits.payed') . '?shop=1';
-                break;
-        }
-        return bff::filter('shops.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('shops-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'shops']);
     }
 
     /**
@@ -666,17 +627,13 @@ abstract class ShopsBase_ extends Module
                 $aData = array_merge($aData, $aRegions['db']);
 
                 # формируем URL магазина
-                $sLink = static::url('shop.view', array(
-                        'region' => $aRegions['keys']['region'],
-                        'city'   => $aRegions['keys']['city']
-                    ), true
-                );
-                if ($nShopID) {
-                    $sLink .= $aData['keyword'] . '-' . $nShopID;
-                } else {
-                    # дополняем в ShopsModel::shopSave
-                }
-                $aData['link'] = $sLink;
+                # + дополняем в ShopsModel::shopSave
+                $aData['link'] = static::url('shop.view', array(
+                    'region'  => $aRegions['keys']['region'],
+                    'city'    => $aRegions['keys']['city'],
+                    'keyword' => $aData['keyword'],
+                    'id'      => ($nShopID ? $nShopID : 0),
+                ), true);
 
                 if ($titlesLang) {
                     # продублируем мультиязычные данные для незаполненных языков
@@ -867,12 +824,12 @@ abstract class ShopsBase_ extends Module
                 'icon'  => 'mm'
             ),
         ));
+        func::sortByPriority($aTypes, 'priority', 2);
         foreach ($aTypes as $k=>$v) {
             if (!isset($v['id'])) {
                 $aTypes[$k]['id'] = $k;
             }
         }
-        func::sortByPriority($aTypes, 'priority', true);
 
         if ($bSelectOptions) {
             return HTML::selectOptions($aTypes, $nSelectedID, false, 'id', 'title');
@@ -883,13 +840,21 @@ abstract class ShopsBase_ extends Module
 
     /**
      * Работа со счетчиком кол-ва новых запросов на открытие / закрепление магазина
-     * @param integer $nIncrement , пример: -2, -1, 1, 2
+     * @param integer $increment , null - пересчитать, пример: -2, -1, 1, 2
      * @param boolean $bJoin true - закрепление, false - открытие
      */
-    public function updateRequestsCounter($nIncrement, $bJoin = false)
+    public function updateRequestsCounter($increment = null, $bJoin = false)
     {
-        config::saveCount('shops_requests', $nIncrement, true);
-        config::saveCount('shops_requests_' . ($bJoin ? 'join' : 'open'), $nIncrement, true);
+        if (empty($increment)) {
+            $countOpen = $this->model->shopsRequestsCounter(false);
+            $countFix = $this->model->shopsRequestsCounter(true);
+            config::save('shops_requests', $countOpen + $countFix, true);
+            config::save('shops_requests_join', $countFix, true);
+            config::save('shops_requests_open', $countOpen, true);
+        } else {
+            config::saveCount('shops_requests', $increment, true);
+            config::saveCount('shops_requests_'.($bJoin ? 'join' : 'open'), $increment, true);
+        }
     }
 
     /**
@@ -935,6 +900,27 @@ abstract class ShopsBase_ extends Module
                 )
             );
         }
+    }
+
+    /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        if ( empty($userID)) return;
+        $shops = $this->model->shopsList(array('user_id' => $userID), 0, false);
+        if ( ! empty($shops)) {
+            foreach($shops as $v) {
+                $this->shopDelete($v['id']);
+            }
+        }
+        $this->model->requestDelete(array('user_id' => $userID));
+        $this->model->claimDelete(array('user_id' => $userID));
+        
+        $this->updateModerationCounter(null);
+        $this->updateRequestsCounter(null);
     }
 
     /**

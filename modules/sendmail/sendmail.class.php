@@ -15,7 +15,7 @@ class Sendmail_ extends SendmailBase
         $massendID = $params['id'];
 
         do {
-            # получаем информацию об рассылке
+            # получаем информацию о рассылке
             $massend = $this->model->massendData($massendID);
             if (empty($massend)) {
                 break;
@@ -23,6 +23,23 @@ class Sendmail_ extends SendmailBase
 
             switch ($massend['status']) {
                 case static::STATUS_PROCESSING:
+                    if ($massend['pid']) {
+                        if ( ! posix_kill($massend['pid'], 0)) {
+                            # не удалось послать сигнал процессу.
+                            $time = strtotime($massend['finished']);
+                            if ( ! $time || $time < strtotime($massend['started'])) {
+                                $time = strtotime($massend['started']);
+                            }
+                            if (time() < $time + CronManager::SINGLE_TIMEOUT) {
+                                # Выжидаем timeout
+                                break 2;
+                            }
+                        } else  {
+                            # процесс присутствует в системе и работает выходим.
+                            break 2;
+                        }
+                    }
+                    break;
                 case static::STATUS_FINISHED:
                 case static::STATUS_PAUSED:
                     break 2;
@@ -103,7 +120,6 @@ class Sendmail_ extends SendmailBase
                 # макрос ФИО
                 $replace = array('{fio}' => $row['name']);
 
-
                 # макрос отписки
                 $hash = Users::userHashGenerate($row['user_id'], $massendID);
                 $replace['{unsubscribe}'] = Users::url('unsubscribe', array('h'=>$hash));
@@ -123,9 +139,9 @@ class Sendmail_ extends SendmailBase
 
                 # ставим отметку, получатель обработан
                 $update = array('processed' => 1);
-                try{
+                try {
                     $result = $this->sendMail($row['email'], $subject, $body, $from, $fromName, $customHeaders);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     bff::log(__FUNCTION__.' Exception: '.$e->getMessage());
                     $result = false;
                 }
@@ -144,6 +160,21 @@ class Sendmail_ extends SendmailBase
             });
 
             if ($status) {
+                $exec = false;
+                if ($status == static::STATUS_FINISHED) {
+                    $total = $this->model->massendReceiversByFilter(array(
+                        'massend_id' => $massendID,
+                    ));
+                    $processed = $this->model->massendReceiversByFilter(array(
+                        'massend_id' => $massendID,
+                        'processed' => 1,
+                    ));
+                    # кол - во обработанных меньше запланнированных, пробуем запустить рассылку еще раз
+                    if ($total && $processed < $total) {
+                        $status = static::STATUS_PROCESSING;
+                        $exec = true;
+                    }
+                }
                 $this->model->massendSave($massendID, array(
                     'status'    => $status,
                     'pid'       => 0,
@@ -151,10 +182,11 @@ class Sendmail_ extends SendmailBase
                     'fail'      => $fail,
                     'finished'  => date('Y-m-d H:i:s'),
                 ));
+                if ($exec) {
+                    bff::cronManager()->executeOnce('sendmail', 'cronMassendOnce', array('id' => $massendID), $massendID);
+                }
             }
-
-        }while(false);
-
+        } while(false);
     }
 
     /**
@@ -169,5 +201,66 @@ class Sendmail_ extends SendmailBase
             $this->sendMail($v, ! empty($subject) ? $subject : 'subject', ! empty($body) ? $body : 'body', ! empty($from) ? $from : 'from', ! empty($fromname) ? $fromname : 'fromname');
         }
     }
+
+    /**
+     * Возобновление неожиданно завершившихся рассылок по крону раз в 15 минут
+     */
+    public function cronMassendDirector()
+    {
+        $data = $this->model->massendListing(array(
+            'status' => array(static::STATUS_PROCESSING, static::STATUS_SCHEDULED),
+        ), array('id', 'status', 'started', 'finished', 'pid'));
+        if (empty($data)) return;
+
+        foreach($data as $v) {
+            if ($v['pid']) {
+                if ( ! posix_kill($v['pid'], 0)) {
+                    # не удалось послать сигнал процессу. Выжидаем timeout
+                    $time = strtotime($v['finished']);
+                    if ( ! $time || $time < strtotime($v['started'])) {
+                        $time = strtotime($v['started']);
+                    }
+                    if (time() > $time + CronManager::SINGLE_TIMEOUT) {
+                        $this->model->massendSave($v['id'], array(
+                            'pid' => 0,
+                        ));
+                    } else {
+                        continue;
+                    }
+                } else {
+                    #  процесс присутствует в системе и работает, пропускаем.
+                    continue;
+                }
+            }
+            $exec = false;
+            switch($v['status']) {
+                case static::STATUS_SCHEDULED:
+                    if (strtotime($v['started']) > time()) {
+                        $exec = true;
+                    }
+                    break;
+                case  static::STATUS_PROCESSING:
+                    $exec = true;
+                    break;
+            }
+            if ($exec) {
+                bff::cronManager()->executeOnce('sendmail', 'cronMassendOnce', array('id' => $v['id']), $v['id']);
+            }
+        }
+    }
+
+    /**
+     * Расписание запуска крон задач
+     * @return array
+     */
+    public function cronSettings()
+    {
+
+        return array(
+            'cronMassendDirector' => array('period' => '*/15 * * * *'),
+        );
+    }
+
+
 
 }

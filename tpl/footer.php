@@ -27,39 +27,28 @@
                     <?= Site::copyright(); ?>
 <?  ?>
                 </div>
-                <div class="span2">
-                    <? if( ! empty($aFooterMenu['col1']['sub']) ) { ?>
-                    <ul><? foreach($aFooterMenu['col1']['sub'] as $v) {
-                            echo $footerLink($v);
-                           } ?>
-                    </ul>
-                    <? } ?>
-                </div>
-                <div class="span3">
-                    <? if( ! empty($aFooterMenu['col2']['sub']) ) { ?>
-                    <ul><? foreach($aFooterMenu['col2']['sub'] as $v) {
-                            echo $footerLink($v);
-                           } ?>
-                    </ul>
-                    <? } ?>
-                </div>
-                <div class="span3">
-                    <? if( ! empty($aFooterMenu['col3']['sub']) ) { ?>
-                    <ul><? foreach($aFooterMenu['col3']['sub'] as $v) {
-                            echo $footerLink($v);
-                           } ?>
-                    </ul>
-                    <? } ?>
-                    <div class="l-footer__content__counters">
-                        <?= Site::languagesSwitcher(); # Выбор языка ?>
-                        <div class="l-footer__content__counters__list">
-                        <? if( ! empty($aCounters)) { ?>
-                            <? foreach($aCounters as $v) { ?><div class="item"><?= $v['code'] ?></div><? } ?>
-                        <? } ?>
-                        </div>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
+                <?php $footerCols = array('col1'=>['w'=>'2'], 'col2'=>['w'=>'3'], 'col3'=>['w'=>'3','last'=>true]);
+                    foreach ($footerCols as $colKey=>$colData): ?>
+                    <div class="span<?= $colData['w'] ?>">
+                        <?php if ( ! empty($aFooterMenu[$colKey]['sub']) ) { ?>
+                            <ul><?php
+                                foreach($aFooterMenu[$colKey]['sub'] as $v):
+                                    echo $footerLink($v);
+                                endforeach; ?>
+                            </ul>
+                        <?php } if ( ! empty($colData['last'])) { ?>
+                            <div class="l-footer__content__counters">
+                                <?= Site::languagesSwitcher(); # Выбор языка ?>
+                                <div class="l-footer__content__counters__list">
+                                <?php if( ! empty($aCounters)) { ?>
+                                    <?php foreach($aCounters as $v) { ?><div class="item"><?= $v['code'] ?></div><?php } ?>
+                                <?php } ?>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                       <?php } ?>
+                   </div>
+               <?php endforeach; ?>
             </div>
         </div>
         <?php if (!empty($footerText)) { ?>
@@ -72,24 +61,16 @@
 <? endif; ?>
 <? if(DEVICE_PHONE): ?>
 <div id="footer" class="l-footer l-footer_mobile visible-phone">
-    <div class="l-footer_mobile__menu">
-    <? if( ! empty($aFooterMenu['col1']['sub']) ) { ?>
-        <ul><? foreach($aFooterMenu['col1']['sub'] as $v) {
-                echo $footerLink($v);
-            } ?>
-        </ul>
-    <? } ?>
-    </div>
-    <div class="l-footer_mobile__menu">
-        <? if( ! empty($aFooterMenu['col2']['sub']) ) { ?>
-            <ul><? foreach($aFooterMenu['col2']['sub'] as $v) {
-                    echo $footerLink($v, 'pseudo-link');
+    <?php foreach ($aFooterMenu as $k => $col) { if (mb_stripos($k, 'col') === 0 && ! empty($col['sub'])) { ?>
+        <div class="l-footer_mobile__menu">
+            <ul><? foreach($col['sub'] as $v) {
+                    echo $footerLink($v);
                 } ?>
             </ul>
-        <? } ?>
-    </div>
+        </div>
+    <?php } } ?>
     <div class="l-footer_mobile__lang mrgt20">
-    <?= Site::languagesSwitcher(); # Выбор языка ?>
+        <?= Site::languagesSwitcher(); # Выбор языка ?>
     </div>
     <div class="l-footer_mobile__copy mrgt15 mrgb30">
         <?= Site::copyright(); ?>

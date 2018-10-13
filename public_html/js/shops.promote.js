@@ -68,7 +68,7 @@ var jShopsShopPromote = (function(){
             refreshTotal();
         });
         if(o.svc_abon_selected > 0){
-            $('#j-svc-item-abonement').click();
+            $('#j-svc-item-abonement').trigger('click');
         }
 
         refreshTotal();
@@ -101,15 +101,15 @@ var jShopsShopPromote = (function(){
         $formSubmit.toggleClass('btn-success', (price > 0)).prop({disabled:!o.svc_id});
         var balanceHidden = $psBlock.find('.j-ps-item-balance').toggleClass('hide', price > o.user_balance).hasClass('hide');
         if( balanceHidden && $psValue.val() == 'balance' ) {
-            $form.find('.j-ps-item:visible:first').click();
+            $form.find('.j-ps-item:visible:first').trigger('click');
         }
         if( price === 0 || o.user_balance >= price ) {
-            $form.find('.j-ps-item-balance').click();
+            $form.find('.j-ps-item-balance').trigger('click');
         }
         $psBlock.toggleClass('hide', !(o.svc_id > 0 && price > 0));
         if(o.abonement){
             if( ! $form.find('.j-ps-item:checked').length){
-                $form.find('.j-ps-item:visible:first').click();
+                $form.find('.j-ps-item:visible:first').trigger('click');
             }
         }
     }

@@ -21,25 +21,19 @@
     <div class="content">
         <div class="container-fluid">
             <div class="l-top row-fluid">
-                <? if( DEVICE_DESKTOP_OR_TABLET ) { ?>
-                    <div class="l-top__logo span5 hidden-phone">
-                        <!-- for: desktop & tablet -->
-                        <div class="l-top__logo_desktop pull-left rel">
-                        <a class="logo" href="<?= bff::urlBase() ?>"><img src="<?= Site::logoURL('header') ?>" alt="<?= HTML::escape(Site::titleHeader()) ?>" /> <span><?= Site::titleHeader() ?></span></a>
+                <div class="l-top__logo span6">
+                    <div class="l-top__logo_desktop l-top__logo_desktop__v2 pull-left">
+                    <a class="logo" href="<?= bff::urlBase() ?>"><img src="<?= Site::logoURL('header') ?>" alt="<?= HTML::escape(Site::titleHeader()) ?>" /></a>
+
+                    <div class="logo-text">
+                    <span class="logo-title"><?= Site::titleHeader() ?></span>
 <?
 
 ?>
-                        </div>
                     </div>
-                    <? } if( DEVICE_PHONE && bff::isIndex() ) { ?>
-                    <div class="l-top__logo span6 visible-phone">
-                        <!-- for: mobile -->
-                        <div class="l-top__logo_mobile">
-                            <a class="logo" href="<?= bff::urlBase() ?>"><img src="<?= Site::logoURL('header') ?>" alt="<?= HTML::escape(Site::titleHeader()) ?>" /></a>
-                        </div>
                     </div>
-                    <? } ?>
-                <div class="l-top__navbar span7">
+                </div>
+                <div class="l-top__navbar span6">
                     <? if( ! User::id() ) { $favsCounter = BBS::i()->getFavorites(0, true); ?>
                     <!-- for: guest -->
                     <div class="l-top__navbar_guest" id="j-header-guest-menu">
@@ -82,7 +76,7 @@
                             <div class="user-menu pull-right">
                                 <div class="btn-group nowrap">
                                     <!-- start: User Dropdown -->
-                                    <a href="#" data-toggle="dropdown" class="btn">
+                                    <a href="javascript:void(0);" data-toggle="dropdown" class="btn">
                                         <i class="fa fa-user"></i><span class="hidden-tablet"> <?= tpl::truncate($userMenu['user']['name'], 20) ?></span>
                                         <i class="fa fa-caret-down"></i>
                                     </a>
@@ -106,7 +100,7 @@
                                 <ul class="btn-group">
                                     <li class="btn">
                                         <!-- start: User Dropdown -->
-                                        <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                                        <a href="javascript:void(0);" data-toggle="dropdown" class="dropdown-toggle">
                                             <i class="fa fa-user"></i>
                                             <i class="fa fa-caret-down"></i>
                                         </a>

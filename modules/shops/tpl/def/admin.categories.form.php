@@ -16,7 +16,7 @@ echo tplAdmin::blockStart( $edit ? _t('shops', 'Магазины / Катего�
 <input type="hidden" name="id" value="<?= $id ?>" />
 <div class="tabsBar" id="shopsCategoryFormTabs">
     <? foreach($aTabs as $k=>$v) { ?>
-        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="#" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
+        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="javascript:void(0);" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
     <? } ?>
 </div>
 <!-- таб: Основные -->
@@ -47,7 +47,7 @@ echo tplAdmin::blockStart( $edit ? _t('shops', 'Магазины / Катего�
 <tr>
     <td class="row1">
         <span class="field-title"><?= _t('', 'URL Keyword'); ?></span>:<br />
-        <a href="#" onclick="return bff.generateKeyword('#j-shops-cat-title-<?= LNG ?>', '#j-shops-cat-keyword');" class="ajax desc small"><?= _t('', 'сгенерировать'); ?></a>
+        <a href="javascript:void(0);" onclick="return bff.generateKeyword('#j-shops-cat-title-<?= LNG ?>', '#j-shops-cat-keyword');" class="ajax desc small"><?= _t('', 'сгенерировать'); ?></a>
     </td>
     <td class="row2">
         <input class="stretch" type="text" maxlength="100" name="keyword_edit" id="j-shops-cat-keyword" value="<?= $keyword_edit ?>" />
@@ -72,7 +72,7 @@ echo tplAdmin::blockStart( $edit ? _t('shops', 'Магазины / Катего�
                 <div style="margin:5px 0;">
                     <input type="hidden" name="<?= $iconField ?>_del" class="del-icon" value="0" />
                     <img src="<?= $oIcon->url($id, $aData[$iconField], $icon['key']) ?>" alt="" /><br />
-                    <a href="#" class="ajax desc cross but-text" onclick="return jShopsCategory.iconDelete(this);"><?= _t('', 'Delete'); ?></a>
+                    <a href="javascript:void(0);" class="ajax desc cross but-text" onclick="return jShopsCategory.iconDelete(this);"><?= _t('', 'Delete'); ?></a>
                 </div>
             <? } ?>
         </td>

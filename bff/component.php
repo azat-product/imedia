@@ -3,8 +3,9 @@
 /**
  * Базовый абстрактный класс компонента
  * @abstract
- * @version 0.342
- * @modified 11.sep.2017
+ * @version 0.61
+ * @modified 27.aug.2018
+ * @copyright Tamaranga
  */
 abstract class Component
 {
@@ -18,6 +19,10 @@ abstract class Component
     public $input = null;
     /** @var \bff\base\Locale object */
     public $locale = null;
+    /** @var \bff\Router object */
+    public $router = null;
+    /** @var \View object */
+    public $view = null;
     /** @var \CSmarty object */
     protected $sm = false;
     protected $tpl_vars = array();
@@ -34,7 +39,6 @@ abstract class Component
 
     /**
      * Инициализация компонента
-     * @core-doc
      * @return mixed
      */
     public function init()
@@ -43,11 +47,27 @@ abstract class Component
             return false;
         }
 
-        $this->errors = \bff::DI('errors');
-        $this->security = \bff::DI('security');
-        $this->db = \bff::DI('database');
-        $this->locale = \bff::DI('locale');
-        $this->input = \bff::DI('input');
+        if ($this->errors === null) {
+            $this->errors = \bff\DI::get('errors');
+        }
+        if ($this->security === null) {
+            $this->security = \bff\DI::get('security');
+        }
+        if ($this->db === null) {
+            $this->db = \bff\DI::get('database');
+        }
+        if ($this->input === null) {
+            $this->input = \bff\DI::get('input');
+        }
+        if ($this->view === null) {
+            $this->view = \bff\DI::get('view');
+        }
+        if ($this->locale === null) {
+            $this->locale = \bff\DI::get('locale');
+        }
+        if ($this->router === null) {
+            $this->router = \bff\DI::get('router');
+        }
         if (\bff::adminPanel() && \config::sys('admin.smarty.enabled', false)) {
             $this->sm = \CSmarty::i();
         }
@@ -59,7 +79,6 @@ abstract class Component
 
     /**
      * Инициализирован ли компонент
-     * @core-doc
      * @return bool
      */
     public function getIsInitialized()
@@ -69,7 +88,6 @@ abstract class Component
 
     /**
      * Помечаем инициализацию компонента
-     * @core-doc
      * @return void
      */
     public function setIsInitialized()
@@ -79,7 +97,6 @@ abstract class Component
 
     /**
      * Получение настроек компонента
-     * @core-doc
      * @param mixed $keys
      * @param mixed $default
      * @return array
@@ -110,7 +127,6 @@ abstract class Component
 
     /**
      * Установка настроек компонента
-     * @core-doc
      * @param mixed|array $keys
      * @param mixed $value
      */
@@ -132,8 +148,35 @@ abstract class Component
     }
 
     /**
+     * Проверка соответствия метода текущего запроса GET запросу
+     * @return bool
+     */
+    public function isGET()
+    {
+        return \Request::isGET();
+    }
+
+    /**
+     * Проверка соответствия метода текущего запроса POST запросу
+     * @return bool
+     */
+    public function isPOST()
+    {
+        return \Request::isPOST();
+    }
+
+    /**
+     * Проверка соответствия метода текущего запроса AJAX запросу
+     * @param string|null $requestMethod тип запроса: 'POST', 'GET', NULL - не выполнять проверку типа
+     * @return bool
+     */
+    public function isAJAX($requestMethod = 'POST')
+    {
+        return \Request::isAJAX($requestMethod);
+    }
+
+    /**
      * Формируем ответ на ajax-запрос
-     * @core-doc
      * @param mixed $data response data
      * @param mixed $format response type; 0|false - raw echo, 1|true - json echo, 2 - json echo + errors
      * @param boolean $nativeJsonEncode использовать json_encode
@@ -178,7 +221,6 @@ abstract class Component
 
     /**
      * Формируем ответ на ajax-запрос (для формы)
-     * @core-doc
      * @param array $data response data
      * @param mixed $format response type; 0|false - raw echo, 1|true - json echo, 2 - json echo + errors
      * @param boolean $nativeJsonEncode использовать json_encode
@@ -189,12 +231,16 @@ abstract class Component
     {
         $data['success'] = $this->errors->no();
         $data['fields'] = $this->errors->fields();
+        foreach (['list','html'] as $key) {
+            if (isset($data[$key]) && is_string($data[$key])) {
+                $data[$key] = \bff::tagsProcess($data[$key]);
+            }
+        }
         $this->ajaxResponse($data, $format, $nativeJsonEncode, $escapeHTML);
     }
 
     /**
      * Формируем ответ на ajax-запрос (для формы отправленной через bff.iframeSubmit)
-     * @core-doc
      * @param array $data response data
      * @see $this->ajaxResponseForm
      */

@@ -31,9 +31,9 @@ $listBanner = function($positionNumber) use ($device) {
 
   <div class="sh-list-item<?php if ($v['svc_marked']) { ?> selected<?php } ?> j-shop" data-ex="<?= $v['ex'] ?>">
     <div class="sh-list-item-content">
-      <h3 class="sh-list-item-title">
+      <div class="sh-list-item-title">
         <a href="<?= $v['link'] ?>" title="<?= $v['title'] ?>"><?= $v['title'] ?></a>
-      </h3>
+      </div>
       <div class="sh-list-item-descr">
         <?= tpl::truncate($v['descr'], 170, '...', true) ?>
       </div>

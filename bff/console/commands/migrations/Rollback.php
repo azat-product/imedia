@@ -3,7 +3,13 @@
 /**
  * Консоль: команда отмены миграции БД ядра/расширения
  * @version 0.1
- * @modified 5.sep.2017
+ * @modified 9.may.2018
+ * Examples:
+ * Core:
+ *   php bffc migrations/rollback -t 1.0.0
+ * Extensions:
+ *   php bffc migrations/rollback -x plugin/name -t 1.0.0
+ *   php bffc migrations/rollback -x theme/name -t 1.0.0
  */
 
 use bff\console\commands\Command;

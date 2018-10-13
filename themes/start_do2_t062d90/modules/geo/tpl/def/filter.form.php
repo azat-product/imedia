@@ -33,7 +33,7 @@ if( $device == bff::DEVICE_DESKTOP || $device == bff::DEVICE_TABLET ) { ?>
       <div class="f-navigation__region_change_desktop">
         <div class="l-regions-heading">
           <div class="l-regions-heading-left">
-            <h3 class="l-regions-heading-title" id="j-f-region-desktop-country-title"><?= ! empty($country) ? $country['title'] : '' ?></h3>
+            <div class="l-regions-heading-title" id="j-f-region-desktop-country-title"><?= ! empty($country) ? $country['title'] : '' ?></div>
           </div>
           <div class="l-regions-heading-right">
             <span class="l-regions-heading-right-item">

@@ -324,6 +324,22 @@ class BlogModel_ extends Model
         # перемещаем
         return $this->db->update(TABLE_BLOG_POSTS, array('cat_id' => $nCatNewID), array('cat_id' => $nCatOldID));
     }
+    
+    /**
+     * Перестраиваем URL на страницы всех постов
+     * @param string $language ключ языка
+     */
+    public function postsUrlRefresh($language)
+    {
+        $this->db->select_iterator('SELECT P.id, PL.title
+            FROM ' . TABLE_BLOG_POSTS . ' P,
+                 ' . TABLE_BLOG_POSTS_LANG . ' PL
+            WHERE P.id = PL.id AND PL.lang = :lang
+            ORDER BY P.id', [':lang'=>$language], function($post) {
+            $url = Blog::url('view', $post, true);
+            $this->db->update(TABLE_BLOG_POSTS, ['link' => $url], ['id' => $post['id']]);
+        });
+    }
 
     /**
      * Удаление поста

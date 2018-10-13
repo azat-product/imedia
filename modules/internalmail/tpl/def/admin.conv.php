@@ -7,12 +7,12 @@ $nInterlocutorID = $i['id'];
 <table class="admtbl tbledit">
     <tr class="row1">
         <td style="width:65px;">
-            <a href="#" onclick="return bff.userinfo(<?= $nInterlocutorID ?>);">
+            <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $nInterlocutorID ?>);">
                 <img id="im_avatar" class="img-polaroid" src="<?= $i['avatar'] ?>" alt="" width="50" />
             </a>
         </td>
         <td>
-            <a href="#" onclick="return bff.userinfo(<?= $nInterlocutorID ?>);" class="ajax"><?= (!empty($i['name']) ? $i['name'] : $i['login'] ) ?></a>
+            <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $nInterlocutorID ?>);" class="ajax"><?= (!empty($i['name']) ? $i['name'] : $i['login'] ) ?></a>
             <? if($shop_id) { ?><i class="icon-shopping-cart" title="<?= _te('internalmail', 'Сообщение для магазина'); ?>"></i><? } ?>
             <? if( ! $i['activated'] ) { ?>&nbsp;<span class="disabled">[<?= _t('internalmail', 'неактивирован'); ?>]</span><? } ?>
             <br />
@@ -32,7 +32,7 @@ $nInterlocutorID = $i['id'];
         <? if( $i['im_noreply'] || $ignored ) { ?>
         <?= _t('internalmail', 'Пользователь запретил отправлять ему сообщения.'); ?>
         <? } else { ?>
-        <?= _t('internalmail', 'Аккаунт пользователя заблокирован ([a]причина</a>).', array('a' => '<a href="#" onclick="return bff.userinfo('.$nInterlocutorID.');">')); ?>
+        <?= _t('internalmail', 'Аккаунт пользователя заблокирован ([a]причина</a>).', array('a' => '<a href="javascript:void(0);" onclick="return bff.userinfo('.$nInterlocutorID.');">')); ?>
         <? } ?>
     </div>
     <? } else { ?>

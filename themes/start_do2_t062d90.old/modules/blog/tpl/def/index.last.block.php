@@ -23,7 +23,7 @@
                         </a>
                     </div>
                     <? endif; ?>
-                    <div class="bl-date"><?= tpl::dateFormat($v['created'], '%d.%m.%Y в %H:%M') ?></div>
+                    <div class="bl-date"><?= tpl::dateFormat($v['created'], _t('blog','%d.%m.%Y в %H:%M')) ?></div>
                     <h3 class="bl-list-item-title">
                         <a href="<?= $v['link'] ?>"><?= $v['title'] ?></a>
                     </h3>

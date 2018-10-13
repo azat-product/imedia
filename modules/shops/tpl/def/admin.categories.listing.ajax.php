@@ -13,14 +13,14 @@ foreach($cats as $v)
         <a onclick="return shopsCatAct(<?= $id ?>,'c');" class="but folder<? if( ! $isNode) { ?>_ua<? } ?> but-text"><?= $v['title'] ?></a>
     </td>
     <td><a href="<?= $urlShopsListing.$v['id'] ?>"><?= $v['shops'] ?></a></td>
-    <td class="left"><a class="but <? if( $v['enabled']) { ?>un<? } ?>block" href="#" onclick="return shopsCatAct(<?= $id ?>, 'toggle', this);" title="<?= _te('', 'Вкл/выкл'); ?>"></a>
+    <td class="left"><a class="but <? if( $v['enabled']) { ?>un<? } ?>block" href="javascript:void(0);" onclick="return shopsCatAct(<?= $id ?>, 'toggle', this);" title="<?= _te('', 'Вкл/выкл'); ?>"></a>
         <a class="but edit" href="<?= $urlCatEdit.$id ?>" title="<?= _te('','Edit') ?>"></a>
         <? if($v['numlevel'] >= $deep) { ?><? }
            else if (!$isNode && $v['shops']) { ?><? } else { ?>
             <a class="but add" href="<?= $urlCatAdd.$id ?>" title="<?= _te('','Add') ?>"></a>
         <? } ?>
         <? if( ! $isNode) { ?>
-            <a class="but del" href="#" onclick="return shopsCatAct(<?= $id ?>, 'del', this);" title="<?= _te('', 'Delete') ?>"></a>
+            <a class="but del" href="javascript:void(0);" onclick="return shopsCatAct(<?= $id ?>, 'del', this);" title="<?= _te('', 'Delete') ?>"></a>
         <? } ?>
     </td>
 </tr>

@@ -16,7 +16,7 @@
         <div class="index-categories-item-content">
           <div class="index-categories-item-title">
             <a href="<?= $v['l'] ?>"><?= $v['t'] ?></a>
-            <span class="index-categories-item-title-count">(<?= $v['items'] ?>)</span>
+           
           </div>
           <?php if($v['subn']): ?>
             <div class="index-categories-item-links">

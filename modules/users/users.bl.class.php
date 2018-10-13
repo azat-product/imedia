@@ -12,6 +12,10 @@ abstract class UsersBase_ extends UsersModule
     const ENOTIFY_INTERNALMAIL = 2; # уведомления о новых сообщениях
     const ENOTIFY_BBS_COMMENTS = 4; # уведомления о комментариях в объявлениях
 
+    # Удаление пользователя
+    const DESTROY_BY_OWNER = 1; # Удалил сам себя
+    const DESTROY_BY_ADMIN = 2; # Администратором
+
     public function init()
     {
         parent::init();
@@ -76,7 +80,7 @@ abstract class UsersBase_ extends UsersModule
                 unset($list[$k]); continue;
             }
             if (!isset($v['maxlength'])) {
-                $v['maxlength'] = 1000;
+                $list[$k]['maxlength'] = 1000;
             }
             $list[$k]['key'] = $k;
         }
@@ -265,54 +269,7 @@ abstract class UsersBase_ extends UsersModule
      */
     public static function url($key = '', array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # Авторизация
-            case 'login':
-                $url .= '/user/login' . static::urlQuery($opts);
-                break;
-            # Выход
-            case 'logout':
-                $url .= '/user/logout' . static::urlQuery($opts);
-                break;
-            # Регистрация
-            case 'register':
-                $url .= '/user/register' . (!empty($opts) ? static::urlQuery($opts) : '');
-                break;
-            # Авторизация
-            case 'login.social':
-                $url .= '/user/loginsocial/' . (!empty($opts['provider']) ? $opts['provider'] : '') . static::urlQuery($opts, array('provider'));
-                break;
-            # Профиль пользователя
-            case 'user.profile':
-                $url .= '/users/' . $opts['login'] . '/' . (!empty($opts['tab']) ? $opts['tab'] . '/' : '') . static::urlQuery($opts, array('login','tab'));
-                break;
-            # Восстановление пароля
-            case 'forgot':
-                $url .= '/user/forgot' . (!empty($opts) ? static::urlQuery($opts) : '');
-                break;
-            # Настройки профиля
-            case 'my.settings':
-                $url .= '/cabinet/settings' . (!empty($opts) ? static::urlQuery($opts) : '');
-                break;
-            # Ссылка активации акканута
-            case 'activate':
-                $url .= '/user/activate' . (!empty($opts) ? static::urlQuery($opts) : '');
-                break;
-            # Ссылка подтверждения email-адреса при смене инициированной из кабинета
-            case 'email.change':
-                $url .= '/user/email_change' . (!empty($opts) ? static::urlQuery($opts) : '');
-                break;
-            # Пользовательское соглашение
-            case 'agreement':
-                $url .= '/'.config::sys('users.agreement.page', 'agreement.html', TYPE_STR) . (!empty($opts) ? static::urlQuery($opts) : '');
-                break;
-            # Отписка от рассылки
-            case 'unsubscribe':
-                $url .= '/user/unsubscribe' . (!empty($opts) ? static::urlQuery($opts) : '');
-                break;
-        }
-        return bff::filter('users.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('users-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'users']);
     }
 
     /**
@@ -932,6 +889,17 @@ abstract class UsersBase_ extends UsersModule
     }
 
     /**
+     * Инициируем событие удаления пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры
+     */
+    public function triggerOnUserDeleted($userID, array $options = array())
+    {
+        bff::hook('users.user.deleted', $userID, $options);
+        bff::i()->callModules('onUserDeleted', array($userID, $options));
+    }
+
+    /**
      * Проверка на временный e-mail
      * @param string $email
      * @return bool
@@ -954,7 +922,16 @@ abstract class UsersBase_ extends UsersModule
     }
 
     /**
-     * Формирование {user-hash} для рассылки
+     * Отправка сообщения через форму "связаться с автором" доступна только авторизованным
+     * @return bool
+     */
+    public static function writeFormLogined()
+    {
+        return config::sysAdmin('users.write.form.logined', false, TYPE_BOOL);
+    }
+
+    /**
+     * Формирование хеша для рассылки
      * @param integer $nUserID ID пользователя
      * @param integer $nMassendID ID рассылки
      * @return string
@@ -968,26 +945,26 @@ abstract class UsersBase_ extends UsersModule
     }
 
     /**
-     * Разбор {user-hash} рассылки
+     * Разбор хеша рассылки
      * @param string $hash hash
      * @return boolean|array [user_id, massend_id]
      */
     public static function userHashValidate($hash)
     {
-        if( empty($hash) || strpos($hash, '.') === false ) {
+        if (empty($hash) || strpos($hash, '.') === false) {
             return false;
         }
         $data = explode('.', $hash, 3);
-        if( empty($data) || empty($data[0]) || empty($data[1]) || ! isset($data[2]) ) {
+        if (empty($data) || empty($data[0]) || empty($data[1]) || ! isset($data[2])) {
             return false;
         }
         $userID = intval($data[1]);
         $massendID = intval($data[2]);
         $userData = Users::model()->userData($userID, array('user_id'));
-        if( empty($userData) || empty($userData['user_id']) ) {
+        if (empty($userData) || empty($userData['user_id'])) {
             return false;
         }
-        if( $hash !== static::userHashGenerate($userID, $massendID) ) {
+        if ($hash !== static::userHashGenerate($userID, $massendID)) {
             return false;
         }
         return array(
@@ -996,6 +973,19 @@ abstract class UsersBase_ extends UsersModule
         );
     }
 
-
+    /**
+     * Формирование Email адреса для фейковых пользователей
+     * @param string $name имя пользователя
+     * @return string Email адрес
+     */
+    public function fakeEmailGenerate($name)
+    {
+        if (empty($name)) return '';
+        $template = config::sysAdmin('users.fake.email.template', '{name}-fake@{host}', TYPE_STR);
+        return strtr($template, array(
+            '{name}' => $name,
+            '{host}' => SITEHOST,
+        ));
+    }
 
 }

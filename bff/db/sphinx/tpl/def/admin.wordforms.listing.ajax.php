@@ -13,8 +13,8 @@ foreach ($list as $k=>$v):
             <?= $v['dest'] ?>
         </td>
         <td>
-            <a class="but edit j-edit" title="<?= _te('', 'Edit') ?>" href="#" data-id="<?= $id ?>"></a>
-            <a class="but del j-del" title="<?= _te('', 'Delete') ?>" href="#" data-id="<?= $id ?>"></a>
+            <a class="but edit j-edit" title="<?= _te('', 'Edit') ?>" href="javascript:void(0);" data-id="<?= $id ?>"></a>
+            <a class="but del j-del" title="<?= _te('', 'Delete') ?>" href="javascript:void(0);" data-id="<?= $id ?>"></a>
         </td>
     </tr>
 <? endforeach; unset($v);

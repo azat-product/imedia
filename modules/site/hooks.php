@@ -134,4 +134,21 @@ class SiteHooks
     {
         return bff::hooks()->add('site.languages.list', $callback, $priority);
     }
+
+    /**
+     * Фильтр названия сайта
+     * @param callable $callback {
+     *   @param string $title название сайта
+     *   @param string $position позиция
+     *   @param string $language язык
+     *   @param string $default название по умолчанию
+     *   return string $title итоговое название
+     * }
+     * @param int|null $priority приоритет вызова
+     * @return \Hook
+     */
+    public static function title(callable $callback, $priority = NULL)
+    {
+        return bff::hooks()->add('site.title', $callback, $priority);
+    }
 }

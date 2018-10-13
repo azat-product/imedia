@@ -338,7 +338,9 @@ $drawDynprops = function($self, $numFirst = false) use (&$dynprops, &$extra, $ln
                     $btn_value = $vv['title'];
                     ?><li class="active"><span><?= $vv['title'] ?></span></li><?
                 } else {
+                    if ($vv['items'] > 0) {
                     ?><li><a href="<?= $vv['link'] ?>" class="j-catLink" data-id="<?= $vv['id'] ?>" ><?= $vv['title'] ?></a></li><?
+                    }
                 }
             }
             ?>
@@ -393,16 +395,16 @@ $drawDynprops = function($self, $numFirst = false) use (&$dynprops, &$extra, $ln
             <? if(count($currencies) < 4): ?>
             <ul class="f-asideFilter__currency">
                 <? foreach($currencies as $v){ ?>
-                    <li<?= $price_curr_fromto == $v['id'] ? ' class="active"' : '' ?>><a href="#" class="j-currency-select" data-id="<?= $v['id'] ?>"><?= $v['title_short'] ?></a></li>
+                    <li<?= $price_curr_fromto == $v['id'] ? ' class="active"' : '' ?>><a href="javascript:void(0);" class="j-currency-select" data-id="<?= $v['id'] ?>"><?= $v['title_short'] ?></a></li>
                 <? } ?>
             </ul>
             <? else: ?>
             <div class="f-asideFilter__dropdown dropdown">
                 <?= _t('filter','Валюта') ?>:
-                <a class="dropdown-toggle ajax-ico" data-toggle="dropdown" href="#"><span class="j-currency-selected"><?= $currencies[$price_curr_fromto]['title_short'] ?></span><b class="caret"></b> </a>
+                <a class="dropdown-toggle ajax-ico" data-toggle="dropdown" href="javascript:void(0);"><span class="j-currency-selected"><?= $currencies[$price_curr_fromto]['title_short'] ?></span><b class="caret"></b> </a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
                     <? foreach($currencies as $v){ ?>
-                        <li<?= $price_curr_fromto == $v['id'] ? ' class="active"' : '' ?>><a href="#" class="j-currency-select" data-id="<?= $v['id'] ?>"><?= $v['title_short'] ?></a></li>
+                        <li<?= $price_curr_fromto == $v['id'] ? ' class="active"' : '' ?>><a href="javascript:void(0);" class="j-currency-select" data-id="<?= $v['id'] ?>"><?= $v['title_short'] ?></a></li>
                     <? } ?>
                 </ul>
             </div>
@@ -589,7 +591,7 @@ $drawDynprops = function($self, $numFirst = false) use (&$dynprops, &$extra, $ln
 
     <div class="f-asideFilter__clear">
         <button type="button" class="btn btn-success btn-sm j-submit"><i class="fa fa-check"></i> <?= _t('filter', 'Применить'); ?></button>
-        <a class="ajax-ico j-reset-all" href="#"><i class="fa fa-refresh"></i> <span><?= _t('filter', 'Сбросить фильтр') ?></span></a>
+        <a class="ajax-ico j-reset-all" href="javascript:void(0);"><i class="fa fa-refresh"></i> <span><?= _t('filter', 'Сбросить фильтр') ?></span></a>
     </div>
 
 </div>

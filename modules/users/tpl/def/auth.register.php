@@ -45,7 +45,7 @@
                 <? if($captcha_on) { ?>
                     <?php if (Site::captchaCustom('users-auth-register')) { ?>
                     <div class="control-group">
-                        <?php bff::hook('captcha.custom.view', 'users-auth-register', __FILE__); ?>
+                        <?php bff::hook('captcha.custom.view', 'users-auth-register', __FILE__, ['wrap'=>'<div class="controls">{form}</div>']); ?>
                     </div>
                     <?php } else { ?>
                     <div class="control-group">
@@ -73,7 +73,7 @@
         <div class="u-sc l-table-cell hidden-phone">
             <? foreach($providers as $v) {
 
-            ?><a href="#" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a><br /><?
+            ?><a href="javascript:void(0);" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a><br /><?
 
             } ?>
         </div>
@@ -85,7 +85,7 @@
     <? foreach($providers as $v) {
 
             ?>
-                <a href="#" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a>
+                <a href="javascript:void(0);" class="btn u-sc_<?= $v['class'] ?> j-u-login-social-btn" data="{provider:'<?= $v['key'] ?>',w:<?= $v['w'] ?>,h:<?= $v['h'] ?>}"><?= $v['title'] ?></a>
             <?
 
     } ?>

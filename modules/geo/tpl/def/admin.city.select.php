@@ -32,15 +32,15 @@ if ($covering_type == Geo::COVERING_CITY && ($city_id == $covering_city_id)) { ?
         <div class="relative left">
     <? endif; ?>
     <input type="hidden" name="<?= $field_name ?>" class="j-geo-city-select-id" id="j-geo-city-select-id<?= $U ?>" value="<?= $city_id ?>" />
-    <input type="text" class="autocomplete j-geo-city-select-ac" id="j-geo-city-select-ac<?= $U ?>" value="<?= ( ! empty($city['title']) ? HTML::escape($city['title']) : '' ) ?>" placeholder="<?= $placeholder ?>" style="width:<?= ! empty($options['width']) ? $options['width'] : '212px;' ?><?= $bSelectCountry && ! $country_id ? 'display:none;' : '' ?>" />
+    <input type="text" class="autocomplete j-geo-city-select-ac" id="j-geo-city-select-ac<?= $U ?>" value="<?= ( ! empty($city['title']) ? HTML::escape($city['title']) : '' ) ?>" placeholder="<?= $placeholder ?>" style="width:<?= ! empty($options['width']) ? $options['width'] : '212px' ?>;<?= $bSelectCountry && ! $country_id ? 'display:none;' : '' ?>" />
     <? if($bSelectCountry): ?></div><? endif; ?>
-    <? if ($cancelCity) { ?><a href="#" id="j-geo-city-select-ac-cancel<?= $U ?>" class="disabled" style="<? if( ! $city_id){ ?>display:none;<? } ?>margin-left:<?= $bSelectCountry ? '-22px;':'-22px;'?>"><i class="icon-remove"></i></a><? } ?>
+    <? if ($cancelCity) { ?><a href="javascript:void(0);" id="j-geo-city-select-ac-cancel<?= $U ?>" class="disabled" style="<? if( ! $city_id){ ?>display:none;<? } ?>margin-left:<?= $bSelectCountry ? '-22px;':'-22px;'?>"><i class="icon-remove"></i></a><? } ?>
     <? if($bSelectCountry): ?><div class="clear"></div><? endif; ?>
     <script type="text/javascript">
     <? js::start() ?>
         $(function(){
             var api;
-            var $ac = $('#j-geo-city-select-ac<?= $U ?>').autocomplete('<?= $this->adminLink('regionSuggest', 'geo') ?>',
+            var $ac = $('#j-geo-city-select-ac<?= $U ?>').autocomplete('<?= $this->adminLink('regionSuggest','geo','js') ?>',
                 {valueInput: $('#j-geo-city-select-id<?= $U ?>'),
                  params:<?= ( ! empty($params) ? func::php2js($params) : '{}') ?>,
                  suggest: <?= Geo::regionPreSuggest($country_id) ?>,
@@ -50,7 +50,7 @@ if ($covering_type == Geo::COVERING_CITY && ($city_id == $covering_city_id)) { ?
                 }, function(){ api = this; });
             <? if($bSelectCountry): ?>
                 var cache = {};
-                $('#j-geo-country-select-id<?= $U ?>').change(function(){
+                $('#j-geo-country-select-id<?= $U ?>').on('change',function(){
                     var country = intval($(this).val());
                     if (country) {
                         $ac.show();
@@ -59,7 +59,7 @@ if ($covering_type == Geo::COVERING_CITY && ($city_id == $covering_city_id)) { ?
                         if (cache.hasOwnProperty(country)) {
                             api.setSuggest(cache[country], true);
                         } else {
-                            bff.ajax('<?= $this->adminLink('ajax&act=country-presuggest', 'geo') ?>', {country: country}, function (data) {
+                            bff.ajax('<?= $this->adminLink('ajax&act=country-presuggest','geo','js') ?>', {country: country}, function (data) {
                                 cache[country] = data;
                                 api.setSuggest(data, true);
                             });

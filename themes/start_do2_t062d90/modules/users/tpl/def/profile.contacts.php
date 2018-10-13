@@ -13,6 +13,7 @@
     </a>
     <div class="ad-author-user-info">
       <div class="ad-author-user-name"><?= $user['name'] ?></div>
+      <!-- plugin_user_online_do_block -->
       <?php if ($user['region_id']) { ?>
         <div class="ad-author-user-subtext"><?= $user['region_title'] ?></div>
       <?php } ?>

@@ -25,7 +25,7 @@ var app =
             else { app.popupsHide(false, e); }
         });
         var w_width = app.$W.width();
-        app.$W.resize($.debounce(function(){
+        app.$W.on('resize', $.debounce(function(){
             if (w_width != app.$W.width()) { app.popupsHide(); w_width = app.$W.width(); }
         }, 300, true));
         //device
@@ -55,18 +55,21 @@ var app =
             app.items.fav(data.id, function(added){
                 $el.toggleClass('active', added).
                     attr('title', (added ? app.lang.fav_out : app.lang.fav_in) ).
+                    attr('data-original-title', (added ? app.lang.fav_out : app.lang.fav_in) ).
                     find('.j-i-fav-icon').toggleClass('fa-star', added).toggleClass('fa-star-o', !added);
             });
             return false;
         });
+        //tooltip
+        $('.j-tooltip').tooltip();
         //scrolltop
-        var $scrollTop = $('#j-scrolltop').click(function(){
+        var $scrollTop = $('#j-scrolltop').on('click',function(){
             $('body,html').animate({
                 scrollTop: 0
             }, 400);
             return false;
         });
-        app.$W.scroll(function(){
+        app.$W.on('scroll',function(){
             if(app.device() != app.devices.desktop) return;
             if ($(this).scrollTop() > 1000) {
                 $scrollTop.fadeIn();
@@ -74,7 +77,19 @@ var app =
                 $scrollTop.fadeOut();
             }
         });
-
+        //hidden links
+        app.$D.on('click', '.hidden-link', function(e){
+            console.log(1);
+            if ($(this).data('target') === 'blank' || (e && (
+                (e.hasOwnProperty('metaKey') && e.metaKey) ||
+                (e.hasOwnProperty('ctrlKey') && e.ctrlKey)
+            ))) {
+                window.open($(this).data('link'), '_blank');
+            } else {
+                window.location.href = $(this).data('link');
+            }
+            return false;
+        });
     },
     user: (function(){
         var i = false, settKey, settData, $menu;
@@ -150,14 +165,14 @@ var app =
                     prevQ = Q; if (Q == '+') icon.attr('class', iconClass);
                     input.val(Q);
                     app.inputError(input, false);
-                }).keyup();
+                }).trigger('keyup');
 
                 return {
                     input: input,
                     reset: function(){
-                        input.val(input.data('default')).keyup();
+                        input.val(input.data('default')).trigger('keyup');
                     },
-                    popup: countryPopup,
+                    popup: countryPopup
                 };
             }
         };
@@ -355,7 +370,7 @@ var app =
                     $btn = $form.find('button.j-submit:last');
                     if(o.onInit) o.onInit.call(self, $form);
                     if(onSubmit && onSubmit!==false) {
-                        $form.submit(function(e){
+                        $form.on('submit',function(e){
                             nothing(e);
                             if(self.isProcessing()) return;
                             onSubmit.call(self, $form);
@@ -363,7 +378,7 @@ var app =
                     }
                     // prevent enter submit
                     if (o.noEnterSubmit) {
-                        $form.bind('keyup keypress', function(e) {
+                        $form.on('keyup keypress', function(e) {
                             if ((e.keyCode || e.which) == 13 && ! $(e.target).is('textarea')) {
                                 e.preventDefault();
                                 return false;

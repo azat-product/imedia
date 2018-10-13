@@ -23,7 +23,7 @@
         if( ! (o.width || false) ) o.width = $text.outerWidth() - 2;
 
         if( $cancel.length ) {
-            $cancel.click(function(e){
+            $cancel.on('click',function(e){
                 nothing(e);
                 doSelect(0,'');
                 $text.focus();
@@ -166,7 +166,7 @@
             doSelect(o.newElementValue, getText(true), isEnter);
         }
 
-        $text.keyup(function(e)
+        $text.on('keyup',function(e)
         {
             window.clearTimeout(typingTimeout);
             switch(e.which)

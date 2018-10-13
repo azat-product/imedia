@@ -136,13 +136,13 @@ var jBannersPositionsList =
         $listTable = $block.find('#BannersPositionsListTable');
         filters    = $block.find('#BannersPositionsListFilters').get(0);
 
-        $list.delegate('a.position-edit', 'click', function(){
+        $list.on('click', 'a.position-edit', function(){
             var id = intval($(this).attr('rel'));
             if(id>0) jBannersPositionsFormManager.action('edit',id);
             return false;
         });
 
-        $list.delegate('a.position-toggle', 'click', function(){
+        $list.on('click', 'a.position-toggle', function(){
             var id = intval($(this).attr('rel'));
             var type = $(this).data('type');
             if(id>0) {
@@ -152,7 +152,7 @@ var jBannersPositionsList =
             return false;
         });
 
-        $list.delegate('a.position-del', 'click', function(){
+        $list.on('click', 'a.position-del', function(){
             var id = intval($(this).attr('rel'));
             if(id>0) {
                 bff.confirm('sure', {r: '<?= $this->adminLink('position_delete&id=') ?>'+id});
@@ -160,7 +160,7 @@ var jBannersPositionsList =
             return false;
         });
 
-        $(window).bind('popstate',function(e){
+        $(window).on('popstate',function(e){
             if('state' in window.history && window.history.state === null) return;
             var loc = document.location;
             var actForm = /act=(add|edit)/.exec( loc.search.toString() );

@@ -188,7 +188,7 @@ var jMyItems = (function(){
         var $query = $form.find('.j-q');
         $query.filter(':hidden').prop({disabled:true});
         syncQuery($query);
-        app.$W.resize($.debounce(function(){
+        app.$W.on('resize', $.debounce(function(){
             $query.prop({disabled:false}).filter(':hidden').prop({disabled:true});
         }, 80));
         $form.on('click', '.j-q-submit', function(){

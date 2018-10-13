@@ -7,9 +7,9 @@
     <input type="hidden" name="u" value="<?= $user['id'] ?>" id="j-my-spy-lenta-user-id" />
     <span class="relative">
         <input type="text" id="j-my-spy-lenta-user-email" class="autocomplete input-large" placeholder="<?= _te('internalmail', 'Введите e-mail пользователя'); ?>" value="<?= HTML::escape($user['email']) ?>" />
-        <a href="#" id="j-my-spy-lenta-user-cancel" class="<?= ( ! $user['id'] ? 'hide' : '') ?>" style="position: absolute; top:-4px; right:-17px;"><i class="icon-remove disabled"></i></a>
+        <a href="javascript:void(0);" id="j-my-spy-lenta-user-cancel" class="<?= ( ! $user['id'] ? 'hide' : '') ?>" style="position: absolute; top:-4px; right:-17px;"><i class="icon-remove disabled"></i></a>
     </span>
-    <a href="#" id="j-my-spy-lenta-user-block-all-btn" class="btn btn-small right <?= ( ! $user['id'] ? 'hide' : '') ?>"><?= _t('internalmail', 'заблокировать все сообщения пользователя') ?></a>
+    <a href="javascript:void(0);" id="j-my-spy-lenta-user-block-all-btn" class="btn btn-small right <?= ( ! $user['id'] ? 'hide' : '') ?>"><?= _t('internalmail', 'заблокировать все сообщения пользователя') ?></a>
 </div>
 
 <table class="table table-hover table-condensed table-striped admtbl tblhover">

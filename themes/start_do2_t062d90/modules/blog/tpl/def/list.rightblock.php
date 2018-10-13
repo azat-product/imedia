@@ -11,7 +11,7 @@
 <?php // Categories
 if (Blog::categoriesEnabled() && ! empty($categories)) { ?>
 <div class="l-mainLayout-sidebar-item">
-  <h2 class="l-mainLayout-sidebar-title"><?= _t('blog', 'Категории') ?></h2>
+  <div class="l-mainLayout-sidebar-title"><?= _t('blog', 'Категории') ?></div>
   <ul class="l-mainLayout-sidebar-nav">
     <?php foreach ($categories as &$v) { ?>
         <?php if ($v['active']) { ?>
@@ -27,7 +27,7 @@ if (Blog::categoriesEnabled() && ! empty($categories)) { ?>
 <?php // Tags
 if (Blog::tagsEnabled() && ! empty($tags)) { ?>
 <div class="l-mainLayout-sidebar-item">
-  <h2 class="l-mainLayout-sidebar-title"><?= _t('blog', 'Теги') ?></h2>
+  <div class="l-mainLayout-sidebar-title"><?= _t('blog', 'Теги') ?></div>
   <div class="c-tags">
     <?php foreach ($tags as &$v) { ?>
         <?php if ($v['active']) { ?>
@@ -43,7 +43,7 @@ if (Blog::tagsEnabled() && ! empty($tags)) { ?>
 <?php // Favorites
 if ( ! empty($favs)) { ?>
 <div class="l-mainLayout-sidebar-item">
-  <h2 class="l-mainLayout-sidebar-title"><?= _t('blog', 'Избранные') ?></h2>
+  <div class="l-mainLayout-sidebar-title"><?= _t('blog', 'Избранные') ?></div>
   <ul class="list-unstyled">
     <?php foreach ($favs as &$v) { ?>
         <li><a href="<?= $v['link'] ?>"><?= $v['title'] ?></a></li>

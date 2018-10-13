@@ -1,132 +1,97 @@
-<?php
-
-class Theme_Start_do2_t062d90 extends Theme
-{
-    public function init()
-    {
-        parent::init();
-
-        $this->setSettings(array(
-            'theme_title'   => 'Стартовая тема',
-            'theme_version' => '2.4.1.6',
-            'extension_id'  => 't062d9070171056ece3322974c559def61ca11ff',
-        ));
-
-        /**
-         * Настройки заполняемые в админ. панели
-         */
-        $this->configSettings(array(
-            'device.desktop.responsive' => array(
-                'input' => 'sys',
-                'default' => false,
-            ),
-            'site.index.template' => array(
-                'title' => _t('site','Внешний вид главной'),
-                'type' => TYPE_STR,
-                'input' => 'select',
-                'default' => 'index.default',
-                'options' => function() {
-                    return array(
-                        'index.default' => array('id' => 0, 'title' => 'По-умолчанию', 'tpl' => 'index.default', 'map' => false, 'regions' => false),
-                        'index.regions' => array('id' => 1, 'title' => 'С регионами', 'tpl' => 'index.regions', 'map' => false, 'regions' => true),
-                        'index.map1'    => array('id' => 2, 'title' => 'С картой', 'tpl' => 'index.map1', 'map' => true, 'regions' => true)
-                    );
-                },
-            ),
-            'bbs.search.filter.vertical' => array(
-                'title' => _t('bbs','Вертикальный фильтр в списках'),
-                'input' => 'select',
-                'type' => TYPE_BOOL,
-                'default' => false,
-                'options' => array(
-                    true => array('title' => _t('','включено')),
-                    false => array('title' => _t('','выключено')),
-                ),
-            ),
-            'bbs.index.subcats.limit' => array(
-                'title' => _t('bbs','Подкатегории на главной'),
-                'description' => _t('bbs','Кол-во видимых подкатегорий на главной'),
-                'input' => 'number',
-                'default' => 5,
-                'min' => 1,
-                'max' => 1000,
-            ),
-            'bbs.index.last.limit' => array(
-                'title' => _t('bbs','Блок объявлений на главной'),
-                'description' => _t('bbs','Кол-во объявлений в блоке, [num] - скрыть блок', array('num'=>0)),
-                'input' => 'number',
-                'default' => 10,
-                'min' => 0,
-                'max' => 30,
-            ),
-            'logo' => array(
-                'title' => 'Логотип #1',
-                'tip' => 'логотип в шапке сайта',
-                'input' => 'image',
-                'image' => array(
-                    'sizes' => array(
-                        'view',
-                    ),
-                ),
-            ),
-            'logo.short' => array(
-                'title' => 'Логотип #2',
-                'tip' => 'логотип на странице авторизации, регистрации и подобных',
-                'input' => 'image',
-                'image' => array(
-                    'sizes' => array(
-                        'view',
-                    ),
-                ),
-            ),
-        ));
-# ignore-start
-        bff::hooksBulk([
-            'extensions.themes.'.$this->getName().'.settings.tabs' => function($tabs){
-                $tabs['copy-start'] = array(
-                    'title' => 'Копирование',
-                    'priority' => 2,
-                );
-                return $tabs;
-            },
-            'extensions.themes.'.$this->getName().'.settings.tabs.content' => function($data){
-                $data = array();
-                echo $this->viewPHP($data, 'ignore/copy.form');
-            },
-            'extensions.themes.'.$this->getName().'.settings.submit' => function($data){
-                $isSubmit = $this->input->postget('copy_submit', TYPE_UINT);
-                if (empty($isSubmit)) { return; }
-                $response = array();
-                do {
-                    if (!is_writable(PATH_THEMES)) {
-                        $this->errors->set('Недостаточно прав для записи в директорию "[dir]"', ['dir'=>str_replace(PATH_BASE,DS,PATH_THEMES)]);
-                        break;
-                    }
-                    $title = $this->input->post('copy_title', TYPE_TEXT);
-                    $name = $this->input->post('copy_name', TYPE_NOTAGS);
-                    $type = $this->getExtensionType();
-                    \bff::dev()->createExtension($title, $name, $type, $this);
-                    $response['redirect'] = tplAdmin::adminLink(bff::$event.'&type='.$type);
-                } while(false);
-                $this->ajaxResponseForm($response);
-            }
-        ]);
-# ignore-stop
-    }
-
-    /**
-     * Запуск темы
-     */
-    protected function start()
-    {
-        # Логотипы:
-        bff::hookAdd('site.logo.url.header', function($url){
-            $logo = $this->configImages('logo', 'view');
-            return (!empty($logo) ? $logo : $url);
-        });
-        bff::hookAdd('site.logo.url.header.short', function($url){
-            $logo = $this->configImages('logo.short', 'view');
-            return (!empty($logo) ? $logo : $url);
-        });
-    }
-}
+<?php //0009b
+// Copyright Tamaranga. 2014-2018
+// All Rights Reserved
+echo('No IonCube Loader is installed. Please contact Tamaranga support.');exit(199);
+?>
+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

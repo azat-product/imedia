@@ -95,7 +95,7 @@ class Contacts_ extends ContactsBase
                             'email'   => $p['email'],
                             'message' => nl2br($p['message']),
                         ),
-                        'contacts_admin', config::sys('mail.admin'), false, $from, $fromName
+                        'contacts_admin', config::sysAdmin('mail.admin'), false, $from, $fromName
                     );
                 }
             }

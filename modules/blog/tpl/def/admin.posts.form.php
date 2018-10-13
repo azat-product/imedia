@@ -16,7 +16,7 @@
 <input type="hidden" name="cat_id" id="post-cat_id" value="<?= $cat_id ?>" />
 <div class="tabsBar" id="BlogPostsFormTabs">
     <? foreach($aTabs as $k=>$v) { ?>
-        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="#" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
+        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"><a href="javascript:void(0);" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
     <? } ?>
 </div>
 <div class="j-tab j-tab-info">
@@ -64,7 +64,7 @@
                 <div style="margin: 5px 0;">
                     <input type="hidden" name="preview_del" id="preview_delete_flag" value="0" />
                     <img id="shop_logo" src="<?= $preview_list ?>" alt="" /><br />
-                    <a href="#" class="ajax desc cross but-text" onclick="return jBlogPostsForm.deletePreview(this);"><?= _t('','delete') ?></a>
+                    <a href="javascript:void(0);" class="ajax desc cross but-text" onclick="return jBlogPostsForm.deletePreview(this);"><?= _t('','delete') ?></a>
                 </div>
             <? } ?>
         </td>

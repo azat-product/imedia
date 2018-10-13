@@ -17,8 +17,8 @@ class Sendmail_ extends SendmailBase
         }
 
         $aData = array();
-        $aData['noreply'] = config::sys('mail.noreply');
-        $aData['fromname'] = config::sys('mail.fromname');
+        $aData['noreply'] = config::sysAdmin('mail.noreply');
+        $aData['fromname'] = config::sysAdmin('mail.fromname');
         $aData['wrappers'] = $this->model->wrappersOptions(0, _t('sendmail', '- Без шаблона -'));
         return $this->viewPHP($aData, 'admin.massend');
     }

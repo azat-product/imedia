@@ -13,7 +13,7 @@
     <div class="l-right__content">
         <? # Категории: ?>
         <? if(Blog::categoriesEnabled() && ! empty($categories)) { ?>
-        <h2><?= _t('blog', 'Категории') ?></h2>
+        <div class="l-right__content__title"><?= _t('blog', 'Категории') ?></div>
         <div class="b-mainmenu">
             <ul class="nav">
                 <? foreach($categories as &$v) { ?>
@@ -26,7 +26,7 @@
         <? } ?>
         <? # Теги: ?>
         <? if(Blog::tagsEnabled() && ! empty($tags)) { ?>
-        <h2><?= _t('blog', 'Теги') ?></h2>
+        <div class="l-right__content__title"><?= _t('blog', 'Теги') ?></div>
         <div class="b-tags">
             <? foreach($tags as &$v) { ?>
                 <? if($v['active']) { ?>
@@ -37,7 +37,7 @@
         <? } ?>
         <? # Избранные: ?>
         <? if ( ! empty($favs)) { ?>
-        <h2><?= _t('blog', 'Избранные') ?></h2>
+        <div class="l-right__content__title"><?= _t('blog', 'Избранные') ?></div>
         <div class="b-fav">
             <ul class="unstyled">
                 <? foreach($favs as &$v) { ?>

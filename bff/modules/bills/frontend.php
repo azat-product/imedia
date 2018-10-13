@@ -94,11 +94,10 @@ abstract class BillsModule extends BillsModuleBase
     {
         if (is_string($mResponse)) {
             echo 'ERR: ' . $mResponse;
-            exit;
         } else {
             echo 'YES';
-            exit;
         }
+        \bff::shutdown();
     }
 
     # --------------------------------------------------------------------
@@ -127,7 +126,7 @@ abstract class BillsModule extends BillsModuleBase
             return 'OK';
         } elseif ($paymentStatus == 5) # статус RBKMoney: Платеж зачислен
         {
-            $str = config::sys('bills.rbkmoney.id') . "::$orderId::$serviceName::$eshopAccount::$recipientAmount::$recipientCurrency::$paymentStatus::$userName::$userEmail::$paymentData::" . config::sys('bills.rbkmoney.key');
+            $str = config::sysAdmin('bills.rbkmoney.id') . "::$orderId::$serviceName::$eshopAccount::$recipientAmount::$recipientCurrency::$paymentStatus::$userName::$userEmail::$paymentData::" . config::sysAdmin('bills.rbkmoney.key');
             if (mb_strtolower($hash) === mb_strtolower(md5($str))) {
                 $mResult = $this->processBill($orderId, $recipientAmount, static::PS_RBK);
 
@@ -163,14 +162,14 @@ abstract class BillsModule extends BillsModuleBase
             return $this->payError('wrong_bill_id');
         }
 
-        $pass = config::sys('bills.robox.pass2');
+        $pass = config::sysAdmin('bills.robox.pass2' , '', TYPE_PASS);
         $crc2 = strtoupper(md5("$OutSum:$InvId:$pass"));
 
         if (strtoupper($crc) === $crc2) {
             $mResult = $this->processBill($InvId, $OutSum, static::PS_ROBOX);
             if ($mResult === true) {
                 echo "OK$InvId" . PHP_EOL;
-                exit;
+                \bff::shutdown();
             } else {
                 return $mResult;
             }
@@ -188,8 +187,8 @@ abstract class BillsModule extends BillsModuleBase
     {
         extract($_POST);
 
-        $zpayid = config::sys('bills.zpay.id'); # $LMI_PAYEE_PURSE
-        $zpkey = config::sys('bills.zpay.key'); # $LMI_SECRET_KEY
+        $zpayid = config::sysAdmin('bills.zpay.id'); # $LMI_PAYEE_PURSE
+        $zpkey = config::sysAdmin('bills.zpay.key'); # $LMI_SECRET_KEY
 
         if (empty($LMI_HASH)) {
             $this->log('Z-Payment: параметр LMI_HASH пустой: "' . $LMI_HASH . '"');
@@ -314,7 +313,7 @@ abstract class BillsModule extends BillsModuleBase
         # Формирование значения параметра WMI_SIGNATURE, путем
         # вычисления отпечатка, сформированного выше сообщения,
         # по алгоритму MD5 и представление его в Base64
-        return base64_encode(pack("H*", md5($fieldValues . config::sys('bills.w1.secret'))));
+        return base64_encode(pack("H*", md5($fieldValues . config::sysAdmin('bills.w1.secret' , '', TYPE_PASS))));
     }
 
     protected function w1_response($sResult = 'OK', $sDescription = false)
@@ -329,7 +328,7 @@ abstract class BillsModule extends BillsModuleBase
         if ($sResult !== 'OK') {
             $this->log('W1: bad response "'.$sDescription.'"');
         }
-        exit;
+        \bff::shutdown();
     }
 
     # --------------------------------------------------------------------
@@ -356,7 +355,7 @@ abstract class BillsModule extends BillsModuleBase
             }
             // Post IPN data back to PayPal to validate the IPN data is genuine
             // Without this step anyone can fake IPN data
-            $paypal_url = 'https://' . config::sys('bills.paypal.host', 'www.paypal.com', TYPE_STR) . '/cgi-bin/webscr';
+            $paypal_url = 'https://' . config::sysAdmin('bills.paypal.host', 'www.paypal.com', TYPE_STR) . '/cgi-bin/webscr';
             $ch = curl_init($paypal_url);
             if ($ch == false) {
                 $this->log('Paypal: curl_init false');
@@ -392,7 +391,7 @@ abstract class BillsModule extends BillsModuleBase
                     break;
                 }
                 $mc_currency = (!empty($_REQUEST['mc_currency']) ? $_REQUEST['mc_currency'] : '');
-                if ($mc_currency != config::sys('bills.paypal.currency', 'USD', TYPE_STR)) {
+                if ($mc_currency != config::sysAdmin('bills.paypal.currency', 'USD', TYPE_STR)) {
                     $this->log('Paypal: incorrect mc_currency ['.$mc_currency.'].');
                     break;
                 }
@@ -420,7 +419,7 @@ abstract class BillsModule extends BillsModuleBase
             }
         } while(false);
 
-        exit;
+        \bff::shutdown();
     }
 
     # --------------------------------------------------------------------
@@ -430,14 +429,14 @@ abstract class BillsModule extends BillsModuleBase
     protected function liqpay_request()
     {
         # https://www.liqpay.com/ru/doc/callback
-        $private = config::sys('bills.liqpay.private_key', '', TYPE_STR);
-        $currency = config::sys('bills.liqpay.currency', '', TYPE_STR);
+        $private = config::sysAdmin('bills.liqpay.private_key', '', TYPE_PASS);
+        $currency = config::sysAdmin('bills.liqpay.currency', '', TYPE_STR);
 
         $data = (!empty($_REQUEST['data']) ? $_REQUEST['data'] : '');
         $signature = (!empty($_REQUEST['signature']) ? $_REQUEST['signature'] : '');
         if ($signature != base64_encode( sha1( $private . $data . $private, 1 ) )) {
             $this->log('Liqpay: Не совпадает Signature: data = "' . $data . '" signature = "'.$signature.'"');
-            exit;
+            $this->liqpay_response('signature error');
         }
 
         $data = json_decode(base64_decode($data), true);
@@ -445,21 +444,21 @@ abstract class BillsModule extends BillsModuleBase
         $status_success = 'success';
         // $status_success = 'sandbox';  # тестовый платеж
         if (empty($data['status']) || $data['status'] != $status_success) {
-            $this->log('Liqpay: Не верный статус платежа. '.print_r($data, true));
-            exit;
+            $this->log('Liqpay: Неверный статус платежа. '.print_r($data, true));
+            $this->liqpay_response('status error');
         }
         if (!is_numeric($data['order_id'])) {
             $this->log('Liqpay: Некорректный номер счета. '.print_r($data, true));
-            exit;
+            $this->liqpay_response('order id error');
         }
         $invoiceID = $data['order_id'];
         if (empty($data['amount']) || empty($data['currency'])) {
             $this->log('Liqpay: Некорректная сумма. '.print_r($data, true));
-            exit;
+            $this->liqpay_response('amount/currency error');
         }
         if ($data['currency'] != $currency) {
             $this->log('Liqpay: Не совпадает валюта платежа. '.print_r($data, true));
-            exit;
+            $this->liqpay_response('wrong currency = '.strval($data['currency']));
         }
         $sum = $data['amount'];
 
@@ -467,7 +466,13 @@ abstract class BillsModule extends BillsModuleBase
         if ($res === true) {
             $this->redirect( static::url('success') );
         }
-        exit;
+        $this->liqpay_response();
+    }
+
+    protected function liqpay_response($response = 'OK')
+    {
+        echo $response;
+        \bff::shutdown();
     }
 
     # --------------------------------------------------------------------
@@ -477,12 +482,12 @@ abstract class BillsModule extends BillsModuleBase
     protected function yandex_request()
     {
         # https://tech.yandex.ru/money/doc/dg/reference/notification-p2p-incoming-docpage/
-        $secret = config::sys('bills.yandex.money.secret', '', TYPE_STR);
+        $secret = config::sysAdmin('bills.yandex.money.secret', '', TYPE_PASS);
         $logPost = ' $_POST = '.print_r($_POST, true);
 
         if (!isset($_POST['sha1_hash'])) {
             $this->log('Yandex: Не найден sha1_hash.'.$logPost);
-            exit;
+            $this->yandex_response('failed: empty sha1 hash');
         }
 
         $verify = array();
@@ -500,39 +505,45 @@ abstract class BillsModule extends BillsModuleBase
         $verify .= '&'.$label;
         if (sha1($verify) != $_POST['sha1_hash']) {
             $this->log('Yandex: Не совпадает sha1_hash.'.$logPost);
-            exit;
+            $this->yandex_response('failed: wrong sha1 hash');
         }
 
         if (!empty($_POST['test_notification'])) {
-            $this->log('Yandex: test_notification.'.$logPost);
-            exit;
+            $this->log('Yandex: test_notification.'.$logPost, Logger::INFO);
+            $this->yandex_response();
         }
         if (isset($_POST['unaccepted'])) {
             $unaccepted = filter_var($_POST['unaccepted'], FILTER_VALIDATE_BOOLEAN);
             if ($unaccepted) {
                 $this->log('Yandex: установлен флаг unaccepted.'.$logPost);
-                exit;
+                $this->yandex_response('failed: unaccepted was set');
             }
         }
         if (isset($_POST['codepro'])) {
             $codepro = filter_var($_POST['codepro'], FILTER_VALIDATE_BOOLEAN);
             if ($codepro) {
                 $this->log('Yandex: перевод защищен кодом протекции.'.$logPost);
-                exit;
+                $this->yandex_response('failed: code protection was set');
             }
         }
         if (!is_numeric($_POST['label'])) {
             $this->log('Yandex: Некорректный номер счета.'.$logPost);
-            exit;
+            $this->yandex_response('failed: wrong label');
         }
         $invoiceID = $_POST['label'];
         if (empty($_POST['withdraw_amount'])) {
             $this->log('Yandex: Некорректная сумма.'.$logPost);
-            exit;
+            $this->yandex_response('failed: wrong amount');
         }
         $sum = $_POST['withdraw_amount'];
 
         $this->processBill($invoiceID, $sum, static::PS_YANDEX_MONEY);
-        exit;
+        $this->yandex_response();
+    }
+
+    protected function yandex_response($response = 'OK')
+    {
+        echo $response;
+        \bff::shutdown();
     }
 }

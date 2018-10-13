@@ -43,7 +43,7 @@ echo tplAdmin::blockStart( _t('bbs', 'Объявления / Категории 
 <? } ?>
 <div class="tabsBar" id="bbsCategoryFormTabs">
     <? foreach($aTabs as $k=>$v) { ?>
-        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"<? if($k === 'tpl' && $isVirtual) { ?> style="display: none;" <?php } ?>><a href="#" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
+        <span class="tab<? if($k == 'info') { ?> tab-active<? } ?>"<? if($k === 'tpl' && $isVirtual) { ?> style="display: none;" <?php } ?>><a href="javascript:void(0);" class="j-tab-toggler" data-key="<?= $k ?>"><?= $v ?></a></span>
     <? } ?>
     <span class="progress pull-right" id="progress-category-form" style="display:none; margin: 8px 5px 0 0;"></span>
 </div>
@@ -79,7 +79,7 @@ echo tplAdmin::blockStart( _t('bbs', 'Объявления / Категории 
 <?= $this->locale->buildForm($aData, 'bbs-category', ''.'
 <tr class="required">
     <td class="row1 field-title">'._t('bbs', 'Название:').'</td>
-    <td class="row2"><input class="stretch lang-field" type="text" name="title[<?= $key ?>]" id="bbs-cat-title-<?= $key ?>" value="<?= HTML::escape($aData[\'title\'][$key]); ?>" maxlength="200" /></td>
+    <td class="row2"><input class="stretch lang-field j-bbs-cat-title" type="text" name="title[<?= $key ?>]" id="bbs-cat-title-<?= $key ?>" value="<?= HTML::escape($aData[\'title\'][$key]); ?>" maxlength="200" /></td>
     '.$copyRow().'
 </tr>
 <tr class="<? if(!$aData[\'edit\'] || $aData[\'numlevel\'] < BBS::catsFilterLevel()): ?>displaynone<? endif ?> j-virtual-hidden">
@@ -150,12 +150,12 @@ echo tplAdmin::blockStart( _t('bbs', 'Объявления / Категории 
                                 $i = 1;
                                 if( ! empty($price_sett['ranges']) ) {
                                     foreach($price_sett['ranges'] as $v) {
-                                        ?><tr class="range-<?= $i; ?>"><td><?= _t('', 'от'); ?> <input name="price_sett[ranges][<?= $i ?>][from]" value="<?= ($v['from'] > 0 ? $v['from'] : '' ); ?>" type="text" class="input-mini" />&nbsp;&nbsp; <?= _t('', 'до'); ?> <input name="price_sett[ranges][<?= $i ?>][to]" type="text" value="<?= ($v['to'] > 0 ? $v['to'] : ''); ?>" class="input-mini" /><span class="help-inline j-price-ranges-curr-help"><?= $price_curr_title ?></span><a class="but cross j-price-ranges-del" href="#" style="margin-left:7px;"></a></td></tr><?
+                                        ?><tr class="range-<?= $i; ?>"><td><?= _t('', 'от'); ?> <input name="price_sett[ranges][<?= $i ?>][from]" value="<?= ($v['from'] > 0 ? $v['from'] : '' ); ?>" type="text" class="input-mini" />&nbsp;&nbsp; <?= _t('', 'до'); ?> <input name="price_sett[ranges][<?= $i ?>][to]" type="text" value="<?= ($v['to'] > 0 ? $v['to'] : ''); ?>" class="input-mini" /><span class="help-inline j-price-ranges-curr-help"><?= $price_curr_title ?></span><a class="but cross j-price-ranges-del" href="javascript:void(0);" style="margin-left:7px;"></a></td></tr><?
                                         $i++;
                                     }
                                 } ?>
                             </table>
-                            <a href="#" class="ajax" id="j-price-ranges-add"><?= _t('bbs', 'добавить диапазон цен'); ?></a><span class="desc">&nbsp;&nbsp;&uarr;&darr;</span>
+                            <a href="javascript:void(0);" class="ajax" id="j-price-ranges-add"><?= _t('bbs', 'добавить диапазон цен'); ?></a><span class="desc">&nbsp;&nbsp;&uarr;&darr;</span>
                         </td>
                     </tr>
                     <tr>
@@ -248,13 +248,8 @@ echo tplAdmin::blockStart( _t('bbs', 'Объявления / Категории 
 <tr class="j-virtual-hidden">
     <td class="row1 field-title"><?= _t('bbs', 'Вид списка<br /> по-умолчанию:'); ?></td>
     <td class="row2">
-        <select name="list_type" style="width: auto;">
-            <?= HTML::selectOptions(array(
-                0 => _t('bbs', 'Не указан'),
-                BBS::LIST_TYPE_LIST    => _t('bbs', 'Список'),
-                BBS::LIST_TYPE_GALLERY => _t('bbs', 'Галерея'),
-                BBS::LIST_TYPE_MAP     => _t('bbs', 'Карта'),
-            ), $list_type); ?>
+        <select name="list_type" data-selected="<?= $list_type ?>" style="width: auto;">
+            <?= HTML::selectOptions(BBS::itemsSearchListTypes(), $list_type, _t('', 'Не указан'), 'id', 'title'); ?>
         </select>
     </td>
     <?= $copyRow('list_type') ?>
@@ -262,7 +257,7 @@ echo tplAdmin::blockStart( _t('bbs', 'Объявления / Категории 
 <tr>
     <td class="row1">
         <span class="field-title"><?= _t('', 'URL Keyword'); ?></span>:<br />
-        <a href="#" onclick="return bff.generateKeyword('#bbs-cat-title-<?= LNG ?>', '#bbs-cat-keyword');" class="ajax desc small"><?= _t('', 'сгенерировать'); ?></a>
+        <a href="javascript:void(0);" onclick="return bff.generateKeyword('.j-bbs-cat-title:visible', '#bbs-cat-keyword');" class="ajax desc small"><?= _t('', 'сгенерировать'); ?></a>
     </td>
     <td class="row2">
         <input class="stretch" type="text" maxlength="100" name="keyword_edit" id="bbs-cat-keyword" value="<?= $keyword_edit ?>" />
@@ -288,7 +283,7 @@ echo tplAdmin::blockStart( _t('bbs', 'Объявления / Категории 
                 <div style="margin:5px 0;">
                     <input type="hidden" name="<?= $iconField ?>_del" class="del-icon" value="0" />
                     <img src="<?= $oIcon->url($id, $aData[$iconField], $icon['key']) ?>" alt="" /><br />
-                    <a href="#" class="ajax desc cross but-text" onclick="return jCategory.iconDelete(this);"><?= _t('', 'удалить'); ?></a>
+                    <a href="javascript:void(0);" class="ajax desc cross but-text" onclick="return jCategory.iconDelete(this);"><?= _t('', 'удалить'); ?></a>
                 </div>
             <? } ?>
         </td>
@@ -347,31 +342,42 @@ echo tplAdmin::blockStart( _t('bbs', 'Объявления / Категории 
                 <? if ( ! empty($aData['dp'])): foreach($aData['dp'] as $k => $v): ?>
                     <div style="margin-bottom: 4px;">
                         <? if ( ! empty($v['cache_key'])): ?>
-                        <a href="#" class="j-tpl-macros" data-key="{<?= $v['cache_key'] ?>}">{<?= $v['cache_key'] ?>}</a>
+                        <a href="javascript:void(0);" class="j-tpl-macros" data-key="{<?= $v['cache_key'] ?>}">{<?= $v['cache_key'] ?>}</a>
                         <? endif; ?>
-                        <a href="#" class="j-tpl-macros <?= ! empty($v['cache_key']) ? 'desc' : '' ?>" data-key="{<?= $v['id'] ?>}">{<?= $v['id'] ?>}</a>
+                        <a href="javascript:void(0);" class="j-tpl-macros <?= ! empty($v['cache_key']) ? 'desc' : '' ?>" data-key="{<?= $v['id'] ?>}">{<?= $v['id'] ?>}</a>
                         <?= $v['req'] ? ' <span class="required-mark">*</span>' : '' ?><br />
                         <?= $v['title'] ?>
                     </div>
+                    <? if ($v['parent']): ?>
+                        <div style="margin-bottom: 4px;">
+                            <? if ( ! empty($v['cache_key'])): ?>
+                                <a href="javascript:void(0);" class="j-tpl-macros" data-key="{<?= $v['cache_key'] ?>.sub}">{<?= $v['cache_key'] ?>.sub}</a>
+                            <? endif; ?>
+                            <a href="javascript:void(0);" class="j-tpl-macros <?= ! empty($v['cache_key']) ? 'desc' : '' ?>" data-key="{<?= $v['id'] ?>.sub}">{<?= $v['id'] ?>.sub}</a>
+                            <br /><?= $v['child_title'] ?>
+                        </div>
+                    <? endif; ?>
                 <? endforeach; endif; ?>
                 <? $tplSpecialFields = array(
-                    'price'         => array('title' => _t('filter', 'Цена')),
-                    'category'      => array('title' => _t('filter', 'Категория объявления')),
-                    'geo.city'      => array('title' => _t('geo', 'Город')),
-                    'geo.city.in'   => array('title' => _t('geo', 'Город со склонением')),
-                    'geo.metro'     => array('title' => _t('geo', 'Станция метро')),
-                    'geo.district'  => array('title' => _t('geo', 'Район города')),
+                    'price'             => array('title' => _t('filter', 'Цена')),
+                    'category'          => array('title' => _t('filter', 'Категория объявления')),
+                    'category-parent'   => array('title' => _t('filter', 'Родительская категория объявления')),
+                    'category-N'        => array('title' => _t('filter', 'Категория уровня N = 1 ... [max]</span>', array('max' => BBS::CATS_MAXDEEP))),
+                    'geo.city'          => array('title' => _t('geo', 'Город')),
+                    'geo.city.in'       => array('title' => _t('geo', 'Город со склонением')),
+                    'geo.metro'         => array('title' => _t('geo', 'Станция метро')),
+                    'geo.district'      => array('title' => _t('geo', 'Район города')),
                 ); ?>
                 <? foreach ($tplSpecialFields as $k => $v): ?>
                     <div style="margin-bottom: 4px;">
-                        <a href="#" class="j-tpl-macros" data-key="{<?= $k ?>}">{<?= $k ?>}</a><br />
+                        <a href="javascript:void(0);" class="j-tpl-macros" data-key="{<?= $k ?>}">{<?= $k ?>}</a><br />
                         <?= $v['title'] ?>
                     </div>
                 <? endforeach; ?>
                 </div>
                 <hr size="1" style="color:#ccc" />
                 <div style="margin-top: 10px;">
-                    <a href="#" class="j-tpl-macros" data-key="|"><?= _t('bbs', '+ добавить разделитель'); ?></a>
+                    <a href="javascript:void(0);" class="j-tpl-macros" data-key="|"><?= _t('bbs', '+ добавить разделитель'); ?></a>
                 </div>
             </td>
         </tr>
@@ -427,6 +433,9 @@ var jCategory = (function(){
                     if (data.hasOwnProperty('landing_url')) {
                         $form.find('[name="landing_url"]').val(data.landing_url);
                     }
+                    if (data.hasOwnProperty('structure_modified')) {
+                        $form.find('[name="structure_modified"]').val(data.structure_modified);
+                    }
                 }
             }
         },{
@@ -447,7 +456,7 @@ var jCategory = (function(){
             $form.find('.j-cat-copy-step1').toggle((key === 'info'));
         });
 
-        $form.find('[name="addr"]').change(function(){
+        $form.find('[name="addr"]').on('change',function(){
             var ch = $(this).is(':checked');
             var $lt = $form.find('[name="list_type"]');
             var $lt_map = $lt.find('[value="<?= BBS::LIST_TYPE_MAP ?>"]');
@@ -457,7 +466,7 @@ var jCategory = (function(){
             $lt_map.attr('disabled', ! ch);
         });
 
-        $form.find('[name="tpl_title_enabled"]').change(function(){
+        $form.find('[name="tpl_title_enabled"]').on('change',function(){
             $form.find('.j-title-enabled').toggleClass('disabled', ! $(this).is(':checked'));
         });
 
@@ -614,7 +623,7 @@ var jCategoryPrice = (function(){
 
         function addRange(i)
         {
-            $block.append('<tr class="range-'+i+'"><td><?= _t('', 'от') ?> <input name="price_sett[ranges]['+i+'][from]" type="text" class="input-mini" />&nbsp;&nbsp; <?= _t('', 'до') ?> <input name="price_sett[ranges]['+i+'][to]" type="text" class="input-mini" /><span class="help-inline j-price-ranges-curr-help">'+getCurrTitle()+'</span><a class="but cross j-price-ranges-del" href="#" style="margin-left:7px;"></a></td></tr>');
+            $block.append('<tr class="range-'+i+'"><td><?= _t('', 'от') ?> <input name="price_sett[ranges]['+i+'][from]" type="text" class="input-mini" />&nbsp;&nbsp; <?= _t('', 'до') ?> <input name="price_sett[ranges]['+i+'][to]" type="text" class="input-mini" /><span class="help-inline j-price-ranges-curr-help">'+getCurrTitle()+'</span><a class="but cross j-price-ranges-del" href="javascript:void(0);" style="margin-left:7px;"></a></td></tr>');
             $('.range-'+i+' > td > input:first', $block).focus();
         }
     }());

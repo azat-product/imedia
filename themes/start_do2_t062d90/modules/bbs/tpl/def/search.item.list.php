@@ -24,7 +24,7 @@
   <div class="sr-list-item-content">
     <div class="sr-list-item-heading">
       <?php if ($item['svc_quick']) { ?><span class="label label-warning"><?= _t('bbs', 'срочно') ?></span><?php } ?>
-      <h3 class="sr-list-item-heading-title"><a href="<?= $item['link'] ?>"><?= $item['title'] ?></a></h3>
+      <div class="sr-list-item-heading-title"><a href="<?= $item['link'] ?>"><?= $item['title'] ?></a></div>
     </div>
     <div class="sr-glItem-subtext">
       <span class="sr-glItem-subtext-i"><?= $item['cat_title'] ?></span>

@@ -7,7 +7,7 @@
 
     <div class="tabsBar j-shop-form-tabs">
         <? foreach($tabs as $k=>$v) { ?>
-            <span class="tab<? if($k == $tab){ ?> tab-active<? } ?> st-<?= $k ?>"><a href="#" onclick="return jShop.tab('<?= $k ?>', this);"><?= $v ?></a></span>
+            <span class="tab<? if($k == $tab){ ?> tab-active<? } ?> st-<?= $k ?>"><a href="javascript:void(0);" onclick="return jShop.tab('<?= $k ?>', this);"><?= $v ?></a></span>
         <? } ?>
         <div class="progress" style="margin-left: 5px; display: none;" id="j-shop-form-progress"></div>
         <? if($edit && $status != Shops::STATUS_REQUEST) { ?><div class="right"><a href="<?= $link ?>" target="_blank"><?= _t('shops', 'Страница магазина'); ?> &rarr;</a></div><? } ?>
@@ -23,13 +23,13 @@
                 <td class="row1 field-title"><?= _t('shops', 'Владелец'); ?><? if( ! Shops::categoriesEnabled()) { ?><span class="required-mark">*</span><? } ?>:</td>
                 <td class="row2">
                     <? if($edit && ! empty($user)) { ?>
-                        <a href="#" class="ajax<? if($user['blocked']){ ?> text-error<? } ?>" onclick="return bff.userinfo(<?= $user['user_id'] ?>);"><?= $user['email'] ?></a>
+                        <a href="javascript:void(0);" class="ajax<? if($user['blocked']){ ?> text-error<? } ?>" onclick="return bff.userinfo(<?= $user['user_id'] ?>);"><?= $user['email'] ?></a>
                     <? } else { ?>
                         <div<? if($edit) { ?> style="display: none;" <? } ?>>
                             <input type="hidden" name="user_id" value="<?= ( ! empty($user['user_id']) ? $user['user_id'] : 0 ) ?>" class="j-shop-user-id" />
                             <input type="text" name="" value="<?= ( ! empty($user['email']) ? HTML::escape($user['email']) : '' ) ?>" class="input-xlarge autocomplete j-shop-user-ac" placeholder="<?= _te('', 'Введите e-mail пользователя'); ?>" />
                         </div>
-                        <? if($edit) { ?><div><i><?= _t('', 'не указан'); ?></i> - <a href="#" class="ajax desc" onclick="$(this).parent().prev().show().find('input:text').focus(); $(this).parent().remove(); return false;"><?= _t('', 'изменить'); ?></a></div><? } ?>
+                        <? if($edit) { ?><div><i><?= _t('', 'не указан'); ?></i> - <a href="javascript:void(0);" class="ajax desc" onclick="$(this).parent().prev().show().find('input:text').focus(); $(this).parent().remove(); return false;"><?= _t('', 'изменить'); ?></a></div><? } ?>
                     <? } ?>
                 </td>
             </tr>

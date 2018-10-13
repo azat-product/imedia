@@ -134,6 +134,8 @@ abstract class SitemapModuleBase extends Module
                 if ($pos !== 0) {
                     $sLink = substr($sLink, $pos);
                 }
+            } else if (($pos = stripos($sLink, '{route:')) !== false) {
+                // no changes
             } else {
                 if (preg_match('/^(http|https|ftp):\/\//xisu', $sLink) !== 1) {
                     if (strpos($sLink, 'www.') === 0) {
@@ -283,12 +285,15 @@ abstract class SitemapModuleBase extends Module
      */
     protected function replaceMacros($text, $languageKey)
     {
+        if (mb_stripos($text, '{') === false) {
+            return $text;
+        }
         $replace = array(
             self::MACROS_SITEURL  => $this->getMacrosReplacement(self::MACROS_SITEURL, $languageKey),
             self::MACROS_SITEHOST => $this->getMacrosReplacement(self::MACROS_SITEHOST, $languageKey),
         );
         # макрос вида {siteurl:module}
-        if (preg_match('/{siteurl:([a-z0-9\-]+)}/iu', $text, $matches) && ! empty($matches[1])) {
+        if (preg_match('/\{siteurl\:([a-z0-9\-]+)\}/iu', $text, $matches) && ! empty($matches[1])) {
             $module = $matches[1];
             if (method_exists($module, 'urlBase')) {
                 $replace[$matches[0]] = $module::urlBase($languageKey);
@@ -297,7 +302,7 @@ abstract class SitemapModuleBase extends Module
             }
         }
         # макрос вида {sitehost:key}
-        else if (preg_match('/{sitehost:([a-zA-Z0-9\-]+)}/iu', $text, $matches) && ! empty($matches[1])) {
+        else if (preg_match('/\{sitehost\:([a-zA-Z0-9\-]+)\}/iu', $text, $matches) && ! empty($matches[1])) {
             switch ($matches[1]) {
                 case 'nolang': {
                     $replace[$matches[0]] = SITEHOST;
@@ -305,6 +310,14 @@ abstract class SitemapModuleBase extends Module
                 default: {
                     $replace[$matches[0]] = SITEHOST . bff::locale()->getLanguageUrlPrefix($languageKey, false);
                 }
+            }
+        }
+        # макрос вида {route:key}
+        else if (mb_stripos(ltrim($text), '{route:') === 0 && preg_match('/\{route\:([a-zA-Z0-9\-\.]+)(\:[a-zA-Z0-9\-]+)?\}/iu', $text, $matches) && ! empty($matches[1])) {
+            if ( ! empty($matches[2]) && $matches[2] === ':rel') {
+                $replace[$matches[0]] = bff::router()->url($matches[1], [], false);
+            } else {
+                $replace[$matches[0]] = bff::router()->url($matches[1], [], ['lang' => $languageKey]);
             }
         }
         return strtr($text, $replace);

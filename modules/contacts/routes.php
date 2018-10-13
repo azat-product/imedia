@@ -3,7 +3,7 @@
 return [
     # форма контактов
     'contacts-form' => [
-        'pattern'  => 'contact/?',
+        'pattern'  => 'contact{/any?}',
         'callback' => 'contacts/write/',
         'priority' => 310,
     ],

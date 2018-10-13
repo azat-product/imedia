@@ -19,7 +19,7 @@
   <div class="sr-gallery-item-content">
     <div class="sr-gallery-item-heading">
       <?php if ($item['svc_quick']) { ?><span class="label label-warning"><?= _t('bbs', 'срочно') ?></span><?php } ?>
-      <h3 class="sr-gallery-item-heading-title"><a href="<?= $item['link'] ?>"><?= $item['title'] ?></a></h3>
+      <div class="sr-gallery-item-heading-title"><a href="<?= $item['link'] ?>"><?= $item['title'] ?></a></div>
     </div>
     
     <div class="c-price sr-gallery-item-price">

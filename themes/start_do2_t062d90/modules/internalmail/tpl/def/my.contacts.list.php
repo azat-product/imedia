@@ -28,6 +28,7 @@ foreach($list as &$v) { $message = &$v['message']; ?>
     <div class="usr-dialogs-item-content-top">
       <div class="usr-dialogs-item-title">
         <a href="<?= $v['c_url'] ?>"><?= $v['c_name'] ?></a>
+        <!-- plugin_user_online_do_block -->
         <?php if ($v['msgs_new']>0) { ?>
           <span class="label label-success">+<?= $v['msgs_new'] ?></span><?php } else { ?><span class="label label-default"><?= $v['msgs_total'] ?></span>
         <?php } ?>

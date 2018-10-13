@@ -344,9 +344,9 @@ $drawDynprops = function($self, $numFirst = false) use (&$dynprops, &$extra, $ln
                 $btn_value = $vv['title'];
                 $class = ' class="active"';
               }
-              ?>
+              if ($vv['items'] > 0) { ?>
               <li<?= $class ?>><a href="<?= $vv['link'] ?>" class="j-catLink" data-id="<?= $vv['id'] ?>" ><?= $vv['title'] ?></a></li>
-              <?php
+              <?php }
             }
             ?>
             <li class="last"><a href="<?= $v['link'] ?>" class="j-catLink"><?= _t('filter','Все') ?></a></li>

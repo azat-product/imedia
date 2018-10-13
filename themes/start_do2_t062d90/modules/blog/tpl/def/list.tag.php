@@ -9,9 +9,7 @@
  * @var $rightBlock string правый блок (HTML)
  */
 ?>
-<?php if (DEVICE_DESKTOP_OR_TABLET) {
-  echo tpl::getBreadcrumbs($breadCrumbs);
-} ?>
+<?= tpl::getBreadcrumbs($breadCrumbs); ?>
 
 <div class="l-mainLayout">
 

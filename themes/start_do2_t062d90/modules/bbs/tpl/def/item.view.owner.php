@@ -26,6 +26,7 @@
       <?php } ?>
       <div class="ad-author-shop-name">
         <a href="<?= $shop['link'] ?>" title="<?= $shop['title'] ?>"><?= $shop['title'] ?></a>
+        <!-- plugin_user_online_do_block -->
       </div>
       <div class="ad-author-shop-descr">
         <?php if (($descr_limit = 100) && mb_strlen($shop['descr']) > $descr_limit) { ?>
@@ -102,6 +103,7 @@
       </a>
       <div class="ad-author-user-info">
         <div class="ad-author-user-name"><?= $name ?></div>
+        <!-- plugin_user_online_do_block -->
         <?php if ($owner_type == BBS::OWNER_PRIVATE) { ?>
           <div class="ad-author-user-type"><?= _t('view', 'частное лицо') ?></div>
         <?php } ?>

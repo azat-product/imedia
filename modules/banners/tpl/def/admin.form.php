@@ -7,10 +7,10 @@
     $edit = ! empty($id);
 
     $aTypes = bff::filter('banners.admin.banner.form.types', array(
-        Banners::TYPE_IMAGE => array('t'=>_t('banners', 'Изображение'), 'key'=>'image', 'image'=>true, 'click_url'=>true),
-        Banners::TYPE_FLASH => array('t'=> _t('banners', 'Flash'), 'key'=>'flash', 'image'=>true, 'click_url'=>true),
-        Banners::TYPE_CODE  => array('t'=>_t('banners', 'Код'), 'key'=>'code', 'image'=>false, 'click_url'=>false),
-        //Banners::TYPE_TEASER=> array('t'=>_t('banners', 'Тизер'), 'key'=>'teaser', 'image'=>true, 'click_url'=>true),
+        Banners::TYPE_IMAGE => array('t'=>_t('banners', 'Изображение'), 'key'=>'image', 'image'=>true, 'click_url'=>true, 'target_blank'=>true),
+        Banners::TYPE_FLASH => array('t'=> _t('banners', 'Flash'), 'key'=>'flash', 'image'=>true, 'click_url'=>true, 'target_blank'=>true),
+        Banners::TYPE_CODE  => array('t'=>_t('banners', 'Код'), 'key'=>'code', 'image'=>false, 'click_url'=>1, 'target_blank'=>false),
+        //Banners::TYPE_TEASER=> array('t'=>_t('banners', 'Тизер'), 'key'=>'teaser', 'image'=>true, 'click_url'=>true, 'target_blank'=>true),
     ), array('edit'=>$edit));
     if( ! isset($aTypes[$type]) ) {
         $type = key($aTypes);
@@ -20,9 +20,14 @@
     $sitemap = $this->getSitemap($sitemap, 'checkbox', 'sitemap_id');
 
     $flash = $this->flashData( (isset($type_data) ? $type_data : '') );
-    $region_title = HTML::escape( Geo::regionTitle($region_id) );
-    if( ! isset($reg3_city)) $reg3_city = 0;
-    if( ! isset($reg2_region)) $reg2_region = 0;
+    $showCountry = Geo::coveringType(Geo::COVERING_COUNTRIES);
+    if ($showCountry) {
+        $countries = array();
+        $t = Geo::countriesList();
+        foreach($t as $v){
+            $countries[ $v['id'] ] = array('id' => $v['id'], 'title' => $v['title']);
+        }
+    }
 ?>
 <form method="post" action="" enctype="multipart/form-data" id="j-banner-form" class="hidden">
 <input type="hidden" name="id" value="<?= $id ?>" />
@@ -52,13 +57,19 @@
 <tr class="j-banner-filter hidden" id="j-banner-filter-region">
     <td class="row1"><span class="field-title"><?= _t('banners', 'Регион'); ?></span>:</td>
     <td class="row2">
-        <?= Geo::i()->citySelect(($reg3_city ? $reg3_city : $reg2_region), true, 'region_id', array(
-            'reg'=>true, 'placeholder'=>_t('banners', 'Во всех регионах'),
-            'cancel'=>true, 'width'=>'255px',
-            'country_empty' => _t('banners', 'Во всех странах'),
-            'country_value' => $reg1_country,
-            'form' => 'banners-form',
+        <?= Geo::i()->regionSelect(0, 'region', array(
+            'on_change' => 'jBanners.onRegionSelect',
+            'placeholder' => Geo::coveringType(Geo::COVERING_COUNTRIES) ? _t('', 'Страна / Регион / Город') : _t('', 'Регион')
         )); ?>
+        <? $regionHTML = function($r = array('id' => '__id__',  'title' => '__title__')) { ob_start(); ob_implicit_flush(false); ?>
+            <span class="label j-region" style="margin:0 2px 2px 2px;"><?= $r['title'] ?><?
+                ?><a href="javascript:void(0);" class="j-region-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><?
+                ?><input type="hidden" name="regions[]" class="j-region-id" value="<?= $r['id'] ?>"></span>
+        <? return ob_get_clean(); }; ?>
+        <div class="j-regions-list">
+            <span class="label j-empty"<?= ! empty($regions) ? ' style="display:none;" ' : '' ?>><?= _t('', 'Во всех регионах'); ?></span>
+            <? if ( ! empty($regions)) { foreach($regions as $k => $v){ echo $regionHTML(array('id' => $k, 'title' => $showCountry && isset($countries[ $v['country'] ]) ? $countries[ $v['country'] ]['title'].' / '.$v['title'] : $v['title'])); } } ?>
+        </div>
     </td>
 </tr>
     <tr class="j-banner-filter hidden" id="j-banner-filter-list_pos">
@@ -104,7 +115,7 @@
     <td class="row1"><span class="field-title"><?= _t('banners', 'Тип баннера'); ?></span>:</td>
     <td class="row2">
         <?php foreach($aTypes as $k=>$v) { ?>
-            <label class="radio"><input type="radio" name="type" value="<?= $k ?>" <?php if($k == $type){ ?> checked="checked"<?php } ?> onclick="jBanners.onType(<?= $k ?>);" /><?= $v['t'] ?></label>
+            <label class="radio"><input type="radio" name="type" value="<?= $k ?>" <?php if($k == $type){ ?> checked="checked"<?php } ?> onclick="jBanners.onType(<?= $k ?>, false);" /><?= $v['t'] ?></label>
         <?php } ?>
     </td>
 </tr>
@@ -156,8 +167,12 @@
     </td>    
 </tr>
 <tr id="j-banner-type-data-code" class="hidden">
-	<td class="row1"><span class="field-title"><?= _t('banners', 'Код'); ?></span>:</td>
-	<td class="row2"><textarea name="code" rows="5" class="stretch"><?php if($type == Banners::TYPE_CODE){ echo HTML::escape($type_data); } ?></textarea></td>
+	<td class="row1 field-title">
+	    <a href="javascript:void(0);" class="ajax" id="j-code-macro-link" data-original-title="" title=""><?= _t('banners', 'Код'); ?>:</a><div id="j-code-macro-popover"></div>
+    </td>
+	<td class="row2">
+	    <textarea name="code" rows="5" class="stretch"><?php if($type == Banners::TYPE_CODE && !empty($type_data)){ echo HTML::escape($type_data); } ?></textarea>
+    </td>
 </tr>
 <tr id="j-banner-type-data-teaser" class="hidden">
     <td class="row1"><span class="field-title"><?= _t('banners', 'Текст тизера'); ?></span>:</td>
@@ -227,19 +242,19 @@
 
 <script type="text/javascript">
 var jBanners = (function(){
-    var $form, types = <?= func::php2js($aTypes) ?>,
-        $categoryBlock;
+    var $form, formChk, types = <?= func::php2js($aTypes) ?>,
+        $categoryBlock, $regionsList;
 
     $(function(){
         $form = $('#j-banner-form');
-        new bff.formChecker($form);
+        formChk = new bff.formChecker($form);
 
         var bannersShowDateMin = new Date(<?= date('Y,n,d', mktime(0,0,0,date('n')-1, date('d'), date('y'))); ?>);
         bff.datepicker($('#j-banner-show-start', $form), {minDate: bannersShowDateMin, yearRange: '-2:+2'});
         bff.datepicker($('#j-banner-show-finish', $form), {minDate: bannersShowDateMin, yearRange: '-2:+2'});
         $('#j-banner-preview', $form).fancybox();
 
-        var sitemapChecks = $('#j-banner-filter-sitemap .j-check', $form).click(function(){
+        var sitemapChecks = $('#j-banner-filter-sitemap .j-check', $form).on('click', function(){
             var $c = $(this);
             var id = intval($c.val());
             if( $c.is(':checked') ) {
@@ -252,7 +267,7 @@ var jBanners = (function(){
         });
 
         $categoryBlock = $('#j-banner-filter-category', $form);
-        var $categoryChecks = $('.j-check', $categoryBlock).click(function(){
+        var $categoryChecks = $('.j-check', $categoryBlock).on('click',function(){
             var $c = $(this);
             if($c.hasClass('j-all')) {
                 $categoryChecks.not($c).prop({disabled:$c.is(':checked')});
@@ -279,9 +294,24 @@ var jBanners = (function(){
             }
         });
 
-        jBanners.onType(intval(<?= $type ?>));
+        jBanners.onType(intval(<?= $type ?>), true);
         jBanners.onPosition();
         $form.removeClass('hidden');
+
+        if (bff.bootstrapJS()) {
+            <?php $macroses = array(
+                '{query}'     => _tejs('banners', 'Текст поискового запроса'),
+                '{click_url}' => _tejs('banners', 'Ссылка подсчета переходов'),
+            ); ?>
+            $('#j-code-macro-link').popover({
+                trigger: 'click',
+                placement: 'bottom',
+                container: '#j-code-macro-popover',
+                title: '<?= _t('', 'Доступные макросы:'); ?>',
+                html: true,
+                content: '<?php foreach ($macroses as $k => $v){ echo('<div><a href="javascript:" class="ajax" onclick="return jBanners.onCodeMacros(this);">'.$k.'</a> - '.$v.'</div>'); } ?>'
+            });
+        }
 
         var $localeFilter = $form.find('.j-locale-filter');
         $form.on('click', '.j-locale-filter', function(){
@@ -298,11 +328,46 @@ var jBanners = (function(){
         });
 
         var $listPos = $form.find('[name="list_pos"]');
-        $form.find('#j-list-pos-type').change(function(){
+        $form.find('#j-list-pos-type').on('change',function(){
             var v = intval($(this).val());
             $listPos.val(v).toggleClass('displaynone', v < 1);
         });
+
+        $regionsList = $form.find('.j-regions-list');
+        $regionsList.on('click', '.j-region-del', function (e) {
+            e.preventDefault();
+            $(this).closest('.j-region').remove();
+            if ( ! $regionsList.find('.j-region').length) {
+                $regionsList.find('.j-empty').show();
+            }
+        });
     });
+
+    function onRegionSelect(id, title, ex)
+    {
+        $form.find('.j-geo-region-select-ac').val('');
+        id = intval(id);
+        if ( ! id) return;
+        var $exist = $regionsList.find('.j-region-id[value="'+id+'"]');
+        if ($exist.length) {
+            $exist = $exist.closest('.j-region');
+            $regionsList.append($exist);
+            return;
+        }
+        <? if($showCountry): ?>var countries = <?= func::php2js($countries) ?>;
+        var country = intval(ex.data[4]);
+        if ( ! country) country = id;
+        if ( ! countries.hasOwnProperty(country)) return;
+        if ( country != id ) {
+            title = countries[country]['title'] + ' / ' + title;
+        }
+        <? endif; ?>
+        var html = <?= func::php2js($regionHTML()) ?>;
+        html = html.replace(/__id__/g, id);
+        html = html.replace(/__title__/g, title);
+        $regionsList.append(html);
+        $regionsList.find('.j-empty').hide();
+    }
 
     return {
         onPosition: function() {
@@ -320,14 +385,21 @@ var jBanners = (function(){
             if (intval(filters['region']) === 1) $('#j-banner-filter-region', $form).show();
             if (intval(filters['list_pos']) === 1) $('#j-banner-filter-list_pos', $form).show();
         },
-        onType: function(typeID)
+        onType: function(typeID, isInit)
         {
             var typeKey = types[typeID].key;
             $('[id^="j-banner-type-data-"]', $form).hide();
-            $('.j-banner-image', $form).toggle(types[typeID].image);
-            $('.j-banner-click-url', $form).toggle(types[typeID].click_url);
+            $('.j-banner-image', $form).toggle(types[typeID].target_blank);
+            $('.j-banner-click-url', $form).toggle(types[typeID].click_url !== false).removeClass('clr-error');
+            $('.j-banner-click-url', $form).toggleClass('required', types[typeID].click_url === true);
             $('#j-banner-type-data-'+typeKey, $form).show();
-            $('.j-banner-target-blank', $form).toggleClass('displaynone', typeID != <?= Banners::TYPE_IMAGE ?> && typeID != <?= Banners::TYPE_FLASH ?>);
+            $('.j-banner-target-blank', $form).toggle(types[typeID].target_blank);
+            $(function(){ formChk.check(false, true); });
+        },
+        onRegionSelect: onRegionSelect,
+        onCodeMacros: function(el)
+        {
+            bff.textInsert($form.find('#j-banner-type-data-code textarea').get(0), $(el).text());
         }
     };
 }());

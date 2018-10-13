@@ -7,9 +7,8 @@
  */
 ?>
 
-<?php if (DEVICE_DESKTOP_OR_TABLET) {
-  echo tpl::getBreadcrumbs(array(array('title'=>$title,'active'=>true)));
-} ?>
+<?= tpl::getBreadcrumbs(array(array('title'=>$title,'active'=>true))); ?>
+
 <div class="l-mainLayout">
 
   <!-- Content -->

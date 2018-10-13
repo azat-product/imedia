@@ -2,8 +2,8 @@
 
 /**
  * Класс вспомогательных методов обработки текста
- * @version 0.54
- * @modified 2.mar.2017
+ * @version 0.61
+ * @modified 7.sep.2018
  */
 
 class TextParser_
@@ -81,7 +81,7 @@ class TextParser_
                 'blockquote', 'q', 'caption',
                 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
                 # form
-                'form', 'input', 'button', 'textarea', 'noscript', 'select', 'opt', 'option', 'optgroup',
+                'form', 'input', 'button', 'textarea', 'noscript', 'noindex', 'select', 'opt', 'option', 'optgroup',
                 'fieldset', 'label', 'legend',
                 # html5:
                 'article', 'aside', 'bdi', 'bdo', 'details', 'dialog', 'figcaption', 'figure',
@@ -210,6 +210,7 @@ class TextParser_
             # 1. Разрешённые теги. (Все неразрешенные теги считаются запрещенными.)
             $j->cfgAllowTags(\bff::filter('utils.textparser.wysiwyg.allowedTags.frontend', array(
                     'a',
+                    'noindex',
                     'img',
                     'i',
                     'b',
@@ -449,68 +450,101 @@ class TextParser_
         }
     }
 
-
     /**
-     * Подсветка различия двух строк на основе LCS (Longest common subsequence problem)
-     * @param string $string1 строка 1 (старая)
-     * @param string $string2 строка 2 (новая)
-     * @param array $extra параметры
-     *  'insert_open' => '<span class="ins">' - маркер начала добавленного фрагмента
-     *  'insert_close' => '</span>' - маркер конца добавленного фрагмента
-     *  'delete_open' => '<span class="del">' - маркер начала удаленного фрагмента
-     *  'delete_close' => '</span>' - маркер конца удаленного фрагмента
-     * @return string
+     * Подсветка различия двух строк на основе LCS (Longest common subsequence)
+     * @param string|array $old строка 1 (старая)
+     * @param string|array $new строка 2 (новая)
+     * @param array $opts параметры:
+     *  boolean 'text'         - возвращать в форме текста
+     *  string  'insert_open'  - маркер начала добавленного фрагмента
+     *  string  'insert_close' - маркер конца добавленного фрагмента
+     *  string  'delete_open'  - маркер начала удаленного фрагмента
+     *  string  'delete_close' - маркер конца удаленного фрагмента
+     * @license https://github.com/paulgb/simplediff/blob/master/LICENSE
+     * @return string|array
      */
-    public static function highlightStringCompare($string1, $string2, $extra = array())
+    public static function highlightStringCompare($old, $new, $opts = array())
     {
-        if ( ! isset($extra['insert_open'])) {
-            $extra['insert_open'] = '<span class="ins">';
-        }
-        if ( ! isset($extra['insert_close'])) {
-            $extra['insert_close'] = '</span>';
-        }
-        if ( ! isset($extra['delete_open'])) {
-            $extra['delete_open'] = '<span class="del">';
-        }
-        if ( ! isset($extra['delete_close'])) {
-            $extra['delete_close'] = '</span>';
-        }
+        \func::array_defaults($opts, array(
+            'text'         => true,
+            'insert_open'  => '<span class="ins">',
+            'insert_close' => '</span>',
+            'delete_open'  => '<span class="del">',
+            'delete_close' => '</span>',
+        ));
 
         $diff = function($old, $new) use(& $diff) {
-            $maxlen = 0;
-            foreach ($old as $oindex => $ovalue) {
-                $nkeys = array_keys($new, $ovalue);
-                foreach ($nkeys as $nindex) {
-                    $matrix[$oindex][$nindex] = isset($matrix[$oindex - 1][$nindex - 1]) ?
-                        $matrix[$oindex - 1][$nindex - 1] + 1 : 1;
-                    if ($matrix[$oindex][$nindex] > $maxlen) {
-                        $maxlen = $matrix[$oindex][$nindex];
-                        $omax = $oindex + 1 - $maxlen;
-                        $nmax = $nindex + 1 - $maxlen;
+            $maxLen = 0;
+            foreach ($old as $kO => $vO) {
+                $keysN = array_keys($new, $vO);
+                foreach ($keysN as $kN) {
+                    $mtrx[$kO][$kN] = (isset($mtrx[$kO - 1][$kN - 1]) ?
+                        $mtrx[$kO - 1][$kN - 1] + 1 : 1);
+                    if ($mtrx[$kO][$kN] > $maxLen) {
+                        $maxLen = $mtrx[$kO][$kN];
+                        $maxO = $kO + 1 - $maxLen;
+                        $maxN = $kN + 1 - $maxLen;
                     }
                 }
             }
-            if ($maxlen == 0) {
+            if ($maxLen == 0) {
                 return array(array('d'=>$old, 'i'=>$new));
             }
             return array_merge(
-                $diff(array_slice($old, 0, $omax), array_slice($new, 0, $nmax)),
-                array_slice($new, $nmax, $maxlen),
-                $diff(array_slice($old, $omax + $maxlen), array_slice($new, $nmax + $maxlen)));
+                $diff(array_slice($old, 0, $maxO), array_slice($new, 0, $maxN)),
+                array_slice($new, $maxN, $maxLen),
+                $diff(array_slice($old, $maxO + $maxLen), array_slice($new, $maxN + $maxLen))
+            );
         };
 
-        $ret = '';
-        $diff = $diff(explode(' ', $string1), explode(' ', $string2));
-        foreach ($diff as $k) {
-            if (is_array($k)) {
-                $ret .= (!empty($k['d']) ? $extra['delete_open'].implode(' ',$k['d']).$extra['delete_close'] : '').
-                    (!empty($k['i']) ? $extra['insert_open'].implode(' ',$k['i']).$extra['insert_close'] : '');
-            } else {
-                $ret .= $k . ' ';
+        if (is_string($old)) {
+            $old = preg_split("/[\s]+/", $old);
+        }
+        if (is_string($new)) {
+            $new = preg_split("/[\s]+/", $new);
+        }
+
+        $list = $diff($old, $new);
+
+        if ($opts['text']) {
+            $text = '';
+            foreach ($list as &$k) {
+                if (is_array($k)) {
+                    $text .= (!empty($k['d']) ? $opts['delete_open'] . implode(' ', $k['d']) . $opts['delete_close'] : '') .
+                        (!empty($k['i']) ? $opts['insert_open'] . implode(' ', $k['i']) . $opts['insert_close'] : '');
+                } else {
+                    $text .= $k . ' ';
+                }
+            } unset($k);
+            return $text;
+        }
+
+        return $list;
+    }
+
+    /**
+     * Поиск значения аннотации в тексте комментария
+     * @param string $text текст комментария
+     * @param string $paramName ключ параметра
+     * @param mixed $defaultValue значение по умолчанию
+     * @param boolean $multiple допустимо несколько значений
+     * @return mixed значение аннотации
+     */
+    public static function commentAnnotationValue($text, $paramName, $defaultValue = false, $multiple = false)
+    {
+        $paramName = '#@'.preg_quote($paramName,'#').'[\s\t]+(?:(?P<v>.*?))?[\s\t]*\r?$#im';
+        if ($multiple) {
+            if (preg_match_all($paramName, $text, $matches) > 0 && array_key_exists('v', $matches)) {
+                return $matches['v'];
+            }
+        } else {
+            if (preg_match($paramName, $text, $matches) > 0 && array_key_exists('v', $matches)) {
+                return trim($matches['v']);
             }
         }
-        return $ret;
+        return $defaultValue;
     }
+
 
     /**
      * Подготовка данных для минус-слов

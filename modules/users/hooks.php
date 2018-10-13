@@ -347,6 +347,19 @@ class UsersHooks
     }
 
     /**
+     * Хук удаления пользователя
+     * @param callable $callback {
+     *   @param integer $userID ID пользователя
+     * }
+     * @param int|null $priority приоритет вызова
+     * @return \Hook
+     */
+    public static function userDelete(callable $callback, $priority = NULL)
+    {
+        return bff::hooks()->add('users.user.deleted', $callback, $priority);
+    }
+
+    /**
      * Хук некоторых этапов авторизации пользователя в админ. панель
      * @param integer $step шаг:
      *   1 - перед проверкой логина/пароля
@@ -367,9 +380,21 @@ class UsersHooks
     }
 
     /**
+     * Хук расширения HTML формы авторизации пользователя (админ. панель)
+     * @param callable $callback
+     * @param int|null $priority приоритет вызова
+     * @return \Hook
+     */
+    public static function adminUserLoginForm(callable $callback, $priority = NULL)
+    {
+        return bff::hooks()->add('users.admin.login.form', $callback, $priority);
+    }
+
+    /**
      * Хук завершения сессии (logout) пользователя (фронтенд / админ. панель)
      * @param callable $callback {
      *   @param integer $id ID пользователя
+     *   @param string $redirectURL
      * }
      * @param int|null $priority приоритет вызова
      * @return \Hook
@@ -394,6 +419,23 @@ class UsersHooks
     public static function smsSend(callable $callback, $priority = NULL)
     {
         return bff::hooks()->add('users.sms.send', $callback, $priority);
+    }
+
+    /**
+     * Фильтр реализующий возможность расширения списка доступных SMS провайдеров
+     * @param callable $callback {
+     *   @param array $list список SMS провайдеров, исходный список: [
+     *       'sms_ru' => ['title' => 'sms.ru'],
+     *       'atompark_com' => ['title' => 'atompark.com'],
+     *   ]
+     *   return: array итоговый список SMS провайдеров
+     * }
+     * @param int|null $priority приоритет вызова
+     * @return \Hook
+     */
+    public static function smsProvidersList(callable $callback, $priority = NULL)
+    {
+        return bff::hooks()->add('users.sms.provider.list', $callback, $priority);
     }
 
     /**

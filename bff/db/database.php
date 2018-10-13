@@ -2,8 +2,9 @@
 
 /**
  * Класс работы с базой данных
- * @version  3.98
- * @modified 6.may.2018
+ * @version  4.11
+ * @modified 29.jun.2018
+ * @copyright Tamaranga
  *
  * config::sys:
  * - db.type - тип базы данных, допустимые варианты: 'pgsql', 'mysql'
@@ -68,7 +69,7 @@ class Database_
 
         $this->statEnabled = BFF_DEBUG;
 
-        $this->locale = \bff::locale();
+        $this->locale = \bff\DI::get('locale');
 
         // $this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         // $this->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
@@ -278,7 +279,7 @@ class Database_
      * @param mixed $pdoQuery
      * @return bool
      */
-    protected function errorCheck($pdoQuery = false)
+    protected function errorCheck($pdoQuery = false, array $opts = array())
     {
         # Проверяем SQLSTATE
         foreach (array($this->pdo, $pdoQuery) as $obj) {
@@ -286,7 +287,15 @@ class Database_
                 if ($this->trans && $this->auto)
                     $this->rollback();
                 $error = $obj->errorInfo();
-                $this->error('[SQL Error] ( ' . (@$error[0] . '.' . (isset($error[1]) ? $error[1] : '?')) . ' : ' . (isset($error[2]) ? $error[2] : '') . ' )', true);
+                $message = '[SQL Error] ( ' . (@$error[0] . '.' . (isset($error[1]) ? $error[1] : '?')) . ' : ' . (isset($error[2]) ? $error[2] : '');
+                if (isset($opts['query'])) {
+                    $message .= PHP_EOL . print_r($opts['query'], true);
+                }
+                if (isset($opts['bind'])) {
+                    $message .= PHP_EOL . print_r($opts['bind'], true);
+                }
+                $message .= ' )';
+                $this->error($message, true);
 
                 return false;
             }
@@ -533,7 +542,7 @@ class Database_
                 }
             }
             # Проверяем SQLSTATE
-            if (!$this->errorCheck($query)) {
+            if (!$this->errorCheck($query, array('query'=>$cmd,'bind'=>$arg))) {
                 if ($this->tag !== false) { $this->tag = false; }
                 return false;
             }
@@ -681,15 +690,13 @@ class Database_
             if ( ! empty($options['limit'])) {
                 $limit = $options['limit'];
                 if (is_array($limit)) {
-                    if (sizeof($limit) == 1) {
-                        $limit = $this->prepareLimit(0, reset($limit));
-                    } else if (sizeof($limit) > 1) {
-                        $limit = $this->prepareLimit(reset($limit), next($limit));
+                    if ( ! empty($limit)) {
+                        $limit = $this->prepareLimit(false, reset($limit));
                     } else {
                         $limit = '';
                     }
                 } else if (is_numeric($limit)) {
-                    $limit = $this->prepareLimit(0, strval($limit));
+                    $limit = $this->prepareLimit(false, strval($limit));
                 }
             }
             $query = 'UPDATE ' . $table . ' SET ' . $set . ($conditions ? (' WHERE ' . $conditions) : '') . $orderBy . (!empty($limit) ? ' '.$limit : '');
@@ -778,7 +785,7 @@ class Database_
         $fetchType = $options['fetchType'];
 
         if ($exclusive) {
-            $self = \bff::DI('database_factory');
+            $self = \bff\DI::get('database_factory');
             $self->connectionConfig('db');
             $self->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
             $self->connect();
@@ -1337,7 +1344,7 @@ class Database_
 
     /**
      * Подготовка LIMIT
-     * @param integer $offset
+     * @param integer|boolean $offset
      * @param integer $limit
      * @return string SQL
      */
@@ -1345,12 +1352,12 @@ class Database_
     {
         switch ($this->getDriverName()) {
             case 'pgsql':
-                return " LIMIT " . (empty($limit) ? 'ALL' : $limit) . " OFFSET $offset ";
+                return " LIMIT " . (empty($limit) ? 'ALL' : $limit) . ($offset !== false ? " OFFSET $offset " : '');
                 break;
             case 'mysqli':
             case 'mysql':
             default:
-                return " LIMIT $offset," . (empty($limit) ? '18446744073709551615' : $limit) . " ";
+                return ' LIMIT '. ($offset !== false ? $offset . ', ' : '') . (empty($limit) ? '18446744073709551615' : $limit) . " ";
                 break;
         }
     }
@@ -1426,7 +1433,8 @@ class Database_
 
         if (empty($aResult)) return false;
 
-        return $this->exec('INSERT INTO ' . $table . ' (' . join(',', array_keys($data[0])) . ')
+        $first = reset($data);
+        return $this->exec('INSERT INTO ' . $table . ' (' . join(',', array_keys($first)) . ')
                             VALUES ' . join(', ', $aResult), $bind
         );
     }

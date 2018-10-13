@@ -1,9 +1,6 @@
 <?php
 bff::hook('js.extra');
-Minifier::process(tpl::$includesJS);
-foreach (bff::filter('js.includes', tpl::$includesJS) as $v) { ?>
-<script src="<?= $v ?>" type="text/javascript" charset="utf-8"></script>
-<?php } ?>
+echo tpl::includesJS(); ?>
 <script type="text/javascript">
 <? js::start(); ?>
 $(function(){

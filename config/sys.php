@@ -6,7 +6,7 @@
 $config = array(
     'site.host'   => 'imedia.kz',
     'site.static' => '//imedia.kz',
-    'site.title'  => 'Imedia.kz', // название сайта, для подобных случаев: "Я уже зарегистрирован на {Imedia.kz}"
+    'site.title'  => 'imedia.kz', // название сайта, для подобных случаев: "Я уже зарегистрирован на {Imedia.kz}"
     'https.only'  => true,
     /**
      * Доступ к базе данных
@@ -25,14 +25,14 @@ $config = array(
     'mail.support'  => 'support@imedia.kz',
     'mail.noreply'  => 'noreply@imedia.kz',
     'mail.admin'    => 'admin@imedia.kz',
-    'mail.fromname' => 'Imedia.kz',
+    'mail.fromname' => 'imedia.kz',
     'mail.method'   => 'mail', // варианты: mail, sendmail, smtp
     'mail.smtp' => array(
-        'host'=>'localhost',
-        'port'=>25,
-        'user'=>'',
-        'pass'=>'',
-        'secure'=>'', // варианты: '', 'tls', 'ssl'
+        'host'=>'smtp.mail.ru',
+	'port'=>465,
+        'user'=>'noreply@imedia.kz',
+        'pass'=>'qwerty0603',
+        'secure'=>'ssl', // варианты: '', 'tls', 'ssl'
     ),
     /**
      * Локализация
@@ -95,7 +95,7 @@ $config = array(
      */
     'php.errors.reporting' => -1, // all
     'php.errors.display'   => 0, // отображать ошибки (варианты: 
-    'debug' => true, // варианты:true|false - включить debug-режим
+    'debug' => false, // варианты:true|false - включить debug-режим
     /**
      * Дополнительные настройки:
      * ! Настоятельно не рекомендуется изменять после запуска проекта

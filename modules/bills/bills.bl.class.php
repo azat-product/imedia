@@ -86,6 +86,16 @@ abstract class BillsBase_ extends BillsModule
     }
 
     /**
+     * Метод обрабатывающий ситуацию с удалением пользователя
+     * @param integer $userID ID пользователя
+     * @param array $options доп. параметры удаления
+     */
+    public function onUserDeleted($userID, array $options = array())
+    {
+        $this->model->onUserDeleted($userID, $options);
+    }
+
+    /**
      * Формирование URL
      * @param string $key ключ
      * @param array $opts доп. параметры
@@ -94,28 +104,7 @@ abstract class BillsBase_ extends BillsModule
      */
     public static function url($key, array $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # история операций (список завершенных счетов)
-            case 'my.history':
-                $url .= '/cabinet/bill' . (!empty($opts) ? '?' . http_build_query($opts) : '');
-                break;
-            # пополнение счета
-            case 'my.pay':
-                $url = static::url('my.history', $opts + array('pay' => 1), $dynamic);
-                break;
-            # Process
-            case 'process':
-                $url .= '/bill/process' . (isset($opts['ps']) ? '/'.$opts['ps'] : '') . static::urlQuery($opts, array('ps'));
-                break;
-            # Success | Fail | Result
-            case 'success':
-            case 'fail':
-            case 'result':
-                $url .= '/bill/'.$key . static::urlQuery($opts);
-                break;
-        }
-        return bff::filter('bills.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('bills-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'bills']);
     }
 
     public static function getPaySystems($bBalanceUse = false, $bPromotePage = false)

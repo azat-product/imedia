@@ -3,8 +3,9 @@
 /**
  * Класс работы с данными авторизованного пользователя
  * @abstract
- * @version 0.22
- * @modified 5.feb.2014
+ * @version 0.3
+ * @modified 3.jun.2018
+ * @copyright Tamaranga
  */
 abstract class User
 {
@@ -115,6 +116,30 @@ abstract class User
         }
 
         return true;
+    }
+
+    /**
+     * Проверка на вхождение в группу
+     * @param integer|array $groupID ключ группы/нескольких групп
+     * @param array $opts доп. параметры:
+     *   boolean 'at-least-one' - состоит как минимум в одной из указанных групп
+     * @return bool входит в указанные группы
+     */
+    public static function isInGroup($groupID, array $opts = array())
+    {
+        $userGroups = \bff::security()->getUserGroups();
+        if (empty($userGroups)) {
+            return false;
+        }
+        if ( ! is_array($groupID)) {
+            $groupID = array($groupID);
+        }
+        $commonGroups = array_intersect($userGroups, $groupID);
+        if ( ! empty($opts['at-least-one'])) {
+            return sizeof($commonGroups) > 0;
+        } else {
+            return (sizeof($commonGroups) === sizeof($groupID));
+        }
     }
 
 }

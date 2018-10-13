@@ -182,12 +182,13 @@ var sendmailMassend = (function(){
         <hr class="cut" />
         <label class="checkbox"><input type="checkbox" name="test" value="1" tabindex="5" id="ms-test" onclick="sendmailMassend.testMode(this);" /><?= _t('sendmail', 'Тестовая рассылка'); ?></label>
         <div id="ms-test-settings" class="relative" style="display:none;">
-            <? if (FORDEV): ?><label class="checkbox" style="position: absolute; right: 0; top: 0;"><input type="checkbox" name="from_cron" value="1" />From cron manager</label><? endif; ?>
             <label>
                 <?= _t('sendmail', 'Укажите получателей для тестирования:'); ?><br />
                 <input type="text" class="stretch" name="receivers_test" id="ms-receivers-test" />
             </label>
-            <span class="desc"><?= _t('sendmail', 'например:'); ?> <a class="ajax desc ms-receivers-test-example" href="#">test@gmail.com</a>, <a class="ajax desc ms-receivers-test-example" href="#">123@yandex.ru</a></span>
+            <div class="desc left"><?= _t('sendmail', 'например:'); ?> <a class="ajax desc ms-receivers-test-example" href="javascript:void(0);">test@gmail.com</a>, <a class="ajax desc ms-receivers-test-example" href="javascript:void(0);">123@yandex.ru</a></div>
+            <? if (FORDEV): ?><label class="checkbox right text-info"><input type="checkbox" name="from_cron" value="1" />from cron manager</label><? endif; ?>
+            <div class="clear"></div>
         </div>
     </td>
 </tr>

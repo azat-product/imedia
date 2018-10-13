@@ -4,7 +4,7 @@
 
 <div class="tabsBar" id="items-status-tabs">
     <? foreach($tabs as $k=>$v) { ?>
-        <span class="tab <? if($f['status']==$k) { ?>tab-active<? } ?>"><a href="#" onclick="return jItemsPress.onStatus(<?= $k ?>, this);"><?= $v['t'] ?></a></span>
+        <span class="tab <? if($f['status']==$k) { ?>tab-active<? } ?>"><a href="javascript:void(0);" onclick="return jItemsPress.onStatus(<?= $k ?>, this);"><?= $v['t'] ?></a></span>
     <? } ?>
     <div class="right"><div class="progress" style="display:none;" id="progress-items"></div></div>
     <div class="clear"></div>

@@ -82,7 +82,7 @@ class ShopsModel_ extends Model
         }
         if (!empty($aFilterRaw['q'])) {
             $aFilter[':q'] = array(
-                '(S.id = :q_id OR S.title LIKE :q_title)',
+                '(S.id = :q_id OR SL.title LIKE :q_title)',
                 ':q_id'    => intval($aFilterRaw['q']),
                 ':q_title' => '%' . $aFilterRaw['q'] . '%',
             );
@@ -109,6 +109,7 @@ class ShopsModel_ extends Model
             return (integer)$this->db->tag('shops-shops-listing-count', array('filter'=>&$aFilter))->one_data('SELECT COUNT(S.id)
                                 FROM ' . TABLE_SHOPS . ' S
                                     LEFT JOIN ' . TABLE_USERS . ' U ON S.id = U.shop_id
+                                    INNER JOIN '.TABLE_SHOPS_LANG.' SL ON '.$this->db->langAnd(false, 'S', 'SL'). '
                                      ' . ($bJoinCategories ? ' INNER JOIN ' . $categoriesTable . ' C ON S.id = C.shop_id' : '') . '
                                 ' . $aFilter['where'],
                 $aFilter['bind']
@@ -203,6 +204,7 @@ class ShopsModel_ extends Model
             if ($bCount) {
                 return (integer)$this->db->one_data('SELECT COUNT(S.id)
                                     FROM ' . TABLE_SHOPS . ' S
+                                         INNER JOIN '.TABLE_SHOPS_LANG.' SL ON '.$this->db->langAnd(false, 'S', 'SL').'
                                          INNER JOIN ' . $sCategoriesTable . ' C ON S.id = C.shop_id
                                     ' . $aFilter['where'],
                     $aFilter['bind']
@@ -223,6 +225,7 @@ class ShopsModel_ extends Model
             if ($bCount) {
                 return (integer)$this->db->one_data('SELECT COUNT(S.id)
                                     FROM ' . TABLE_SHOPS . ' S
+                                        INNER JOIN '.TABLE_SHOPS_LANG.' SL ON '.$this->db->langAnd(false, 'S', 'SL').'
                                     ' . $aFilter['where'],
                     $aFilter['bind']
                 );
@@ -431,6 +434,7 @@ class ShopsModel_ extends Model
             $this->db->langUpdate($nShopID, $aData, $this->langShops, TABLE_SHOPS_LANG);
             $aDataNonLang = array_diff_key($aData, $this->langShops);
             $res = $this->db->update(TABLE_SHOPS, $aDataNonLang, array('id' => $nShopID));
+            \bff::hook('shops.shop.save', $nShopID, array('data'=>&$aData));
         } else {
             $aData['created'] = $this->db->now();
             $aData['modified'] = $this->db->now();
@@ -441,9 +445,10 @@ class ShopsModel_ extends Model
                 $this->db->langInsert($nShopID, $aData, $this->langShops, TABLE_SHOPS_LANG);
                 # дополняем ссылку
                 $this->db->update(TABLE_SHOPS, array(
-                        'link' => $aData['link'] . $aData['keyword'] . '-' . $nShopID
+                        'link' => strtr($aData['link'], ['{keyword}'=>$aData['keyword'], '{id}'=>$nShopID])
                     ), array('id' => $nShopID)
                 );
+                \bff::hook('shops.shop.create', $nShopID, array('data'=>&$aData));
             }
         }
         if (Shops::categoriesEnabled() && isset($aCats) && $nShopID) {
@@ -885,24 +890,17 @@ class ShopsModel_ extends Model
     }
 
     /**
-     * Перестраиваем URL всех магазинов
+     * Перестраиваем URL всех страниц магазинов
      */
-    public function shopsLinksRebuild()
+    public function shopsUrlsRefresh()
     {
-        $this->db->select_iterator('SELECT S.id, S.keyword,
-                RR.keyword as region, RR.id as region_id,
-                RC.keyword as city, RC.id as city_id
+        $this->db->select_iterator('SELECT S.id, S.keyword, RR.keyword as region, RC.keyword as city
             FROM ' . TABLE_SHOPS . ' S
                  INNER JOIN ' . TABLE_REGIONS . ' RR ON S.reg2_region = RR.id
                  INNER JOIN ' . TABLE_REGIONS . ' RC ON S.reg3_city = RC.id
-            ORDER BY S.id', array(), function($v) {
-            $link = Shops::url('shop.view', array(
-                        'region' => $v['region'],
-                        'city'   => $v['city']
-                    ), true
-                ) . $v['keyword'] . '-' . $v['id'];
-
-            $this->db->update(TABLE_SHOPS, array('link' => $link), array('id' => $v['id']));
+            ORDER BY S.id', [], function($shop) {
+            $url = Shops::url('shop.view', $shop, true);
+            $this->db->update(TABLE_SHOPS, ['link' => $url], ['id' => $shop['id']]);
         });
     }
 
@@ -1021,18 +1019,43 @@ class ShopsModel_ extends Model
 
     /**
      * Удаление заявки
-     * @param integer $nRequestID ID заявки
+     * @param mixed $filter фильтр или ID заявки
      * @return boolean
      */
-    public function requestDelete($nRequestID)
+    public function requestDelete($filter)
     {
-        if (empty($nRequestID)) return false;
-        $res = $this->db->delete(TABLE_SHOPS_REQUESTS, array('id' => $nRequestID));
+        if (empty($filter)) return false;
+        if ( ! is_array($filter)) {
+            $filter = array('id' => $filter);
+        }
+        $res = $this->db->delete(TABLE_SHOPS_REQUESTS, $filter);
         if (!empty($res)) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Количество не просмотренных заявок
+     * @param boolean $join true - закрепление, false - открытие
+     * @return int
+     */
+    public function shopsRequestsCounter($join = false)
+    {
+        if ($join) {
+            $filter = $this->prepareFilter(array(
+                'status' => Shops::STATUS_REQUEST,
+            ));
+
+            return (int)$this->db->one_data('SELECT COUNT(id) FROM ' . TABLE_SHOPS . $filter['where'], $filter['bind']);
+        } else {
+            $filter = $this->prepareFilter(array(
+                'viewed' => 0,
+            ));
+
+            return (int)$this->db->one_data('SELECT COUNT(id) FROM ' . TABLE_SHOPS_REQUESTS . $filter['where'], $filter['bind']);
+        }
     }
 
     # ----------------------------------------------------------------
@@ -1082,15 +1105,23 @@ class ShopsModel_ extends Model
             $aData['user_id'] = User::id();
             $aData['user_ip'] = Request::remoteAddress();
 
-            return $this->db->insert(TABLE_SHOPS_CLAIMS, $aData, 'id');
+            $nClaimID = $this->db->insert(TABLE_SHOPS_CLAIMS, $aData, 'id');
+            if ($nClaimID > 0) {
+                $aData['id'] = $nClaimID;
+                bff::hook('shops.shop.claim.create', $aData);
+            }
+            return $nClaimID;
         }
     }
 
-    public function claimDelete($nClaimID)
+    public function claimDelete($filter)
     {
-        if (!$nClaimID) return false;
+        if (empty($filter)) return false;
+        if ( ! is_array($filter)) {
+            $filter = array('id' => $filter);
+        }
 
-        return $this->db->delete(TABLE_SHOPS_CLAIMS, array('id' => $nClaimID));
+        return $this->db->delete(TABLE_SHOPS_CLAIMS, $filter);
     }
 
     # ----------------------------------------------------------------
@@ -2057,7 +2088,7 @@ class ShopsModel_ extends Model
                 S.svc_abonement_auto, S.svc_abonement_auto_id, S.svc_abonement_one_time,
                 U.email, U.user_id_ex, U.password, U.balance, US.last_login, U.lang,
                 A.price, '.join(',', $titles).'
-            FROM ' . TABLE_SHOPS . ' S
+            FROM ' . TABLE_SHOPS . ' S,
                  ' . TABLE_SHOPS_LANG.' SL,
                  ' . TABLE_SHOPS_ABONEMENTS . ' A, 
                  ' . TABLE_USERS . ' U, 

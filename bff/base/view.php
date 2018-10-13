@@ -2,14 +2,205 @@
 
 /**
  * Базовый класс работы с отображением шаблонов
- * @version 0.63
- * @modified 7.sep.2017
+ * @version 1.3
+ * @modified 23.aug.2018
+ * @copyright Tamaranga
  */
 
 class View
 {
-    /** @var string $layout текущий layout */
+    /** @var string текущий layout */
     protected static $layout = 'main';
+
+    /** @var array данные текущей страниц */
+    protected static $pageData = [];
+
+    /**
+     * Порядок работы с содержимым блока шаблона
+     * @var integer
+     */
+    const BLOCK_CREATE = 1;
+    const BLOCK_AFTER  = 2;
+    const BLOCK_BEFORE = 3;
+    const BLOCK_RENDER = 4;
+
+    /** @var array сохраненные блоки */
+    protected $blocks = [];
+    /** @var array открытые блоки */
+    protected $blocks_open = [];
+
+    /**
+     * Получаем данные текущей страницы
+     * @param string $key ключ требуемых данных
+     * @param bool $default значение по умолчанию
+     * @return mixed
+     */
+    public static function pageData($key, $default = false)
+    {
+        if (array_key_exists($key, static::$pageData)) {
+            return static::$pageData[$key];
+        }
+        return $default;
+    }
+
+    /**
+     * Сохраняем данные текущей страницы
+     * @param string|array $key ключ данных
+     * @param mixed $value значение
+     */
+    public static function setPageData($key, $value = false)
+    {
+        if (is_string($key)) {
+            static::$pageData[$key] = $value;
+        } else if (is_array($key)) {
+            foreach ($key as $k=>$v) {
+                if (is_string($k)) {
+                    static::$pageData[$k] = $v;
+                }
+            }
+        }
+    }
+
+    /**
+     * Отрисовываем блок
+     * @param string $id ID блока
+     * @param string|callable $content содержимое блока
+     * @param bool $return возвращать содержимое
+     * @return mixed
+     */
+    public static function block($id, $content = '', $return = false)
+    {
+        if ( ! is_string($content) && is_callable($content, true)) {
+            $content = call_user_func($content);
+        }
+        if (is_string($content)) {
+            $filter = 'view.block.'.$id;
+            if (\bff::hooksAdded($filter)) {
+                $content = \bff::filter($filter, $content);
+            }
+            if ($return) {
+                return $content;
+            } else {
+                echo $content;
+            }
+        }
+    }
+
+    /**
+     * Открываем новый блок
+     * @param string $id ID блока
+     * @param boolean|integer $render отрисовывать содержимое блока при его закрытии
+     * @return bool
+     */
+    public function start($id, $render = true)
+    {
+        if (array_key_exists($id, $this->blocks_open)) {
+            return false;
+        }
+        if ( ! is_integer($render)) {
+            $render = ($render === true ? static::BLOCK_RENDER : static::BLOCK_CREATE);
+        }
+
+        ob_start();
+        ob_implicit_flush(false);
+        $this->blocks_open[$id] = $render;
+
+        return true;
+    }
+
+    /**
+     * Открываем новый блок
+     * @param string $id ID блока
+     * @param boolean|integer $render отрисовывать содержимое блока при его закрытии
+     * @return bool
+     */
+    public static function blockStart($id, $render = true)
+    {
+        return \bff::view()->start($id, $render);
+    }
+
+    /**
+     * Закрываем блок
+     * @return boolean
+     */
+    public function end()
+    {
+        if (empty($this->blocks_open)) {
+            return false;
+        }
+
+        $content = ltrim(ob_get_clean());
+        $action = end($this->blocks_open);
+        $id = key($this->blocks_open);
+        switch ($action)
+        {
+            case static::BLOCK_CREATE: {
+                $this->blocks[$id] = $content;
+            } break;
+            case static::BLOCK_RENDER: {
+                static::block($id, $content, false);
+            } break;
+            case static::BLOCK_AFTER: {
+                $this->extend($id, $content, true);
+            } break;
+            case static::BLOCK_BEFORE: {
+                $this->extend($id, $content, false);
+            } break;
+        }
+        array_pop($this->blocks_open);
+
+        return true;
+    }
+
+    /**
+     * Закрываем блок
+     * @return boolean
+     */
+    public static function blockEnd()
+    {
+        return \bff::view()->end();
+    }
+
+    /**
+     * Расширяем содержимое блока
+     * @param string $id ID блока
+     * @param string $content содержимое
+     * @param bool $after добавить после имеющегося содержимого
+     */
+    public function extend($id, $content, $after = true)
+    {
+        if (array_key_exists($id, $this->blocks)) {
+            if ($after) {
+                $this->blocks[$id] .= $content;
+            } else {
+                $this->blocks[$id] = $content . $this->blocks[$id];
+            }
+        } else {
+            $this->blocks[$id] = $content;
+        }
+    }
+
+    /**
+     * Устанавливаем содержимое блока
+     * @param string $id ID блока
+     * @param string $content содержимое блока
+     */
+    public function set($id, $content = '')
+    {
+        $this->blocks[$id] = strval($content);
+    }
+
+    /**
+     * Получаем содержимое блока
+     * @param string $id ID блока
+     * @param string $default содержимое блока по умолчанию
+     */
+    public function get($id, $default = '')
+    {
+        return static::block($id, (
+            array_key_exists($id, $this->blocks) ? $this->blocks[$id] : $default
+        ), true);
+    }
 
     /**
      * Рендеринг шаблона (php)

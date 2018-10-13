@@ -9,9 +9,7 @@ $aData = HTML::escape($aData, 'html', array('title','alt'));
 
 if($type == Banners::TYPE_CODE)
 {
-    echo strtr($type_data, array(
-        '{query}' => (!empty($query) ? HTML::escape($query, 'js') : ''),
-    ));
+    echo $type_data;
     ?><div style="display:none;" ><img src="<?= $showURL ?>" width="1" height="1" alt="" /></div><?
 }
 else if($type == Banners::TYPE_FLASH)

@@ -19,7 +19,7 @@ class Blog_ extends BlogBase
         $oPublicator = $this->initPublicator();
 
         $sAct = $this->input->postget('act', TYPE_STR);
-        if (!empty($sAct) || Request::isPOST()) {
+        if (!empty($sAct) || $this->isPOST()) {
             $aResponse = array();
             switch ($sAct) {
                 case 'add':
@@ -185,7 +185,7 @@ class Blog_ extends BlogBase
                     $aResponse = false;
             }
 
-            if ($aResponse !== false && Request::isAJAX()) {
+            if ($aResponse !== false && $this->isAJAX()) {
                 $this->ajaxResponseForm($aResponse);
             }
         }
@@ -242,7 +242,7 @@ class Blog_ extends BlogBase
 
         $aData['list'] = $this->viewPHP($aData, 'admin.posts.listing.ajax');
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array(
                     'list' => $aData['list'],
                     'pgn'  => $aData['pgn'],
@@ -275,7 +275,7 @@ class Blog_ extends BlogBase
         }
 
         $sAct = $this->input->postget('act', TYPE_STR);
-        if (!empty($sAct) || Request::isPOST()) {
+        if (!empty($sAct) || $this->isPOST()) {
             $aResponse = array();
             switch ($sAct) {
                 case 'add':
@@ -367,7 +367,7 @@ class Blog_ extends BlogBase
                     $aResponse = false;
             }
 
-            if ($aResponse !== false && Request::isAJAX()) {
+            if ($aResponse !== false && $this->isAJAX()) {
                 $this->ajaxResponseForm($aResponse);
             }
         }
@@ -378,7 +378,7 @@ class Blog_ extends BlogBase
         $aData['list'] = $this->model->categoriesListing(array('pid' => 1));
         $aData['list'] = $this->viewPHP($aData, 'admin.categories.listing.ajax');
 
-        if (Request::isAJAX()) {
+        if ($this->isAJAX()) {
             $this->ajaxResponseForm(array('list' => $aData['list']));
         }
 
@@ -405,7 +405,7 @@ class Blog_ extends BlogBase
             $this->adminRedirect(Errors::IMPOSSIBLE, 'categories');
         }
 
-        if (Request::isPOST()) {
+        if ($this->isPOST()) {
 
             $nNextCategoryID = $this->input->post('next', TYPE_UINT);
             if ($nNextCategoryID > 0) {

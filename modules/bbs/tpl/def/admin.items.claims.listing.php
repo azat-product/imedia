@@ -7,7 +7,7 @@
 
 <div class="tabsBar" id="j-bbs-claims-status-tabs">
     <? foreach($aTabs as $k=>$v) { ?>
-    <span class="tab<?= $k==$status ? ' tab-active' : '' ?>"><a href="#" class="j-tab" data-id="<?= $k ?>"><?= $v ?></a></span>
+    <span class="tab<?= $k==$status ? ' tab-active' : '' ?>"><a href="javascript:void(0);" class="j-tab" data-id="<?= $k ?>"><?= $v ?></a></span>
     <? } ?>
 </div>
 

@@ -9,7 +9,11 @@
 
     tplAdmin::adminPageSettings(array('link'=>array('title'=>_t('bbs', '+ добавить пакет'), 'href'=>$this->adminLink('svc_packs_create')), 'icon'=>false));
 ?>
-
+<? if ( ! bff::servicesEnabled(true)) { ?>
+    <div class="alert alert-info" style="margin-bottom: 10px;">
+        <?= _t('svc', 'Доступность платных услуг отключена в <a [setting_link]>системных настройках</a> и не отображается пользователям сайта.', array('setting_link'=>'href="'.Site::settingsSystemLink('site','services.enabled').'"')); ?>
+    </div>
+<? } ?>
 <div class="tabsBar">
     <form id="j-bbs-svc-packs-tabs" action="">
     <? foreach($packs as $v) { $packID = $v['id']; if(empty($nActiveTab)) $nActiveTab = $packID; ?>
@@ -120,7 +124,7 @@
                             title = $optionParent.text().trim() + ' / ' + title;
                         }
                         $catsSelected.append(
-                            '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="#" class="j-cat-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[cats][]" class="j-selected-id" value="'+id+'" /></span>'
+                            '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="javascript:void(0);" class="j-cat-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[cats][]" class="j-selected-id" value="'+id+'" /></span>'
                         ).removeClass('hide');
                     }
                 }
@@ -155,7 +159,7 @@
                 {
                     if( id > 0 && ! $regionsSelected.find('.j-selected-id[value="'+id+'"]').length ) {
                         $regionsSelected.append(
-                            '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="#" class="j-region-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[regions][]" class="j-selected-id" value="'+id+'" /></span>'
+                            '<span class="label j-selected" style="margin:0 2px 2px 2px;">'+title+'<a href="javascript:void(0);" class="j-region-del" style="margin-left: 3px;"><i class="icon-remove icon-white" style="margin-top: 0px;"></i></a><input type="hidden" name="'+namePrefix+'[regions][]" class="j-selected-id" value="'+id+'" /></span>'
                         ).removeClass('hide');
                     }
                 }
@@ -260,7 +264,7 @@
                 <td class="row1" width="130"><span class="field-title"><?= _t('bbs', 'Стоимость'); ?></span>:</td>
                 <td class="row2">
                     <input type="text" name="price" value="<?= $v['price'] ?>" style="width: 60px;" pattern="[0-9\.,]*" />&nbsp;<span class="desc"><?= $curr['title_short'] ?></span>
-                    <a href="#" class="btn btn-mini j-price-ex-plus" data-svc="<?= $v['keyword'] ?>" style="margin-left: 5px;"><?= _t('bbs', 'добавить региональную стоимость'); ?></a>
+                    <a href="javascript:void(0);" class="btn btn-mini j-price-ex-plus" data-svc="<?= $v['keyword'] ?>" style="margin-left: 5px;"><?= _t('bbs', 'добавить региональную стоимость'); ?></a>
                     <div id="j-price-ex-block-<?= $v['keyword'] ?>" style="margin: 5px 0;"></div>
                 </td>
             </tr>
@@ -269,7 +273,7 @@
                 <td class="row2">
                     <table class="admtbl tbledit svc-block table-hover" style="width:420px;">
                     <? foreach($svc as $sk=>$sv)
-                    {
+                    {   if ($sv['id'] == BBS::SERVICE_LIMIT) continue;
                         $checked = !empty( $v['svc'][$sk] );
                         $enabled = ! empty( $sv['on'] );
                         if( $enabled ) {
@@ -318,7 +322,7 @@
                             <div style="margin:5px 0;">
                                 <input type="hidden" name="<?= $iconField ?>_del" class="del-icon" value="0" />
                                 <img src="<?= $oIcon->url($packID, $v[$iconField], $icon['key']) ?>" alt="" /><br />
-                                <a href="#" class="ajax desc cross but-text" onclick="return jSvcServicepacks.iconDelete(this);"><?= _t('', 'Delete'); ?></a>
+                                <a href="javascript:void(0);" class="ajax desc cross but-text" onclick="return jSvcServicepacks.iconDelete(this);"><?= _t('', 'Delete'); ?></a>
                             </div>
                         <? } ?>
                     </td>
@@ -351,7 +355,7 @@
                         <input type="button" class="btn btn-danger button delete" value="<?= _te('', 'Delete') ?>" onclick="jSvcServicepacks.del(<?= $packID ?>);" />
                     </div>
                     <div class="right desc">
-                        <?= _t('bbs', 'последние изменения:'); ?> <span class="j-last-modified"><?= tpl::date_format2($v['modified'], true); ?>, <a class="bold desc ajax" href="#" onclick="return bff.userinfo(<?= $v['modified_uid'] ?>);"><?= $v['modified_login'] ?></a></span>
+                        <?= _t('bbs', 'последние изменения:'); ?> <span class="j-last-modified"><?= tpl::date_format2($v['modified'], true); ?>, <a class="bold desc ajax" href="javascript:void(0);" onclick="return bff.userinfo(<?= $v['modified_uid'] ?>);"><?= $v['modified_login'] ?></a></span>
                     </div>
                     <div class="clear"></div>
                 </td>

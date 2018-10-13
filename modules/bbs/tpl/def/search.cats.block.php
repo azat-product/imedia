@@ -11,7 +11,7 @@ if (!empty($cats)): ?>
         <?php $cnt = count($cats); $cols = array(); $i = 0; $j = 0;
         foreach ($cats as $v) {
             if ($j == $visible && $cnt > ($visible+1)) {
-                $cols[$i][] = '<li class="f-categories-col-more"> <a href="#" class="ajax pseudo-link-ajax" id="j-f-categories-toggle"> '.
+                $cols[$i][] = '<li class="f-categories-col-more"> <a href="javascript:void(0);" class="ajax pseudo-link-ajax" id="j-f-categories-toggle"> '.
                     _t('bbs', 'Показать еще [num]', array('num' => tpl::declension($cnt - $visible, _t('bbs', 'категорию;категории;категорий')))).'</a></li> ';
             }
             $cols[$i][] = '<li'.($j >= $visible && $cnt > ($visible+1) ? ' class="hide"' : '').'> <a href="'.$v['link'].'"> '.
@@ -31,7 +31,7 @@ if (!empty($cats)): ?>
 <script type="text/javascript">
 <?php js::start(); ?>
 $(function(){
-    $('#j-f-categories-toggle').click(function(e){
+    $('#j-f-categories-toggle').on('click',function(e){
         e.preventDefault();
         $(this).closest('li').remove();
         $('#j-f-categories-block ul li').removeClass('hide');

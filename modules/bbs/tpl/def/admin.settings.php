@@ -112,7 +112,7 @@ tplAdmin::adminPageSettings(array('icon' => false));
                     <td class="row1 field-title"><?= _t('bbs', 'Категории:'); ?></td>
                     <td class="row2">
                         <select id="j-items-limits-user-category-select"></select>
-                        <a href="#" class="ajax desc" id="j-items-limits-user-category-add"><?= _t('bbs', '+ добавить лимит на категорию'); ?></a>
+                        <a href="javascript:void(0);" class="ajax desc" id="j-items-limits-user-category-add"><?= _t('bbs', '+ добавить лимит на категорию'); ?></a>
                     </td>
                 </tr>
                 <tr class="j-items-limits-user j-items-limits-user-<?= BBS::LIMITS_CATEGORY ?><?= $items_limits_user != BBS::LIMITS_CATEGORY ? ' displaynone' : '' ?>">
@@ -166,7 +166,7 @@ tplAdmin::adminPageSettings(array('icon' => false));
                     <td class="row1 field-title"><?= _t('bbs', 'Категории:'); ?></td>
                     <td class="row2">
                         <select id="j-items-limits-shop-category-select"></select>
-                        <a href="#" class="ajax desc" id="j-items-limits-shop-category-add"><?= _t('bbs', '+ добавить лимит на категорию'); ?></a>
+                        <a href="javascript:void(0);" class="ajax desc" id="j-items-limits-shop-category-add"><?= _t('bbs', '+ добавить лимит на категорию'); ?></a>
                     </td>
                 </tr>
                 <tr class="j-items-limits-shop j-items-limits-shop-<?= BBS::LIMITS_CATEGORY ?><?= $items_limits_shop != BBS::LIMITS_CATEGORY ? ' displaynone' : '' ?>">
@@ -213,7 +213,7 @@ tplAdmin::adminPageSettings(array('icon' => false));
                             <? if ($images_watermark['exists']) { ?>
                             <div class="j-images-watermark-preview">
                                 <img src="<?= HTML::escape($images_watermark['file']['url']); ?>" class="thumbnail" alt="" />
-                                <a href="#" class="but-text bold cross desc ajax j-images-watermark-delete-cross"><?= _t('', 'удалить'); ?></a>
+                                <a href="javascript:void(0);" class="but-text bold cross desc ajax j-images-watermark-delete-cross"><?= _t('', 'удалить'); ?></a>
                             </div>
                             <? } ?>
                         </div>
@@ -239,18 +239,18 @@ tplAdmin::adminPageSettings(array('icon' => false));
         <div id="j-tab-instructions" class="j-tab-form hide">
             <table class="admtbl tbledit">
                 <?= $this->locale->buildForm($aData, 'bbs-settings-instructions', '
-    <tr>
-        <td class="row1">
-            <div style="margin-bottom: 10px;">'._t('bbs', 'Форма добавления:').'</div>
-            <?= tpl::jwysiwyg($aData[\'form_add_\'.$key], \'form_add[\'.$key.\']\', 0, 120); ?>
-        </td>
-    </tr>
-    <tr>
-        <td class="row1">
-            <div style="margin: 10px 0;">'._t('bbs', 'Форма редактирования:').'</div>
-            <?= tpl::jwysiwyg($aData[\'form_edit_\'.$key], \'form_edit[\'.$key.\']\', 0, 120); ?>
-        </td>
-    </tr>'); ?>
+                <tr>
+                    <td class="row1">
+                        <div style="margin-bottom: 10px;">'._t('bbs', 'Форма добавления:').'</div>
+                        <?= tpl::jwysiwyg($aData[\'form_add_\'.$key], \'form_add[\'.$key.\']\', 0, 120); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="row1">
+                        <div style="margin: 10px 0;">'._t('bbs', 'Форма редактирования:').'</div>
+                        <?= tpl::jwysiwyg($aData[\'form_edit_\'.$key], \'form_edit[\'.$key.\']\', 0, 120); ?>
+                    </td>
+                </tr>'); ?>
             </table>
         </div>
 
@@ -410,7 +410,7 @@ tplAdmin::adminPageSettings(array('icon' => false));
             $block.append('<tr data-cat="'+cat+'">'+
                 '<td>'+limitCats['s'+cat]+':</td> '+
                 '<td><input class="input-mini" type="number" min="0" max="9999" maxlength="4" name="items_limits_'+mode+'_category['+cat+']" value="'+val+'" /> / сутки</td>'+
-                '<td><a class="but cross j-delete" href="#" style="margin-left: 10px;"></a></td>'+
+                '<td><a class="but cross j-delete" href="javascript:void(0);" style="margin-left: 10px;"></a></td>'+
             '</tr>');
             makeLimitOptions($block, $select);
         }

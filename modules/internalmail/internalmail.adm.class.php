@@ -168,7 +168,9 @@ class InternalMail_ extends InternalMailBase
 
         # фильтр: пользователь
         $nUserID = $this->input->getpost('u', TYPE_UINT);
-        $aUserData = Users::model()->userData($nUserID, array('user_id as id', 'email'));
+        if ($nUserID > 0) {
+            $aUserData = Users::model()->userData($nUserID, array('user_id as id', 'email'));
+        }
         if (empty($aUserData)) {
             $nUserID = 0;
             $aUserData = array('id' => 0, 'email' => '');
@@ -214,7 +216,9 @@ class InternalMail_ extends InternalMailBase
         $nFolderID = -1;
         $nUserID = $this->input->get('u', TYPE_UINT);
         $nShopID = $this->input->get('shop', TYPE_UINT);
-        $aUserData = Users::model()->userData($nUserID, array('user_id as id', 'email'));
+        if ($nUserID > 0) {
+            $aUserData = Users::model()->userData($nUserID, array('user_id as id', 'email'));
+        }
         if (empty($aUserData)) {
             $nUserID = 0;
             $aUserData = array('id' => 0, 'email' => '');
@@ -386,5 +390,5 @@ class InternalMail_ extends InternalMailBase
         $aData = array('options'=>&$options);
         return $this->viewPHP($aData, 'admin.settings.sys');
     }
-
+    
 }

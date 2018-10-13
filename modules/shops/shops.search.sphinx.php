@@ -102,6 +102,7 @@ class ShopsSearchSphinx_ extends \bff\db\Sphinx
             'sql_query_pre' => array(
                 'SET CHARACTER_SET_RESULTS='.$settings['charset'],
                 'SET NAMES '.$settings['charset'],
+                'UPDATE '.$settings['table'].' SET indexed_delta = NOW() WHERE counter_id = '.$this->moduleID(),
             ),
             'sql_query' => ' \\
             SELECT '.join(', ', $query).' \\
@@ -195,6 +196,10 @@ class ShopsSearchSphinx_ extends \bff\db\Sphinx
             LIMIT '.($offset ? $offset.',' : '').$limit.'
             '.(!empty($opt) ? 'OPTION '.join(',', $opt) : ''),
             $bind, PDO::FETCH_COLUMN, 'fetchAll');
+        if ($data === false) {
+            return false;
+        }
+
         if ($count) {
             # только подсчет кол-ва
             # http://khaletskiy.blogspot.com/2014/06/sphinx-pagination.html

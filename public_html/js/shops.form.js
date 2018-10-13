@@ -301,7 +301,7 @@ var jShopsForm = (function(){
                 $block.append(bff.tmpl(tpl.html(), {value:value, index:index, total:total, types:$types.html(), o:o}));
             } else {
                 $block.append('<div class="controls j-social-link">'+
-                            '<select name="social['+index+'][t]" class="span4 j-type">'+$types.html()+'</select> '+
+                            '<select name="social['+index+'][t]" class="span4 j-type">'+$types.html()+'</select>&nbsp;'+
                             '<div class="input-append sh-social-item">'+
                                 '<input type="text" class="input-large" name="social['+index+'][v]" value="'+value+'" maxlength="300" placeholder="'+ o.lang.social_link+'" />'+
                                 '<a href="#" class="add-on j-delete"><i class="icon-remove"></i></a>'+
@@ -352,7 +352,7 @@ var jShopsForm = (function(){
                 updateAddressIgnoreClass: 'typed'
             });
 
-            geo.addr.$addr.bind('change keyup input', $.debounce(function(){
+            geo.addr.$addr.on('change keyup input', $.debounce(function(){
                 if( ! $.trim(geo.addr.$addr.val()).length ) {
                     geo.addr.$addr.removeClass('typed');
                 } else {

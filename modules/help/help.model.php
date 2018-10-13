@@ -288,6 +288,22 @@ class HelpModel_ extends Model
     }
 
     /**
+     * Перестраиваем URL на страницы всех вопросов
+     * @param string $language ключ языка
+     */
+    public function questionsUrlRefresh($language)
+    {
+        $this->db->select_iterator('SELECT Q.id, QL.title
+            FROM ' . TABLE_HELP_QUESTIONS . ' Q,
+                 ' . TABLE_HELP_QUESTIONS_LANG . ' QL
+            WHERE Q.id = QL.id AND QL.lang = :lang
+            ORDER BY Q.id', [':lang'=>$language], function($question) {
+            $url = Help::url('view', $question, true);
+            $this->db->update(TABLE_HELP_QUESTIONS, ['link' => $url], ['id' => $question['id']]);
+        });
+    }
+
+    /**
      * Удаление вопроса
      * @param integer $nQuestionID ID вопроса
      * @return boolean

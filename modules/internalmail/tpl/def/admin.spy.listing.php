@@ -39,7 +39,7 @@ var pgn = new bff.pgn('#im-spy-listing-pgn', {type:'prev-next'});
     <input type="hidden" name="u" value="<?= $user['id'] ?>" id="j-my-spy-listing-user-id" />
     <span class="relative">
         <input type="text" id="j-my-spy-listing-user-email" class="autocomplete input-large" placeholder="<?= _te('internalmail', 'Введите e-mail пользователя'); ?>" value="<?= HTML::escape($user['email']) ?>" />
-        <a href="#" id="j-my-spy-listing-user-cancel" class="<?= ( ! $user['id'] ? 'hide' : '') ?>" style="position: absolute; top:-4px; right:-17px;"><i class="icon-remove disabled"></i></a>
+        <a href="javascript:void(0);" id="j-my-spy-listing-user-cancel" class="<?= ( ! $user['id'] ? 'hide' : '') ?>" style="position: absolute; top:-4px; right:-17px;"><i class="icon-remove disabled"></i></a>
     </span>
     <input type="button" class="btn btn-small hide" value="<?= _te('internalmail', 'показать сообщения'); ?>" id="j-my-spy-listing-user-submit" />
 </div>
@@ -55,7 +55,7 @@ foreach($contacts as $v)
     <td class="left">
         <a href="<?= $sConversationURL.$userID.'&shop='.$v['shop_id'] ?>"><img src="<?= $v['avatar'] ?>" class="left img-polaroid" style="margin-right: 8px;" width="50" alt="" /></a>
         <div style="margin-bottom: 3px;">
-            <a href="#" class="ajax" onclick="return bff.userinfo(<?= $userID ?>);"><?= ( ! empty($v['name']) ? $v['name'] : $v['login'] ) ?></a>
+            <a href="javascript:void(0);" class="ajax" onclick="return bff.userinfo(<?= $userID ?>);"><?= ( ! empty($v['name']) ? $v['name'] : $v['login'] ) ?></a>
             <? if( ! $v['activated'] ) { ?>&nbsp;<span class="disabled">[<?= _t('', 'неактивирован'); ?>]</span><? } ?>
         </div>
         <a href="<?= $sConversationURL.$userID.'&shop='.$v['shop_id'] ?>" class="label"><?= tpl::declension($v['msgs_total'], _t('internalmail', 'сообщение;сообщения;сообщений')) ?></a>

@@ -134,7 +134,7 @@ class Shops_ extends ShopsBase
                 $sphinxSearch = $f_q;
             } else {
                 $sql[] = array(
-                    '('.$sqlTablePrefix.'title LIKE (:query) OR '.$sqlTablePrefix.'descr LIKE (:query))',
+                    '(SL.title LIKE (:query) OR SL.descr LIKE (:query))',
                     ':query' => "%$f_q%"
                 );
             }
@@ -149,11 +149,14 @@ class Shops_ extends ShopsBase
         # Выполняем поиск магазинов:
         $aData = array('items' => array(), 'pgn' => '');
 
+        $nTotal = false;
         if ($sphinxSearch) {
             $sphinx = $this->shopsSearchSphinx();
             $nTotal = $sphinx->searchShops($sphinxSearch, $sql, $f_c, true);
-        } else {
+        }
+        if ($nTotal === false) {
             $nTotal = $this->model->shopsList($sql, $f_c, true);
+            $sphinxSearch = false;
         }
         
         if ($nTotal > 0) {
@@ -383,6 +386,10 @@ class Shops_ extends ShopsBase
         $shop['addr_map'] = (!empty($shop['addr_addr']) && (floatval($shop['addr_lat']) || floatval($shop['addr_lon'])));
         $shop['descr'] = nl2br($shop['descr']);
         $shop['descr_visible_limit'] = 100;
+        View::setPageData([
+            'shops_view_id' => $shopID,
+            'shops_view_data' => &$shop,
+        ]);
 
         # Разделы
         $tab = trim($this->input->getpost('tab', TYPE_NOTAGS), ' /');
@@ -520,6 +527,12 @@ class Shops_ extends ShopsBase
                 'svc_abonement_one_time',
             )
         );
+        if ( ! empty($aShop)) {
+            View::setPageData([
+                'shops_promote_id' => $nShopID,
+                'shops_promote_data' => &$aShop,
+            ]);
+        }
         if (!empty($_GET['success'])) {
             if ($aShop['status'] == self::STATUS_REQUEST) {
                 $this->redirect(static::url('my.shop', array('success' => 1)));
@@ -587,6 +600,7 @@ class Shops_ extends ShopsBase
 
                 # конвертируем сумму в валюту для оплаты по курсу
                 $pay = Bills::getPayAmount($nSvcPrice, $ps);
+                bff::hook('shops.promote.submit', $nSvcPrice, $ps, $pay);
 
                 if ($ps == 'balance' && $nUserBalance >= $nSvcPrice) {
                     # активируем услугу (списываем со счета пользователя)
@@ -1933,6 +1947,19 @@ class Shops_ extends ShopsBase
         if (!bff::cron()) return;
 
         $this->model->shopsCronCounters();
+    }
+
+    /**
+     * Обрабатываем событие изменения порядка формирования ссылок
+     * @param array $params [changed=>prefix.list|prefix.view]
+     */
+    public function cronChangeUrls(array $params)
+    {
+        if (!bff::cron() || empty($params['changed'])) return;
+
+        if ($params['changed'] === 'prefix.view') {
+            $this->model->shopsUrlsRefresh();
+        }
     }
 
     /**

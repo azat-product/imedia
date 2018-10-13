@@ -32,9 +32,9 @@ $listBanner = function($positionNumber) use ($device) {
             <tbody>
             <tr>
                 <td class="sr-page__list__item_descr">
-                    <h3>
+                    <div class="sr-page__list__title">
                         <a href="<?= $v['link'] ?>" title="<?= $v['title'] ?>"><?= $v['title'] ?></a>
-                    </h3>
+                    </div>
                     <p><?= tpl::truncate($v['descr'], 170, '...', true) ?></p>
 
                     <!-- mobile contacts -->
@@ -42,7 +42,7 @@ $listBanner = function($positionNumber) use ($device) {
                         <ul id="j-shops-list-phone-cp-<?= $v['id'] ?>">
                             <? if($v['has_contacts']) { ?>
                             <li>
-                                <i class="fa fa-bell"></i> <a href="#" class="ajax j-contacts-ex" data-device="<?= bff::DEVICE_PHONE ?>"><?= $lang_contacts_show ?></a>
+                                <i class="fa fa-bell"></i> <a href="javascript:void(0);" class="ajax j-contacts-ex" data-device="<?= bff::DEVICE_PHONE ?>"><?= $lang_contacts_show ?></a>
                                 <div class="hide j-contacts"></div>
                             </li>
                             <? } ?>
@@ -64,7 +64,7 @@ $listBanner = function($positionNumber) use ($device) {
                         <ul>
                             <li>
                                 <? if($v['has_contacts']) { ?>
-                                <i class="fa fa-bell"></i> <a href="#" class="ajax j-contacts-ex" data-device="<?= bff::DEVICE_DESKTOP ?>"><?= $lang_contacts_show ?></a>
+                                <i class="fa fa-bell"></i> <a href="javascript:void(0);" class="ajax j-contacts-ex" data-device="<?= bff::DEVICE_DESKTOP ?>"><?= $lang_contacts_show ?></a>
                                 <div class="dropdown-block box-shadow abs hide sh-page__list__dropdown j-contacts"></div>
                             </li>
                             <? } ?>

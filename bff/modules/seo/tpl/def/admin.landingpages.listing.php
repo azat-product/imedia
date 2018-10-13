@@ -146,13 +146,13 @@ var jSeoLandingPagesList = (function(){
         _listPgn   = _block.find('#SeoLandingPagesListPgn');
         _filters    = _block.find('#SeoLandingPagesListFilters').get(0);
 
-        _list.delegate('a.landingpage-edit', 'click', function(){
+        _list.on('click', 'a.landingpage-edit', function(){
             var $id = intval($(this).data('id'));
             if ($id>0) jSeoLandingPagesFormManager.action('edit',$id);
             return false;
         });
 
-        _list.delegate('a.landingpage-toggle', 'click', function(){
+        _list.on('click', 'a.landingpage-toggle', function(){
             var $id = intval($(this).data('id'));
             var $type = $(this).data('type');
             if ($id>0) {
@@ -162,13 +162,13 @@ var jSeoLandingPagesList = (function(){
             return false;
         });
 
-        _list.delegate('a.landingpage-del', 'click', function(){
+        _list.on('click', 'a.landingpage-del', function(){
             var $id = intval($(this).data('id'));
             if ($id>0) _del($id, this);
             return false;
         });
 
-        $(window).bind('popstate',function(e){
+        $(window).on('popstate',function(e){
             if('state' in window.history && window.history.state === null) return;
             var loc = document.location;
             var $act = /act=(add|edit)/.exec( loc.search.toString() );

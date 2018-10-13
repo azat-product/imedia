@@ -566,7 +566,7 @@ class Smarty
     /**
      * The class constructor.
      */
-    function Smarty()
+    function __construct()
     {
 //            global $_root;
 

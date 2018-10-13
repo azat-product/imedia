@@ -22,7 +22,7 @@ var jBBSShopItems = (function(){
             onSubmit: function(resp, ex) {
                 if(ex.scroll) $.scrollTo($list, {offset: -150, duration:500, axis: 'y'});
                 $pgn.html(resp.pgn);
-                $list.find('.j-list-'+app.device()).html(resp.list);
+                $list.find('.j-list-'+app.device()).html(resp.list).find('.j-tooltip').tooltip();
             },
             onProgress: function(progress, ex) {
                 if(ex.fade) $list.toggleClass('disabled');

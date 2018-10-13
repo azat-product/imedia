@@ -1,6 +1,6 @@
 <?php
 
-abstract class tplAdmin_ extends \bff\base\tpl
+abstract class tplAdmin_ extends \bff\base\tplAdmin
 {
     /**
      * Блок: открытие
@@ -23,6 +23,9 @@ abstract class tplAdmin_ extends \bff\base\tpl
                 $aLink['title'] = '';
             }
             if (!isset($aLink['href'])) $aLink['href'] = '#';
+            if (!empty($aLink['fordev']) && ! FORDEV) {
+                $aLink = array();
+            }
         }
 
         if (is_null($mIcon)) {

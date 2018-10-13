@@ -16,7 +16,7 @@ var bffGalleryInline = (function(){
         $imageList = $('li', $image);
         if((total = $imageList.length) < 1) return;
         if( o.imageClick === true ) {
-            $imageList.click(function(e){
+            $imageList.on('click',function(e){
                 nothing(e);
                 if( timerInProgress ) {
                     timerInProgress = false;
@@ -29,10 +29,10 @@ var bffGalleryInline = (function(){
         $description = $('.description ul', $block);
         
         $play = $('.play', $block);
-        $play.click(playGallery);
+        $play.on('click',playGallery);
 
         $navigation = $('.navigation ul', $block);
-        $navigation.find('span').click(function(){ 
+        $navigation.find('span').on('click',function(){
             moveTo( parseInt($(this).attr('rel'), 10) );
         });
 

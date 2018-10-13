@@ -3,13 +3,16 @@
 /**
  * Плагинизация: плагин
  * @abstract
- * @version 1.91
- * @modified 23.mar.2018
+ * @version 1.95
+ * @modified 30.jul.2018
+ * @copyright Tamaranga
  */
 
-abstract class Plugin extends \Module
+abstract class Plugin extends \Module implements ExtensionInterface
 {
-    use Extension;
+    use Extension {
+        viewPHP as viewPHPBase;
+    }
 
     /**
      * Внутреннее название плагина
@@ -41,6 +44,11 @@ abstract class Plugin extends \Module
      * @var bool
      */
     protected $plugin_enabled = false;
+    /**
+     * Директория шаблонов плагина
+     * @var string
+     */
+    protected $plugin_templates_dir = 'tpl';
 
     /**
      * Инициализация
@@ -76,6 +84,7 @@ abstract class Plugin extends \Module
                 if (BFF_DEBUG) {
                     $this->refreshStatic(true);
                 }
+                $this->extensionStart();
                 $this->start();
             }
         }, 4);
@@ -154,11 +163,14 @@ abstract class Plugin extends \Module
 
     /**
      * Включен ли плагин
-     * @param bool $testMode проверяем включен ли плагин в режиме тестирования
+     * @param bool|null $testMode проверяем включен ли плагин в режиме тестирования
      * @return bool
      */
-    public function isEnabled($testMode = false)
+    public function isEnabled($testMode = null)
     {
+        if ( ! is_bool($testMode)) {
+            $testMode = \bff::dev()->extensionsTestMode();
+        }
         return ($testMode ? $this->isTestmode() : $this->plugin_enabled);
     }
 
@@ -223,5 +235,35 @@ abstract class Plugin extends \Module
     public function cronSettings()
     {
         return array();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function viewPHP(array &$aData, $templateName, $templateDir = false, $display = false)
+    {
+        # Поиск шаблона для текущей активной темы:
+        do {
+            if ( ! empty($templateDir)) {
+                break;
+            }
+            if (($theme = \bff::theme()) === false ||
+                ($themeId = $theme->getExtensionId(false, true)) === '') {
+                break;
+            }
+            $templateName = ltrim($templateName, DS);
+            if (mb_stripos($templateName, $this->plugin_templates_dir . DS) !== 0) {
+                break;
+            }
+            $templateNameThemed = $this->plugin_templates_dir . DS . $themeId . DS .
+                mb_substr($templateName, mb_strlen($this->plugin_templates_dir . DS));
+            if (is_file($this->extension_path . $templateNameThemed . '.php')) {
+                # tpl/file.php => tpl/themeID/file.php
+                # tpl/subdir/file.php => tpl/themeID/subdir/file.php
+                $templateName = $templateNameThemed;
+            }
+        } while (false);
+
+        return $this->viewPHPBase($aData, $templateName, $templateDir, $display);
     }
 }

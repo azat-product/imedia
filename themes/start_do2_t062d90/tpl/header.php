@@ -15,7 +15,8 @@ $url = array(
     <div class="l-header-in">
       <!-- Logo -->
       <div class="l-header-logo">
-        <a href="<?= bff::urlBase() ?>"><img src="<?= Site::logoURL('header') ?>" alt="<?= HTML::escape(Site::titleHeader()) ?>" /> <span><?= Site::titleHeader() ?></span></a>
+        <a href="<?= bff::urlBase() ?>"><img src="<?= Site::logoURL('header') ?>" alt="<?= HTML::escape(Site::titleHeader()) ?>" /></a>
+        <span><?= Site::titleHeader() ?></span>
       </div>
       <!-- User Navigation -->
       <div class="l-header-user">

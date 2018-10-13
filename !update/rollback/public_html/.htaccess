@@ -1,0 +1,25 @@
+RewriteEngine on
+
+# catch errors
+ErrorDocument 401   /index.php?bff=errors&errno=401
+ErrorDocument 403   /index.php?bff=errors&errno=403
+ErrorDocument 404   /index.php?bff=errors&errno=404
+ErrorDocument 500   /index.php?bff=errors&errno=500
+ErrorDocument 501   /index.php?bff=errors&errno=501
+ErrorDocument 502   /index.php?bff=errors&errno=502
+ErrorDocument 504   /index.php?bff=errors&errno=504
+
+# directory index file
+DirectoryIndex index.php
+Options -Indexes                                                   
+Options +FollowSymlinks
+
+# www to non-www
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+
+# send to index.php
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [L]

@@ -67,7 +67,7 @@
                     <? } ?>
                 </div>
             </div>
-            <? if ( ! empty($svc_shops)) { # TODO: подставить иконки для услуг магазинов ?>
+            <? if ( ! empty($svc_shops)) { ?>
             <div class="j-services-list j-services-list-shops hide">
                 <div class="i-services__list">
                     <? foreach($svc_shops as $v) { ?>

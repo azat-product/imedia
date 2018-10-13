@@ -20,7 +20,7 @@ tpl::includeJS('shops.abonement', false, 1);
 
                 <div class="controls controls-noinput">
                     <strong><?= $user_abonement['title'] ?></strong><br>
-                    <a href="#" class="ajax pseudo-link-ajax j-abonement-change-toggle">
+                    <a href="javascript:void(0);" class="ajax pseudo-link-ajax j-abonement-change-toggle">
                         <small><?= _t('shops', 'изменить') ?></small>
                     </a>
                 </div>
@@ -36,7 +36,7 @@ tpl::includeJS('shops.abonement', false, 1);
                         <small><?= _t('shops', 'Автопродление') ?></small>
                     </label>
                     <br>
-                    <a href="#" class="ajax pseudo-link-ajax j-abonement-prolong-toggle">
+                    <a href="javascript:void(0);" class="ajax pseudo-link-ajax j-abonement-prolong-toggle">
                         <small><?= _t('shops', 'продлить') ?></small>
                     </a>
                     <div class="alert alert-warning mrgt10 mrgb0 autoupdate <?= ! $svc_abonement_auto ? 'hide' : '' ?>" id="j-abonement-autoupdate">

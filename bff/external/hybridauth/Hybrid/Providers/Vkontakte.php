@@ -102,6 +102,7 @@ class Hybrid_Providers_Vkontakte extends Hybrid_Provider_Model_OAuth2 {
 		// Vkontakte requires user id, not just token for api access
 		$params['uid'] = Hybrid_Auth::storage()->get("hauth_session.{$this->providerId}.user_id");
 		$params['fields'] = implode(',', $this->fields);
+		$params['v'] = '3.0';
 
 		// ask vkontakte api for user infos
 		$response = $this->api->api('getProfiles', 'GET', $params);

@@ -32,7 +32,7 @@
                                     <strong><?= $shop['title'] ?></strong>
                                     <div class="v-author_shop__descr">
                                         <? if($shop['descr_visible_limit'] > 0 && mb_strlen($shop['descr']) > $shop['descr_visible_limit']) { ?>
-                                            <div><?= tpl::truncate($shop['descr'], $shop['descr_visible_limit'] , '', true) ?><a href="#" class="ajax v-author_shop__descr_expand" id="j-shop-view-descr-ex-phone">...</a></div>
+                                            <div><?= tpl::truncate($shop['descr'], $shop['descr_visible_limit'] , '', true) ?><a href="javascript:void(0);" class="ajax v-author_shop__descr_expand" id="j-shop-view-descr-ex-phone">...</a></div>
                                             <div class="hide"><?= mb_substr($shop['descr'], $shop['descr_visible_limit']); ?></div>
                                         <? } else { ?>
                                             <?= $shop['descr']; ?>
@@ -42,7 +42,7 @@
                                     <? if( ! empty($shop['addr_addr'])) { ?>
                                         <div class="v-author_shop__address rel">
                                             <i class="fa fa-map-marker"></i> 
-                                            <?php if ($shop['addr_map']): ?><a href="#" id="j-shop-view-phone-map-toggler" class="ajax"><?= $shop['region_title'].', '.$shop['addr_addr'] ?></a><?php else: ?><?= $shop['region_title'].', '.$shop['addr_addr'] ?><?php endif; ?>
+                                            <?php if ($shop['addr_map']): ?><a href="javascript:void(0);" id="j-shop-view-phone-map-toggler" class="ajax"><?= $shop['region_title'].', '.$shop['addr_addr'] ?></a><?php else: ?><?= $shop['region_title'].', '.$shop['addr_addr'] ?><?php endif; ?>
                                         </div>
                                         <?php if ($shop['addr_map']) {
                                             Geo::mapsAPI(false);
@@ -55,7 +55,7 @@
                                 <? if($shop['has_contacts']): ?>
                                 <div class="v-author__contact">
                                     <span class="l-page__spacer mrgt15 mrgb5"></span>
-                                    <div class="v-author__contact__title align-center"><span><?= _t('shops', 'Контакты') ?>:</span> <a href="#" class="ajax j-shop-view-c-toggler"><?= _t('shops', 'показать контакты') ?></a></div>
+                                    <div class="v-author__contact__title align-center"><span><?= _t('shops', 'Контакты') ?>:</span> <a href="javascript:void(0);" class="ajax j-shop-view-c-toggler"><?= _t('shops', 'показать контакты') ?></a></div>
                                     <? if( ! empty($shop['phones']) ): ?>
                                         <div class="v-author__contact_items">
                                             <?= _t('users', 'Тел.') ?>
@@ -179,7 +179,7 @@
                             }
                         ?>
                         <div class="v-author_shop__address rel">
-                            <? if($shop['addr_map']){ ?><a href="#" class="ico ajax" id="j-shop-view-map-toggler"><i class="fa fa-map-marker"></i> <span><?= _t('shops', 'Показать на карте') ?></span></a><? } ?>
+                            <? if($shop['addr_map']){ ?><a href="javascript:void(0);" class="ico ajax" id="j-shop-view-map-toggler"><i class="fa fa-map-marker"></i> <span><?= _t('shops', 'Показать на карте') ?></span></a><? } ?>
                             <span class="v-author_shop__address_info"><?= $shop['region_title'].', '.$shop['addr_addr'] ?></span>
                             <? if($shop['addr_map']){ ?>
                             <div id="j-shop-view-map-popup" class="v-map-popup v-map-popup_shop dropdown-block dropdown-block-right box-shadow hide abs">
@@ -193,7 +193,7 @@
                     <div class="clearfix"></div>
                     <? if($shop['has_contacts']): ?>
                     <div class="v-author__contact">
-                        <div class="v-author__contact__title"><span><?= _t('shops', 'Контакты') ?>:</span> <a href="#" class="ajax j-shop-view-c-toggler"><?= _t('shops', 'показать контакты') ?></a></div>
+                        <div class="v-author__contact__title"><span><?= _t('shops', 'Контакты') ?>:</span> <a href="javascript:void(0);" class="ajax j-shop-view-c-toggler"><?= _t('shops', 'показать контакты') ?></a></div>
                         <? if( ! empty($shop['phones']) ): ?>
                         <div class="v-author__contact_items">
                             <div class="v-author__contact_title"><?= _t('users', 'Тел.') ?></div>
@@ -236,7 +236,7 @@
                     <? endif; # is_owner and has_owner ?>
                 </div>
                 <div class="v-actions rel">
-                    <a href="#" class="ico" id="j-shop-view-send4friend-desktop-link"><i class="fa fa-user"></i> <span><?= _t('shops', 'Поделиться с другом') ?></span></a> <br />
+                    <a href="javascript:void(0);" class="ico" id="j-shop-view-send4friend-desktop-link"><i class="fa fa-user"></i> <span><?= _t('shops', 'Поделиться с другом') ?></span></a> <br />
                     <div id="j-shop-view-send4friend-desktop-popup" class="v-send4friend-popup dropdown-block dropdown-block-right box-shadow abs hide">
                         <div class="v-send4friend-popup__form">
                             <form action="" class="form-inline">
@@ -246,7 +246,7 @@
                         </div>
                     </div>
                     <? if ( ! $is_owner): ?>
-                    <a href="#" class="ico" id="j-shops-v-claim-desktop-link"><i class="fa fa-fire"></i> <span><?= _t('shops', 'Пожаловаться') ?></span></a>
+                    <a href="javascript:void(0);" class="ico" id="j-shops-v-claim-desktop-link"><i class="fa fa-fire"></i> <span><?= _t('shops', 'Пожаловаться') ?></span></a>
                     <div id="j-shops-v-claim-desktop-popup" class="v-complaint-popup dropdown-block dropdown-block-right box-shadow abs hide">
                         <div class="v-complaint-popup__form">
                             <?= _t('shops', 'Укажите причины, по которым вы считаете этот магазин некорректным') ?>:

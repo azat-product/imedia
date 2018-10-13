@@ -2,8 +2,9 @@
 
 /**
  * Плагинизация: хуки
- * @version 0.59
- * @modified 9.mar.2018
+ * @version 0.62
+ * @modified 23.aug.2018
+ * @copyright Tamaranga
  */
 
 class Hooks
@@ -155,15 +156,15 @@ class Hooks
             $middleware = array_merge(['callback'=>$callable], $options);
             if ( ! empty($options['route'])) {
                 $route = $options['route'];
-                $this->add('routes', function($list) use ($route, $middleware) {
+                $this->routes(function($list) use ($route, $middleware) {
                     if (is_string($route)) {
                         if (isset($list[$route])) {
                             $list[$route]['middleware'][] = $middleware;
                         }
                     } else if (is_array($route)) {
-                        foreach ($route as $v) {
-                            if (isset($list[$v])) {
-                                $list[$v]['middleware'][] = $middleware;
+                        foreach ($route as $id) {
+                            if (isset($list[$id])) {
+                                $list[$id]['middleware'][] = $middleware;
                             }
                         }
                     }
@@ -613,6 +614,22 @@ class Hooks
     }
 
     /**
+     * Фильтр обработки блоков шаблонов
+     * @see \View::block
+     * @param string $id ID блока
+     * @param callable $callback {
+     *   @param string $content содержимое блока
+     *   return: string содержимое блока
+     * }
+     * @param int|null $priority приоритет вызова
+     * @return \Hook
+     */
+    public function viewBlock($id, callable $callback, $priority = NULL)
+    {
+        return $this->add('view.block.'.$id, $callback, $priority);
+    }
+
+    /**
      * Фильтр списка роутов проекта
      * @see \bff\base\app::routes
      * @param callable $callback {
@@ -626,6 +643,33 @@ class Hooks
     public function routes(callable $callback, $priority = NULL)
     {
         return $this->add('routes', $callback, $priority);
+    }
+
+    /**
+     * Фильтр результата возвращаемого обработчиком роута
+     * @param string|array $id ID роута|нескольких роутов
+     * @param callable $callback {
+     *   @param mixed $response результат возвращаемый обработчиком роута
+     *   @param array $route данные роута
+     *   @param Psr\Http\Message\ServerRequestInterface $request объект запроса
+     *   return: mixed $response
+     * }
+     * @param int|null $priority приоритет вызова
+     * @return \Hook|array
+     */
+    public function routeAfter($id, callable $callback, $priority = NULL)
+    {
+        if (is_string($id)) {
+            return $this->add('app.run.route.after.' . $id, $callback, $priority);
+        } else if (is_array($id)) {
+            $return = array();
+            foreach ($id as $k) {
+                if (is_string($k)) {
+                    $return[$k] = $this->add('app.run.route.after.' . $k, $callback, $priority);
+                }
+            }
+            return $return;
+        }
     }
 
     /**

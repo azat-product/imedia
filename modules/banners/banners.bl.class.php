@@ -85,20 +85,8 @@ abstract class BannersBase_ extends Module
      */
     public static function url($key, $opts = array(), $dynamic = false)
     {
-        $url = $base = static::urlBase(LNG, $dynamic);
-        switch ($key) {
-            # ссылка перехода
-        case 'click':
-            $url .= '/bn/click/' . (!empty($opts['id']) ? $opts['id'] : '');
-            break;
-            # ссылка просмотра
-        case 'show':
-            $url .= '/bn/show/' . (!empty($opts['id']) ? $opts['id'] : '');
-            break;
-        }
-        return bff::filter('banners.url', $url, array('key'=>$key, 'opts'=>$opts, 'dynamic'=>$dynamic, 'base'=>$base));
+        return bff::router()->url('banners-'.$key, $opts, ['dynamic'=>$dynamic,'module'=>'banners']);
     }
-
 
     /**
      * Устанавливаем строку поискового запроса
@@ -174,24 +162,26 @@ abstract class BannersBase_ extends Module
                 if (!empty($regionData['numlevel'])) # user OR settings
                 {
                     foreach ($aBanners as $k => &$v) {
-                        if (!$v['region_id']) {
+                        if (empty($v['regions'])) {
                             continue;
                         }
-                        if ($v['reg3_city']) {
-                            if ($regionData['numlevel'] == Geo::lvlCity && $v['reg3_city'] == $regionData['id']) {
-                                continue;
-                            }
-                        } else if ($v['reg2_region']) {
-                            if ($regionData['numlevel'] == Geo::lvlRegion && $v['reg2_region'] == $regionData['id']) {
-                                continue;
-                            } else if ($regionData['numlevel'] == Geo::lvlCity && $v['reg2_region'] == $regionData['pid']) {
-                                continue;
-                            }
-                        } else if ($v['reg1_country']) {
-                            if ($regionData['numlevel'] == Geo::lvlCountry && $regionData['id'] == $v['reg1_country']) {
-                                continue;
-                            } else if ($regionData['country'] == $v['reg1_country']) {
-                                continue;
+                        foreach($v['regions'] as $vv) {
+                            if ($vv['reg3_city']) {
+                                if ($regionData['numlevel'] == Geo::lvlCity && $vv['reg3_city'] == $regionData['id']) {
+                                    continue 2;
+                                }
+                            } else if ($vv['reg2_region']) {
+                                if ($regionData['numlevel'] == Geo::lvlRegion && $vv['reg2_region'] == $regionData['id']) {
+                                    continue 2;
+                                } else if ($regionData['numlevel'] == Geo::lvlCity && $vv['reg2_region'] == $regionData['pid']) {
+                                    continue 2;
+                                }
+                            } else if ($vv['reg1_country']) {
+                                if ($regionData['numlevel'] == Geo::lvlCountry && $regionData['id'] == $vv['reg1_country']) {
+                                    continue 2;
+                                } else if ($regionData['country'] == $vv['reg1_country']) {
+                                    continue 2;
+                                }
                             }
                         }
                         unset($aBanners[$k]);
@@ -200,7 +190,7 @@ abstract class BannersBase_ extends Module
                     # при отсутствии фильтрации по региону(все регионы),
                     # игнорируем баннеры с определенным регионом
                     foreach ($aBanners as $k => &$v) {
-                        if ($v['region_id']) {
+                        if ( ! empty($v['regions'])) {
                             unset($aBanners[$k]);
                         }
                     }
@@ -368,6 +358,13 @@ abstract class BannersBase_ extends Module
                 $v['query'] = $this->viewQuery;
                 $v['showURL'] = static::url('show', array('id'=>$v['id']));
                 $v['clickURL'] = static::url('click', array('id'=>$v['id']));
+                if ($v['type'] == static::TYPE_CODE) {
+                    $v['type_data'] = strtr($v['type_data'], array(
+                        '{query}' => (!empty($this->viewQuery) ? HTML::escape($this->viewQuery, 'js') : ''),
+                        '{click_url}' => HTML::escape($v['clickURL']),
+                        '{show_url}' => HTML::escape($v['showURL']),
+                    ));
+                }
                 if($sResult){
                     $sResult .= '<br /><br />';
                 }

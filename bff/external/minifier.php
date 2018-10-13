@@ -9,6 +9,8 @@ require_once modification(PATH_CORE . 'external/minifier/src/Exceptions/IOExcept
 
 class Minifier_
 {
+    const CONFIG_KEY = 'minifier';
+
     /**
      * Минимизация файлов статики: js, css
      * @param array $data @ref список url файлов
@@ -24,11 +26,9 @@ class Minifier_
             return;
         }
 
-        $configKey = 'minifier';
-
         static $settings = false;
         if( ! $settings){
-            $settings = \config::get($configKey, '');
+            $settings = \config::get(static::CONFIG_KEY, '');
             $settings = \func::unserialize($settings);
         }
         $save = false;
@@ -67,7 +67,7 @@ class Minifier_
             if ( ! in_array($ext, array('js', 'css'))) {
                 continue;
             }
-            $key = pathinfo($path, PATHINFO_FILENAME).'.'.md5($path); # md5 пути к файлу
+            $key = pathinfo($path, PATHINFO_FILENAME).'.'.md5($path.$minUrl); # md5 пути к файлу
             $modified = filemtime($path); # дата и время последнего редактирования файла
             $minPathFile = $minPath.$key.'.'.$ext;
             if (file_exists($minPathFile) && ! empty($settings[$key]['mod']) && $settings[$key]['mod'] == $modified) {
@@ -91,7 +91,7 @@ class Minifier_
         } unset($v);
 
         if ($save) {
-            \config::save($configKey, serialize($settings));
+            \config::save(static::CONFIG_KEY, serialize($settings));
             $settings = false;
         }
     }
@@ -133,5 +133,18 @@ class Minifier_
             return false;
         }
         return true;
+    }
+
+    /**
+     * Сбросить кеш
+     */
+    public static function reset()
+    {
+        $path = \bff::path('min');
+        $files = \bff\utils\Files::getFiles($path);
+        foreach($files as $v) {
+            @unlink($v);
+        }
+        \config::save(static::CONFIG_KEY, '');
     }
 }

@@ -58,7 +58,7 @@ var jForm = (function(){
                     geo.addr.$addr.val(data.addr_addr);
                     geo.addr.$lat.val(data.addr_lat);
                     geo.addr.$lon.val(data.addr_lon);
-                    geoMapSearch();
+                    geoMapSearch('publisher-toggle');
                 }
                 $form.find('[name="owner_type"]').filter('[value="'+(type ? o.owner_types.business : o.owner_types.private)+'"]').prop('checked', true);
             });
@@ -92,7 +92,7 @@ var jForm = (function(){
         cat.$form.on('click', '.j-cat-type', function(){
             catType($(this).val());
         });
-        cat.$form.find('.j-cat-types .j-cat-type:checked').click();
+        cat.$form.find('.j-cat-types .j-cat-type:checked').trigger('click');
         cat.$form.removeClass('hide');
         $form.on('change', function(){
             fillTitle();
@@ -212,7 +212,7 @@ var jForm = (function(){
         }
         imgRotate();
         var imgUnloadProcessed = false;
-        app.$W.bind('beforeunload', function(){
+        app.$W.on('beforeunload', function(){
             if( ! imgUnloadProcessed && intval(o.itemID) === 0) {
                 imgUnloadProcessed = true;
                 var fn = [];
@@ -267,6 +267,7 @@ var jForm = (function(){
                             geo.metro.$empty.hide();
                         }
                         geo.metro.$value.val(station.id);
+                        geo.metro.$cancel.show();
                         geo.metro.popup.hide();
                         fillTitle();
                     });
@@ -354,10 +355,12 @@ var jForm = (function(){
                     }
                     // map
                     if(ex.title && ex.title.length > 0) {
-                         geoMapSearch(true);
+                        geo.addr.$addr.removeClass('typed');
+                        geoMapSearch('city-select');
                     }
                     svcPricesUpdate();
                     fillTitle();
+                    bff.hook('bbs.form.onCity', cityID, ex);
                 },
                 refreshMetro: function(cityID, callback)
                 {
@@ -464,7 +467,7 @@ var jForm = (function(){
 
         if(o.hasOwnProperty('periods')){
             var $help = $form.find('.j-period-help');
-            $form.find('[name="publicated_period"]').change(function(){
+            $form.find('[name="publicated_period"]').on('change',function(){
                 var v = $(this).val();
                 if(o.periods.hasOwnProperty(v)){
                     $help.html(o.periods[v]);
@@ -493,6 +496,7 @@ var jForm = (function(){
             var separator = ' &raquo; ';
             var id = [], title = [], parentData = {}, parentID = data.pid, currentID = data.id;
             o.catLastTitle = '';
+            o.catPath = [];
             while( cache[device].hasOwnProperty(parentID) ) {
                 var parentCats = cache[device][parentID].cats;
                 for(var i in parentCats) {
@@ -502,6 +506,7 @@ var jForm = (function(){
                         title.unshift(parentCats[i].t);
                         if ( ! o.catLastTitle) {
                             o.catLastTitle = parentCats[i].t;
+                            o.catPath = title;
                         }
                     }
                 }
@@ -629,6 +634,7 @@ var jForm = (function(){
             $('#j-i-title-maxlength', $form).toggleClass('hidden', autoTitle);
             $('#j-i-title-auto', $form).toggleClass('hidden', ! autoTitle);
             fillTitle();
+            bff.hook('bbs.form.onCategory', id, data);
         } else {
             bff.ajax(bff.ajaxURL('bbs','item-form-cat'), {id:id}, function(data){
                 if(data && data.success) {
@@ -763,38 +769,51 @@ var jForm = (function(){
                 updateAddressIgnoreClass: 'typed'
             });
 
-            geo.addr.$addr.bind('change keyup input', $.debounce(function(){
+            geo.addr.$addr.on('change keyup input', $.debounce(function(){
                 if( ! $.trim(geo.addr.$addr.val()).length ) {
                     geo.addr.$addr.removeClass('typed');
                 } else {
                     geo.addr.$addr.addClass('typed');
-                    geoMapSearch();
+                    geoMapSearch('addr-change');
                 }
             }, 700));
-            geoMapSearch();
+            geoMapSearch('map-init');
         }, {zoom: o.geoMapZoom});
     }
 
-    function geoMapSearch(newCity)
+    function geoMapSearch(action)
     {
-        newCity = newCity || false;
-
         if( ! geo.addr.mapEditor) { return; }
+
+        var query = [];
+
+        // country
         var $country = geo.$block.find('.j-geo-city-select-country');
         var country = o.geoCountry;
-        if($country.length){
-            country = $country.find('option:selected').text();
+        if ($country.length) {
+            if ($country.is('select')) {
+                country = (intval($country.val()) > 0 ? $country.find('option:selected').text() : '');
+            } else {
+                country = $country.val();
+            }
         }
-        var query = [country];
+        if ( ! country.length) { return; }
+        query.push(country);
+
+        // city
         var city = $.trim( geo.$block.find('.j-geo-city-select-ac').val() );
-        if(city) query.push(city);
+        if (city) { query.push(city); } else { return; }
+
+        // addr
         var addr = $.trim( geo.addr.$addr.val() );
-        if(addr && newCity !== true) query.push(addr);
+        if (addr && action !== 'city-select') { query.push(addr); }
+
+        // query
         query = query.join(', ');
-        if( geo.addr.lastQuery == query ) return;
-        geo.addr.mapEditor.search( geo.addr.lastQuery = query, false, function(){
+        if (geo.addr.lastQuery == query) { return; }
+        geo.addr.mapEditor.search(geo.addr.lastQuery = query, false, function(){
             geo.addr.mapEditor.centerByMarker();
-        } );
+        });
     }
 
     function userPhonesInit(limit, data)
@@ -894,7 +913,7 @@ var jForm = (function(){
         var view = data.tpl_title_view.split('|');
         outer: for(var i in view){
             if ( ! view.hasOwnProperty(i)) continue;
-            var m = view[i].match(/\{[\w:\.]+\}/g);
+            var m = view[i].match(/\{[\w:\-\.]+\}/g);
             var str = view[i];
             for (var j in m) {
                 if ( ! m.hasOwnProperty(j)) continue;
@@ -917,31 +936,46 @@ var jForm = (function(){
                             break;
                     }
                 }
+                var dpsub = false;
+                p = name.indexOf('.sub');
+                if (p >= 0) {
+                    dpsub = true;
+                    name = name.substr(0, p);
+                }
                 var v = '';
                 if (data.tpl_data.hasOwnProperty(name)) {
-                    var $inp = cat.$form.find('[name="'+data.tpl_data[name].name+'"]:visible');
-                    if ( ! $inp.length) $inp = cat.$form.find('[name="'+data.tpl_data[name].name+'[]"]:visible');
-                    if ( ! $inp.length) continue outer;
-                    if ($inp.is('select')) {
+                    if (dpsub) {
+                        var $inp = cat.$form.find('.j-dp-child-'+data.tpl_data[name].id+' select');
+                        if ( ! $inp.length) continue outer;
+                        if ($inp.closest('.j-dp').hasClass('.j-dp-child-hidden')) continue outer;
                         if ($inp.val() > 0) {
                             v = $inp.find(':selected').text();
                         }
-                    } else if ($inp.is('[type="radio"]')) {
-                        $inp = $inp.filter(':checked');
-                        if ($inp.length) {
-                            v = $inp.parent().text();
-                        }
-                    } else if ($inp.is('[type="checkbox"]')) {
-                        $inp = $inp.filter(':checked');
-                        var vv = [];
-                        $inp.each(function () {
-                            vv.push($(this).parent().text());
-                        });
-                        if (vv.length) {
-                            v = vv.join(' ');
-                        }
                     } else {
-                        v = $inp.val();
+                        var $inp = cat.$form.find('[name="'+data.tpl_data[name].name+'"]:visible');
+                        if ( ! $inp.length) $inp = cat.$form.find('[name="'+data.tpl_data[name].name+'[]"]:visible');
+                        if ( ! $inp.length) continue outer;
+                        if ($inp.is('select')) {
+                            if ($inp.val() > 0) {
+                                v = $inp.find(':selected').text();
+                            }
+                        } else if ($inp.is('[type="radio"]')) {
+                            $inp = $inp.filter(':checked');
+                            if ($inp.length) {
+                                v = $inp.parent().text();
+                            }
+                        } else if ($inp.is('[type="checkbox"]')) {
+                            $inp = $inp.filter(':checked');
+                            var vv = [];
+                            $inp.each(function () {
+                                vv.push($(this).parent().text());
+                            });
+                            if (vv.length) {
+                                v = vv.join(' ');
+                            }
+                        } else {
+                            v = $inp.val();
+                        }
                     }
                 } else {
                     switch (name) {
@@ -985,7 +1019,20 @@ var jForm = (function(){
                                 v = $distr.find(':selected').text();
                             }
                             break;
-
+                        default:
+                            if (name.substr(0, 9) == 'category-') {
+                                if ( ! o.catPath) break;
+                                var n = name.substr(9);
+                                if (n == 'parent') {
+                                    v = o.catPath[o.catPath.length - 2];
+                                } else {
+                                    n = intval(n) - 1;
+                                    if (o.catPath.hasOwnProperty(n)) {
+                                        v = o.catPath[n];
+                                    }
+                                }
+                            }
+                            break
                     }
                 }
                 if ( ! v.length) continue outer;
@@ -1014,6 +1061,7 @@ var jForm = (function(){
                 var data = cat.cacheD[key];
                 $('.j-dp-child-'+id, $form).html( ( data.form.length ? data.form : '') ).
                     closest('.j-control-group').toggleClass('hide j-dp-child-hidden', ! data.form.length);
+                fillTitle();
             } else {
                 bff.ajax(bff.ajaxURL('bbs','dp-child'), {dp_id:id, dp_value:val, name_prefix:prefix, search:false}, function(data){
                     if(data && data.success) {

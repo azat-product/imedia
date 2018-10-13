@@ -15,7 +15,6 @@
     <div class="sr-breakLisk-content tab-content hidden-phone">
         <? foreach($cats as $k => $v): ?>
             <div class="tab-pane" id="categories-tab-<?= $k ?>">
-                <strong><?= $v['t'] ?></strong>
                 <? $links = array(); foreach($v['data'] as $vv){ $links[] = '<a href="'.$vv['link'].'">'.$vv['title'].'</a>'; } ?>
                 <?= join(', ', $links); ?>
             </div>
@@ -49,7 +48,7 @@
                     </ul>
                 <? endforeach; ?>
             </div>
-            <? if($showAll): ?><a href="#" class="ajax pseudo-link-ajax" id="j-bottomLocations-show"><?= _t('bbs', 'Все...'); ?></a><? endif; ?>
+            <? if($showAll): ?><a href="javascript:void(0);" class="ajax pseudo-link-ajax" id="j-bottomLocations-show"><?= _t('bbs', 'Все...'); ?></a><? endif; ?>
         <? endif; ?>
     </div>
 <? endif; ?>
@@ -58,7 +57,7 @@
     <script type="text/javascript">
         <? js::start(); ?>
         $(function(){
-            $('#j-bottomLocations-show').click(function(e){
+            $('#j-bottomLocations-show').on('click',function(e){
                 e.preventDefault();
                 $('#j-bottomLocations ul li').removeClass('hide');
                 $(this).addClass('hide');

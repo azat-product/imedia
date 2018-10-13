@@ -36,8 +36,8 @@
                                 </div>
                                 <div style="text-align: center; position: absolute; right: 5px; top: 5px;">
                                     <div style="margin-bottom: 5px;"><img src="<?= UsersAvatar::url($user_id, $avatar, UsersAvatar::szNormal, $sex) ?>" class="img-polaroid" alt="" /></div>
-                                    <a href="#" class="text-error j-act-block<? if($blocked) { ?> hidden<? } ?>" onclick="jUserStatusPopup.block(); return false;"><?= _t('', 'заблокировать'); ?></a>
-                                    <a href="#" class="text-success j-act-unblock<? if(!$blocked) { ?> hidden<? } ?>" onclick="jUserStatusPopup.unblock(); return false;"><?= _t('', 'разблокировать'); ?></a>
+                                    <a href="javascript:void(0);" class="text-error j-act-block<? if($blocked) { ?> hidden<? } ?>" onclick="jUserStatusPopup.block(); return false;"><?= _t('', 'заблокировать'); ?></a>
+                                    <a href="javascript:void(0);" class="text-success j-act-unblock<? if(!$blocked) { ?> hidden<? } ?>" onclick="jUserStatusPopup.unblock(); return false;"><?= _t('', 'разблокировать'); ?></a>
                                 </div>
                             </td>
                         </tr>
@@ -47,7 +47,7 @@
                             <td></td>
                             <td>
                                 <? if($shop_id > 0) { ?>
-                                    <a href="<?= $shop['link'] ?>" target="_blank" class="but linkout"></a><a href="#" onclick="return bff.shopInfo(<?= $shop_id ?>);" class="ajax"><?= $shop['title'] ?></a>
+                                    <a href="<?= $shop['link'] ?>" target="_blank" class="but linkout"></a><a href="javascript:void(0);" onclick="return bff.shopInfo(<?= $shop_id ?>);" class="ajax"><?= $shop['title'] ?></a>
                                 <? } else { ?>
                                     <span class="desc"><?= _t('', 'нет'); ?>,&nbsp;</span><a href="<?= $this->adminLink('add&user='.$user_id, 'shops') ?>" class="desc"><?= _t('shops', '(открыть магазин)'); ?></a>
                                 <? } ?>
@@ -171,8 +171,8 @@
                             <input type="hidden" name="recipient" value="<?= $user_id ?>" />
                             <div><b><?= _t('users', 'Отправить сообщение:'); ?></b></div>
                             <textarea name="message" class="autogrow j-message" style="height:90px; min-height:90px;"></textarea>
-                            <a class="btn btn-mini btn-success j-btn-send" href="#"><?= _t('', 'отправить'); ?></a>
-                            <a class="btn btn-mini j-btn-cancel" href="#"><?= _t('', 'отмена'); ?></a>
+                            <a class="btn btn-mini btn-success j-btn-send" href="javascript:void(0);"><?= _t('', 'отправить'); ?></a>
+                            <a class="btn btn-mini j-btn-cancel" href="javascript:void(0);"><?= _t('', 'отмена'); ?></a>
                         </form>
                     </div> 
                     <div class="alert alert-success" id="j-users-userinfo-im-success" style="display:none;">
@@ -184,7 +184,7 @@
 
                 <div class="ipopup-content-bottom">
                     <ul class="right">
-                        <? if($im_form){ ?><li><a href="#" class="edit_s ajax" id="j-users-userinfo-im-toggle"><?= _t('internalmail', 'написать сообщение'); ?></a></li><? } ?>
+                        <? if($im_form){ ?><li><a href="javascript:void(0);" class="edit_s ajax" id="j-users-userinfo-im-toggle"><?= _t('internalmail', 'написать сообщение'); ?></a></li><? } ?>
                         <li><span class="post-date" title="<?= _te('users', 'дата регистрации'); ?>"><?= tpl::date_format2($created, true) ?></span></li>
                         <li><a href="<?= $this->adminLink('listing&status=7&uid='.$user_id, 'bbs') ?>"> <?= _t('bbs', 'объявления'); ?> </a></li>
                         <li><a href="<?= $this->adminLink('user_edit&rec='.$user_id.'&tuid='.$tuid) ?>"> <?= _t('', 'редактировать'); ?> <span style="display:inline;" class="desc">#<?= $user_id ?></span></a></li>

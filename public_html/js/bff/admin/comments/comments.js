@@ -55,7 +55,7 @@ bffAdmComments.prototype =
         var thisObj = this;
         img.css('cursor', 'pointer').css('display','inline').
             addClass(this.o.classes.close).
-            unbind('click').click(function(){ thisObj.toggleNode(img); });
+            off('click').on('click',function(){ thisObj.toggleNode(img); });
     },
     
     toggleNode: function(img) {    

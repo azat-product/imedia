@@ -24,9 +24,9 @@
         <a href="<?= $parent['link'] ?>" class="img j-parent" data="{id:<?= $parent['id'] ?>,pid:<?= $parent['pid'] ?>,subs:1,title:'<?= HTML::escape($parent['title'], 'js') ?>'}"><img src="<?= $parent['icon'] ?>" alt="<?= $parent['title'] ?>" /></a>
         <div class="subcat">
             <? if( $parent['main'] ) { ?>
-            <a href="#" class="backto ajax j-back" data="{prev:0}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
+            <a href="javascript:void(0);" class="backto ajax j-back" data="{prev:0}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
             <? } else { ?>
-            <a href="#" class="backto ajax j-back" data="{prev:<?= $parent['pid'] ?>}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
+            <a href="javascript:void(0);" class="backto ajax j-back" data="{prev:<?= $parent['pid'] ?>}">&laquo; <?= _t('filter','Вернуться назад') ?></a>
             <? } ?>
             <p class="title"><strong><?= $parent['title'] ?></strong></p>
         </div>

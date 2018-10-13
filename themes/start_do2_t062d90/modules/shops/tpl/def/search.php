@@ -24,9 +24,8 @@ if ($isMap) {
 $rightBlock = (DEVICE_DESKTOP_OR_TABLET && ! $isMap && ($bannerRight = Banners::view('shops_search_right')) );
 
 ?>
-<?php if (DEVICE_DESKTOP_OR_TABLET) {
-  echo tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb');
-} ?>
+
+<?= tpl::getBreadcrumbs($cat['crumbs'], false, 'breadcrumb'); ?>
 
 <div class="l-mainLayout">
 

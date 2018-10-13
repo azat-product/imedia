@@ -21,7 +21,7 @@
                 <div class="control-group">
                     <div class="controls">
                         <input type="text" name="email" value="<?= ( ! empty($email) ? HTML::escape($email) : '' ) ?>" class="j-required" id="j-u-register-social-email" placeholder="<?= _te('users','Введите ваш email') ?>" maxlength="100" />
-                        <a class="additions pseudo-link-ajax j-social" style="display:none;" id="j-u-register-social-email-change" href="#"><?= _t('users','Изменить e-mail') ?></a>
+                        <a class="additions pseudo-link-ajax j-social" style="display:none;" id="j-u-register-social-email-change" href="javascript:void(0);"><?= _t('users','Изменить e-mail') ?></a>
                     </div>
                 </div>
                 <div class="control-group hide j-social">

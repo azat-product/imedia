@@ -90,7 +90,7 @@ class UsersSMS_ extends Component
      */
     protected function send_sms_ru($phoneNumber, $message)
     {
-        $appID = config::sys('users.sms.sms_ru.api_id', '', TYPE_STR);
+        $appID = config::sysAdmin('users.sms.sms_ru.api_id', '', TYPE_STR);
         if (empty($appID)) {
             bff::log('UsersSMS: Необходимо указать системную настройку "users.sms.sms_ru.api_id"');
             return false;
@@ -101,10 +101,10 @@ class UsersSMS_ extends Component
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
-            'test'   => config::sys('users.sms.sms_ru.test', 0, TYPE_UINT),
+            'test'   => config::sysAdmin('users.sms.sms_ru.test', 0, TYPE_UINT),
             'api_id' => $appID,
             'to'     => $phoneNumber,
-            'from'   => config::sys('users.sms.sms_ru.from', '', TYPE_STR),
+            'from'   => config::sysAdmin('users.sms.sms_ru.from', '', TYPE_STR),
             'text'   => $message,
         ));
         $body = curl_exec($ch);
@@ -171,14 +171,14 @@ class UsersSMS_ extends Component
      */
     protected function send_atompark_com($phoneNumber, $message)
     {
-        $username = config::sys('users.sms.atompark_com.username', '', TYPE_STR);
-        $password = config::sys('users.sms.atompark_com.password', '', TYPE_STR);
+        $username = config::sysAdmin('users.sms.atompark_com.username', '', TYPE_STR);
+        $password = config::sysAdmin('users.sms.atompark_com.password', '', TYPE_PASS);
         if (empty($username) || empty($password)) {
             bff::log('UsersSMS: Необходимо указать системную настройку "users.sms.atompark_com.username" и "users.sms.atompark_com.password"');
             return false;
         }
 
-        $sender = config::sys('users.sms.atompark_com.sender', 'SMS', TYPE_STR);
+        $sender = config::sysAdmin('users.sms.atompark_com.sender', 'SMS', TYPE_STR);
 
         $src = '<?xml version="1.0" encoding="UTF-8"?>
         <SMS>

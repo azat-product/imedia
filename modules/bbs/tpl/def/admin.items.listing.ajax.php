@@ -7,8 +7,9 @@
     <? if($moderationList): ?><td><label class="checkbox inline"><input type="checkbox" name="i[]" onclick="jItems.massModerate('check',this);" value="<?= $id ?>" class="check j-item-check" /></label></td><? endif; ?>
     <td><span class="small"><?= $id ?></span></td>
     <td class="left">
-        <a class="linkout but" href="<?= BBS::urlDynamic($v['link'], array('from'=>'adm','mod'=>BBS::moderationUrlKey($id))) ?>" target="_blank"></a><a href="#" onclick="return bff.iteminfo(<?= $id ?>);" class="nolink"><?= tpl::truncate($v['title'], 60, '...', true) ?></a><br />
-        <a href="#" class="desc" onclick="return jItems.onCategory(<?= $v['cat_id1'] ?>);"><?= $v['cat_title'] ?></a>
+        <a class="linkout but" href="<?= BBS::urlDynamic($v['link'], array('from'=>'adm','mod'=>BBS::moderationUrlKey($id))) ?>" target="_blank"></a><a href="javascript:void(0);" onclick="return bff.iteminfo(<?= $id ?>);" class="nolink"><?= tpl::truncate($v['title'], 60, '...', true) ?></a><br />
+        <a href="javascript:void(0);" class="desc" onclick="return jItems.onCategory(<?= $v['cat_id1'] ?>);"><?= $v['cat_title'] ?></a>
+        <?php bff::hook('bbs.admin.items.list.view', ['id'=>$id,'item'=>&$v,'filter'=>&$f]); ?>
     </td>
     <td>
         <? # для списка "на модерации", указываем причину отправления на модерацию:
@@ -30,11 +31,11 @@
         <span><?= tpl::date_format3($v['created']); ?></span>
     </td>
     <td>
-        <a href="#" onclick="return bff.userinfo(<?= $v['user_id'] ?>);" class="userlink"></a>&nbsp;
+        <a href="javascript:void(0);" onclick="return bff.userinfo(<?= $v['user_id'] ?>);" class="userlink"></a>&nbsp;
         <a class="but images<? if(!$v['imgcnt']){ ?> disabled<? } ?>" href="<?= $urlEdit.$id.'&tab=images' ?>" title="<?= _te('', 'фото:'); ?> <?= $v['imgcnt'] ?>"></a>
         <? if (BBS::commentsEnabled()) { ?><a class="but comm<? if(!$v['comments_cnt']){ ?> disabled<? } ?>" href="<?= $urlEdit.$id.'&tab=comments' ?>" title="<?= _te('', 'комментариев:'); ?> <?= $v['comments_cnt'] ?>"></a><? } ?>
         <a class="but edit" href="<?= $urlEdit.$id ?>"></a>
-        <a class="but del item-del" href="#" rel="<?= $id ?>"></a>
+        <a class="but del item-del" href="javascript:void(0);" rel="<?= $id ?>"></a>
     </td>
 </tr>
 <? } if(empty($list)) { ?>

@@ -19,9 +19,11 @@ class App extends Application
 
         $this->addCommands(\bff::filter('app.console.commands.list', array(
             new commands\Maintenance(),
+            new commands\tests\Unit(),
             new commands\migrations\Create(),
             new commands\migrations\Migrate(),
             new commands\migrations\Rollback(),
+            new commands\extensions\ModuleInit(),
         )));
     }
 }

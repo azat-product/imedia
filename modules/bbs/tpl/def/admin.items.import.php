@@ -42,10 +42,16 @@ echo tplAdmin::blockStart(_t('bbs', 'Объявления / Импорт / Эк�
             <input type="hidden" name="cat_id" id="j-cat_id" value="" />
             <table class="admtbl tbledit" style="margin-top:5px;">
                 <tr>
-                    <td class="row1 field-title" width="120"><?= _t('users', 'Пользователь'); ?><span class="required-mark">*</span>:</td>
+                    <td class="row1 field-title" width="120"><?= _t('users', 'Пользователь'); ?>:<span class="required-mark j-multi_users j-multi_users-0">*</span></td>
                     <td>
+                        <div style="margin:0 0 5px 4px;">
+                            <label class="radio inline"><input type="radio" name="multi_users" value="0" checked="checked" /><?= _t('bbs', 'один пользователь'); ?></label>
+                            <label class="radio inline"><input type="radio" name="multi_users" value="1" /><?= _t('bbs', 'несколько пользователей'); ?></label>
+                            <i class="icon-question-sign disabled j-tooltip" data-placement="right" data-toggle="tooltip" title="<?= _te('bbs', 'E-mail пользователя указывается в объявлении'); ?>"></i>
+                        </div>
                         <input type="hidden" name="user_id" value="0" id="j-item-user-id" />
-                        <input type="text" name="email" value="" id="j-item-user-email" class="autocomplete input-large" placeholder="<?= _te('bbs', 'Введите e-mail пользователя'); ?>" />
+                        <input type="text" name="email" value="" id="j-item-user-email" class="autocomplete j-multi_users j-multi_users-0 input-large" placeholder="<?= _te('bbs', 'Введите e-mail пользователя'); ?>" />
+                        <label class="j-multi_users j-multi_users-1 checkbox displaynone"><input type="checkbox" name="multi_users_fake" value="1" checked="checked" /><?= _t('bbs', 'Пометить создаваемых пользователей как сгенерированные.'); ?></label>
                         <? if( BBS::publisher(BBS::PUBLISHER_SHOP) ) { ?>
                         <a href="javascript:void(0);" id="j-item-user-help" data-placement="right" data-toggle="tooltip" title="<?= _te('bbs', 'только пользователи с открытыми магазинами'); ?>"><i class="icon-question-sign"></i></a>
                         <script type="text/javascript">$(function () {
@@ -54,9 +60,14 @@ echo tplAdmin::blockStart(_t('bbs', 'Объявления / Импорт / Эк�
                                 }
                             });</script>
                         <? } else if( BBS::publisher(BBS::PUBLISHER_USER_OR_SHOP) ) { ?>
-                        <div id="j-item-user-publisher" style="display: none; margin:5px;">
+                        <div id="j-item-user-publisher" class="j-multi_users j-multi_users-0" style="display: none; margin:5px;">
                             <label class="inline radio"><input type="radio" name="shop" value="0" checked="checked" /><?= _t('users', 'Частное лицо'); ?></label>
                             <label class="inline radio"><input type="radio" name="shop" value="1" /><?= _t('users', 'Магазин'); ?></label>
+                        </div>
+                        <? } else if( BBS::publisher(BBS::PUBLISHER_USER_TO_SHOP) ) { ?>
+                        <div id="j-item-user-publisher" class="j-multi_users j-multi_users-0" style="display: none; margin:5px;">
+                            <label class="inline radio"><input type="radio" name="shop" value="0" /><?= _t('users', 'Частное лицо'); ?></label>
+                            <label class="inline radio"><input type="radio" name="shop" value="1" checked="checked" /><?= _t('users', 'Магазин'); ?></label>
                         </div>
                         <? } ?>
                     </td>
@@ -110,7 +121,7 @@ echo tplAdmin::blockStart(_t('bbs', 'Объявления / Импорт / Эк�
                                                     <span class="upload-mask">
                                                         <input type="file" name="file" id="j-import_file" />
                                                     </span>
-                                                    <a class="ajax"><?= _t('bbs', 'выбрать файл'); ?> <span class="desc"><?= _t('bbs', '(*.xml или *.csv формат)'); ?></span></a>
+                                                    <a class="ajax"><?= _t('bbs', 'выбрать файл'); ?> <span class="desc"><?= _t('bbs', '(*.xml, *.yml или *.csv формат)'); ?></span></a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -304,13 +315,20 @@ echo tplAdmin::blockStart(_t('bbs', 'Объявления / Импорт / Эк�
             buttonsState();
 
             jImportYandex.init();
+
+            $('.j-tooltip').tooltip();
+
+            $importForm.on('change', '[name="multi_users"]', function () {
+                $importForm.find('.j-multi_users').addClass('displaynone');
+                $importForm.find('.j-multi_users-'+$(this).val()).removeClass('displaynone');
+            });
         });
 
         function buttonsState()
         {
             $templateButton.prop('disabled', ! intval(catID));
             $exportButton.prop('disabled',  ! intval(catID));
-            $importButton.prop('disabled', ! intval($('#j-item-user-id').val()) || (! $fileField.val() && ! $urlField.val()));
+            $importButton.prop('disabled', ! $fileField.val() && ! $urlField.val());
         }
 
         function catSelect($select)

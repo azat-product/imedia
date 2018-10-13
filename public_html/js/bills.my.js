@@ -21,7 +21,7 @@ var jBillsMyHistory = (function(){
         listMngr = app.list($form, {
             onSubmit: function(resp, ex) {
                 if(ex.scroll) $.scrollTo($list, {offset: -150, duration:500, axis: 'y'});
-                $list.html(resp.list);
+                $list.html(resp.list).find('.j-tooltip').tooltip();
                 $pgn.html(resp.pgn);
                 $pp.toggle(resp.total > 0);
             },

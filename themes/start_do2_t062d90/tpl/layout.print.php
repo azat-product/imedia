@@ -7,10 +7,14 @@
 <!DOCTYPE html>
 <html class="no-js">
 <head>
-	<?= SEO::i()->metaRender(array('content-type'=>true)) ?>
-	<?= View::template('css'); ?>
+<?php View::blockStart('head'); ?>
+<?= SEO::i()->metaRender(array('content-type'=>true)) ?>
+<?= View::template('css'); ?>
+<?php View::blockEnd(); ?>
 </head>
-<body data-dbq="<?= bff::database()->statQueryCnt(); ?>">
+<body>
+<?php View::blockStart('body'); ?>
+    <?= View::template('alert'); ?>
 	<div class="print-page">
 		<!-- BEGIN main content -->
 		<div class="l-content">
@@ -18,5 +22,6 @@
 		</div>
 		<!-- END main content -->
 	</div>
+<?php View::blockEnd(); ?>
 </body>
 </html>

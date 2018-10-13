@@ -5,7 +5,7 @@
 <tr class="row<?= $k%2 ?><? if($v['status'] == Shops::STATUS_BLOCKED) { ?> text-error<? } else if( $v['status'] == Shops::STATUS_NOT_ACTIVE ) { ?> desc<? } ?>">
     <td><?= $v['id'] ?></td>
     <td class="left">
-        <a class="linkout but" href="<?= Shops::urlDynamic($v['link'], array('from'=>'adm')) ?>" target="_blank"><a href="#" onclick="return bff.shopInfo(<?= $v['id'] ?>);" class="nolink"><?= $v['title'] ?></a>
+        <a class="linkout but" href="<?= Shops::urlDynamic($v['link'], array('from'=>'adm')) ?>" target="_blank"><a href="javascript:void(0);" onclick="return bff.shopInfo(<?= $v['id'] ?>);" class="nolink"><?= $v['title'] ?></a>
     </td>
     <td>
         <? # для списка "на модерации", указываем причину отправления на модерацию:
@@ -24,7 +24,7 @@
     <td><?= tpl::date_format2($v['created'], true, true); ?></td>
     <td>
         <a class="but edit" href="<?= $urlEdit.$v['id'] ?>"></a>
-        <a class="but del j-act-del" href="#" data-id="<?= $v['id'] ?>"></a>
+        <a class="but del j-act-del" href="javascript:void(0);" data-id="<?= $v['id'] ?>"></a>
     </td>
 </tr>
 <? } if(empty($list)) { ?>
