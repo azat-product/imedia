@@ -67,6 +67,13 @@ $listBanner = function($positionNumber) use ($device) {
           </div>
         <?php } ?>
       </div>
+        <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
+        <div class="ad-author-in">
+            <? $aAvarageAuthorRatingData = ['value' => $v['shop_avarage_value']]; ?>
+            <span>
+            <?= _t('view', 'Средняя оценка компании') ?>
+            </span><br><?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+        </div>
     </div>
   </div>
 

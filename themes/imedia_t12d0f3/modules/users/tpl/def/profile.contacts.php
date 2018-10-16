@@ -8,18 +8,34 @@
 ?>
 <div class="ad-author">
   <div class="ad-author-in ad-author-user">
-    <a href="<?= $user['profile_link'] ?>" class="ad-author-user-avatar">
-      <img src="<?= $user['avatar'] ?>" alt=""/>
-    </a>
-    <div class="ad-author-user-info">
-      <div class="ad-author-user-name"><?= $user['name'] ?></div>
-      <?php if ($user['region_id']) { ?>
-        <div class="ad-author-user-subtext"><?= $user['region_title'] ?></div>
-      <?php } ?>
-      <div
-        class="ad-author-user-subtext"><?= _t('users', 'на сайте с [date]', array('date' => tpl::date_format2($user['created']))) ?></div>
-    </div>
+      <a href="<?= $user['profile_link'] ?>" class="ad-author-user-avatar">
+          <img src="<?= $user['avatar'] ?>" alt=""/>
+      </a>
+      <div class="ad-author-user-info">
+          <div class="ad-author-user-name">6<?= $user['name'] ?></div>
+          <?php if ($user['region_id']) { ?>
+              <div class="ad-author-user-subtext"><?= $user['region_title'] ?></div>
+          <?php } ?>
+          <div class="ad-author-user-subtext">
+              <?= _t('users', 'на сайте с [date]', array('date' => tpl::date_format2($user['created']))) ?>
+          </div>
+      </div>
   </div>
+  <div class="ad-author-in">
+      <? $aAvarageAuthorRatingData = ['value' => $avarage_author_rating]; ?>
+      <span>
+          <?= _t('view', 'Средняя оценка [user_title]', ['user_title' => empty($shop_id) ? 'автора' : 'компании']) ?>
+      </span><br><?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+  </div>
+  <? if (!empty($avarage_author_categories_rating)): ?>
+      <div class="ad-author-in">
+          <? foreach ($avarage_author_categories_rating as $category_rating): ?>
+              <? $aAvarageAuthorCategoryData = ['value' => $category_rating['value']]; ?>
+              <span><?= _t('view', $category_rating['title']) ?></span>
+              <br><?= BBS::i()->viewPHP($aAvarageAuthorCategoryData, 'item.rating.author.cat.avarage'); ?><br>
+          <? endforeach; ?>
+      </div>
+  <? endif; ?>
   <?php if(!empty($user['phones']) || !empty($user['contacts'])) { ?>
     <div class="ad-author-in ad-author-contact">
       <div class="ad-author-contact-row">

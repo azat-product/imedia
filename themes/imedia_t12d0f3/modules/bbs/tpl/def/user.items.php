@@ -18,6 +18,7 @@ tpl::includeJS(array('history'), true);
 tpl::includeJS('bbs.items', false);
 ?>
 
+<a name="search_list"></a>
 <form action="" id="j-user-view-items-list">
   <input type="hidden" name="c" value="<?= $f['c'] ?>" class="j-cat-value" />
   <input type="hidden" name="page" value="<?= $f['page'] ?>" />
@@ -43,6 +44,11 @@ tpl::includeJS('bbs.items', false);
         </ul>
       </li>
     </ul>
+      <? if( ! empty($items) ) : ?>
+          <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
+          <input <?=$sort_by_rating ? 'checked="checked"' : '' ?> type="checkbox" name="sort_by_rating" onclick="return makeSortByRating();">
+          <span><?=_t('', ' по рейтингу')?></span>
+      <? endif;?>
   </div>
 
   <!-- Listings -->
@@ -73,3 +79,5 @@ tpl::includeJS('bbs.items', false);
   });
   <?php js::stop(); ?>
 </script>
+<?php
+tpl::includeJS(array('bbs.shops.sort.raiting'), false);

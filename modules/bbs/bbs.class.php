@@ -796,6 +796,7 @@ class BBS_ extends BBSBase
                 $seoNoIndex = true;
                 break;
         }
+        $f_sort_by_rating = $this->input->get('sort_by_rating', TYPE_BOOL);
         $aData = array('items' => array(), 'pgn' => '');
 
         $nTotal = $this->model->itemsList($sql, true, array('context' => 'search'));
@@ -827,7 +828,7 @@ class BBS_ extends BBSBase
                 'limit'   => $oPgn->getLimit(),
                 'offset'  => $oPgn->getOffset(),
                 'listCurrency'  => ($bUseCategoryCurrency ? $catData['price_sett']['curr'] : 0),
-            ));
+            ), $f_sort_by_rating);
             $aData['pgn'] = $oPgn->view(array('pagelast'=>false));
             $f['page'] = $oPgn->getCurrentPage();
         }
@@ -948,6 +949,7 @@ class BBS_ extends BBSBase
             );
         }
 
+        $aData['sort_by_rating'] = $f_sort_by_rating;
         return $this->viewPHP($aData, 'search');
     }
 
@@ -1871,9 +1873,39 @@ class BBS_ extends BBSBase
             'bbs_view_id' => $nItemID,
             'bbs_view_data' => &$aData,
         ]);
+
+        $aData['item_id'] = $nItemID;
+        $aData['current_user_item_rating'] = $this->model->getCurrentUserItemRating($nItemID, $nUserID);
+        $aData['avarage_item_rating'] = $this->model->getAvarageItemRating($nItemID);
+        $aData['avarage_author_rating'] = $this->model->getAvarageAuthorRating($aData['user']['id'], $aData['is_shop']);
+        $aData['avarage_author_categories_rating'] = $this->model->getAuthorCategoriesAvarageRating($aData['user']['id'], $aData['is_shop']);
         return $this->viewPHP($aData, 'item.view');
     }
 
+    public function raitings()
+    {
+        $itemId = $this->input->post('item_id', TYPE_INT);
+        $userId = $this->input->getpost('user_id', TYPE_INT);
+        $authorId = $this->input->getpost('author_id', TYPE_INT);
+        $isShop = $this->input->getpost('is_shop', TYPE_BOOL);
+        $value = $this->input->getpost('value', TYPE_INT);
+
+        if (empty($itemId) ||  empty($userId) ||  empty($value) ){
+            $this->errors->reloadPage();
+        }
+
+        $this->model->saveItemRatingByUser($itemId, $userId, $value);
+
+        $aResponse = [
+            'success' => $this->errors->no(),
+            'avarage_item_rating' => $this->model->getAvarageItemRating($itemId),
+            'avarage_author_rating' => $this->model->getAvarageAuthorRating($authorId, $isShop),
+            'message' => _t('items', 'Ваша оценка успешна сохранена'),
+            'new_rating' => $value,
+        ];
+
+        $this->ajaxResponse($aResponse);
+    }
     /**
      * Добавление ОБ
      * @param get ::uint 'cat' - ID категории по-умолчанию
@@ -4374,6 +4406,7 @@ class BBS_ extends BBSBase
             'c'    => TYPE_UINT, # ID категории
             'page' => TYPE_UINT, # страница
         ));
+        $f_sort_by_rating = $this->input->get('sort_by_rating', TYPE_BOOL);
         extract($f, EXTR_REFS | EXTR_PREFIX_ALL, 'f');
         $f['lt'] = self::LIST_TYPE_LIST;
 
@@ -4394,7 +4427,7 @@ class BBS_ extends BBSBase
                 'orderBy' => 'publicated_order DESC',
                 'limit'   => $pgn->getLimit(),
                 'offset'  => $pgn->getOffset(),
-            ));
+            ) , $f_sort_by_rating);
             $data['pgn'] = $pgn->view();
         }
 
@@ -4430,6 +4463,7 @@ class BBS_ extends BBSBase
         $data['f'] = & $f;
         $data['cats'] = & $cats;
         $data['empty'] = !$total;
+        $data['sort_by_rating'] = $f_sort_by_rating;
 
         return $this->viewPHP($data, 'user.items');
     }
@@ -4448,6 +4482,7 @@ class BBS_ extends BBSBase
             'c'    => TYPE_UINT, # ID категории
             'page' => TYPE_UINT, # страница
         ));
+        $f_sort_by_rating = $this->input->get('sort_by_rating', TYPE_BOOL);
         extract($f, EXTR_REFS | EXTR_PREFIX_ALL, 'f');
         $f['lt'] = self::LIST_TYPE_LIST;
 
@@ -4473,7 +4508,7 @@ class BBS_ extends BBSBase
                 'orderBy' => 'publicated_order DESC',
                 'limit'   => $pgn->getLimit(),
                 'offset'  => $pgn->getOffset(),
-            ));
+            ), $f_sort_by_rating);
             $data['pgn'] = $pgn->view();
         }
 
@@ -4511,6 +4546,7 @@ class BBS_ extends BBSBase
         $data['f'] = & $f;
         $data['cats'] = & $cats;
         $data['empty'] = !$total;
+        $data['sort_by_rating'] = $f_sort_by_rating;
 
         return $this->viewPHP($data, 'shop.items');
     }

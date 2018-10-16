@@ -33,6 +33,7 @@ $rightBlock = (DEVICE_DESKTOP_OR_TABLET && ! $isMap && ($bannerRight = Banners::
   <!-- Content -->
   <div class="l-mainLayout-content<?php if ($rightBlock) { ?> has-sidebar<?php } ?>">
     <div id="j-shops-search-list">
+      <a name="search_list"></a>
       <div class="l-pageHeading">
         <h1 class="l-pageHeading-title"><?= ( $f_c > 0 ? $cat['titleh1'] : ( ! empty($f_q) ? _t('shops', 'Результаты поиска по запросу "[query]"', array('query'=>$f_q)) : (!empty($cat['titleh1']) ? $cat['titleh1'] : _t('shops', 'Все магазины')) ) ) ?></h1>
       </div>
@@ -47,6 +48,11 @@ $rightBlock = (DEVICE_DESKTOP_OR_TABLET && ! $isMap && ($bannerRight = Banners::
             } ?>
           </div>
         </div>
+        <? if( ! empty($items) ) : ?>
+            <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
+            <input <?=$sort_by_rating ? 'checked="checked"' : '' ?> type="checkbox" name="sort_by_rating" onclick="return makeSortByRating();">
+            <span><?=_t('', ' по рейтингу')?></span>
+        <? endif;?>
         <?php } ?>
       </div>
       
@@ -111,6 +117,7 @@ $rightBlock = (DEVICE_DESKTOP_OR_TABLET && ! $isMap && ($bannerRight = Banners::
   <?php js::stop(); ?>
 </script>
 <?php
+tpl::includeJS(array('bbs.shops.sort.raiting'), false);
 
 # актуализируем данные формы поиска
 # формируемой позже в фаблоне /tpl/filter.php

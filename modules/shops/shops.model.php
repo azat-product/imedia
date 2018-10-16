@@ -169,7 +169,7 @@ class ShopsModel_ extends Model
      * @param string $sqlOrderBy
      * @return mixed
      */
-    public function shopsList(array $aFilter, $nCategoryID, $bCount = false, $sqlLimit = '', $sqlOrderBy = 'svc_fixed DESC, S.svc_fixed_order DESC, S.items_last DESC')
+    public function shopsList(array $aFilter, $nCategoryID, $bCount = false, $sqlLimit = '', $sqlOrderBy = 'svc_fixed DESC, S.svc_fixed_order DESC, S.items_last DESC', $orderByRating = false)
     {
         $sqlFields = array(
             'id',
@@ -196,6 +196,8 @@ class ShopsModel_ extends Model
         $sqlFields .= ', ((S.svc & ' . Shops::SERVICE_MARK . ') > 0) as svc_marked
                        , ((S.svc & ' . Shops::SERVICE_FIX . ') > 0) as svc_fixed';
 
+        $sqlOrderBy = $orderByRating ? "shop_avarage_value DESC, ".$sqlOrderBy : $sqlOrderBy;
+
         if ($nCategoryID > 0) {
             $sCategoriesTable = (Shops::categoriesEnabled() ? TABLE_SHOPS_IN_CATEGORIES : TABLE_SHOPS_IN_CATEGORIES_BBS);
 
@@ -211,12 +213,16 @@ class ShopsModel_ extends Model
                 );
             }
 
-            return $this->db->tag('shops-shops-list-data-cat', array('fields'=>&$sqlFields,'filter'=>&$aFilter))->select('SELECT ' . $sqlFields . '
+            return $this->db->tag('shops-shops-list-data-cat', array('fields'=>&$sqlFields,'filter'=>&$aFilter))->select('SELECT ' . $sqlFields . ',
+                                        SUM(IR.value)/COUNT(IR.value) as shop_avarage_value
                                     FROM ' . TABLE_SHOPS . ' S
                                          INNER JOIN '.TABLE_SHOPS_LANG.' SL ON '.$this->db->langAnd(false, 'S', 'SL').'
                                          INNER JOIN ' . $sCategoriesTable . ' C ON S.id = C.shop_id
                                          LEFT JOIN ' . TABLE_REGIONS . ' R ON R.id = S.region_id
+                                         LEFT JOIN ' . TABLE_BBS_ITEMS.' I ON S.id = I.shop_id
+                                         LEFT JOIN ' .TABLE_BBS_ITEMS_RATINGS.' IR ON I.id = IR.item_id
                                     ' . $aFilter['where'] . '
+                                    GROUP BY S.id
                                     ORDER BY ' . $sqlOrderBy . ' ' . $sqlLimit,
                 $aFilter['bind']
             );
@@ -230,10 +236,13 @@ class ShopsModel_ extends Model
                     $aFilter['bind']
                 );
             } else {
-                return $this->db->tag('shops-shops-list-data', array('fields'=>&$sqlFields,'filter'=>&$aFilter))->select('SELECT ' . $sqlFields . '
+                return $this->db->tag('shops-shops-list-data', array('fields'=>&$sqlFields,'filter'=>&$aFilter))->select('SELECT ' . $sqlFields . ',
+                                SUM(IR.value)/COUNT(IR.value) as shop_avarage_value
                             FROM ' . TABLE_SHOPS . ' S
                                 INNER JOIN '.TABLE_SHOPS_LANG.' SL ON '.$this->db->langAnd(false, 'S', 'SL'). '
                                 LEFT JOIN ' . TABLE_REGIONS . ' R ON R.id = S.region_id
+                                LEFT JOIN ' . TABLE_BBS_ITEMS.' I ON S.id = I.shop_id
+                                LEFT JOIN ' .TABLE_BBS_ITEMS_RATINGS.' IR ON I.id = IR.item_id
                             ' . $aFilter['where'] . '
                             GROUP BY S.id
                             ORDER BY ' . $sqlOrderBy . ' ' . $sqlLimit, $aFilter['bind']

@@ -122,7 +122,7 @@ class BBSModel_ extends Model
      * @param array $fields список дополнительных полей
      * @return mixed
      */
-    public function itemsList(array $filter = array(), $countOnly = false, array $opts = array())
+    public function itemsList(array $filter = array(), $countOnly = false, array $opts = array(), $orderByRating = false)
     {
         func::array_defaults($opts, array(
             'context' => 'bbs-items-list',
@@ -146,6 +146,8 @@ class BBSModel_ extends Model
             return array();
         }
 
+        $orderBy = $orderByRating ? "avarage_rating_value DESC" : 'FIELD(I.id,'.join(',', $itemsID).')';
+
         $lang = $opts['lang'];
         $districtsEnabled = $opts['districts'] && Geo::districtsEnabled();
         $fields = $opts['fields']; $joinTables = $opts['joinTables'];
@@ -160,14 +162,17 @@ class BBSModel_ extends Model
                  ((I.svc & ' . BBS::SERVICE_UP . ') > 0) as svc_up,
                  I.publicated, I.publicated_order as publicated_last,  I.modified,
                  C.price_sett, C.price as price_on, CL.title as cat_title,
+                 SUM(IR.value)/COUNT(IR.value) as avarage_rating_value, 
                  R.title_'.$lang.' AS city_title, I.regions_delivery, I.lang '.
                  ( ! empty($fields) ? ','.join(',', $fields) : '').'
           FROM ' . TABLE_BBS_ITEMS . ' I '.join(' ', $joinTables).'
-            LEFT JOIN ' . TABLE_REGIONS . ' R ON I.city_id = R.id
             INNER JOIN ' . TABLE_BBS_CATEGORIES . ' C ON C.id = I.cat_id
             INNER JOIN ' . TABLE_BBS_CATEGORIES_LANG . ' CL ON CL.id = I.cat_id AND CL.lang = :lang
+            LEFT JOIN ' . TABLE_REGIONS . ' R ON I.city_id = R.id
+            LEFT JOIN ' . TABLE_BBS_ITEMS_RATINGS . ' IR ON I.id = IR.item_id 
           WHERE I.id IN ('.join(',', $itemsID).')
-          ORDER BY FIELD(I.id,'.join(',', $itemsID).')
+          GROUP BY I.id 
+          ORDER BY '.$orderBy.'
           ', array(':lang'=>$lang), $opts['ttl']
         );
 
@@ -4103,6 +4108,83 @@ class BBSModel_ extends Model
 
             return $nCategoryID;
         }
+    }
+
+    public function saveItemRatingByUser($itemId, $userId, $value)
+    {
+        $this->db->exec('
+            INSERT INTO '.TABLE_BBS_ITEMS_RATINGS.' (item_id, user_id, value)
+            VALUES (:item_id, :user_id, :value)
+            ON DUPLICATE KEY UPDATE value = :value
+        ', ['item_id' => $itemId, ':user_id' => $userId, ':value' => $value]);
+    }
+
+    public function getAvarageItemRating($itemId)
+    {
+        $avarageRating = $this->db->select_one_column('
+            SELECT SUM(value)/COUNT(value) 
+            FROM '.TABLE_BBS_ITEMS_RATINGS.'
+            WHERE item_id = :item_id
+            GROUP BY item_id
+        ', ['item_id' => $itemId]);
+
+        return number_format((float) array_shift($avarageRating), 2);
+    }
+
+    public function getCurrentUserItemRating($nItemID, $nUserID)
+    {
+        $userItemRating = $this->db->select_one_column('
+            SELECT value 
+            FROM '.TABLE_BBS_ITEMS_RATINGS.'
+            WHERE 
+                item_id = :item_id AND
+                user_id = :user_id
+        ', ['item_id' => $nItemID, 'user_id' => $nUserID]);
+
+        return (int) array_shift($userItemRating);
+    }
+
+    public function getAvarageAuthorRating($nUserId, $isShop)
+    {
+        $where = [
+            'I.user_id = :user_id',
+            $isShop ? 'I.shop_id > 0' : 'I.shop_id = 0'
+        ];
+
+        $avarageRating = $this->db->select_one_column('
+            SELECT SUM(IR.value)/COUNT(IR.value) 
+            FROM 
+                '.TABLE_BBS_ITEMS_RATINGS.' IR
+                JOIN '.TABLE_BBS_ITEMS.' I ON I.id = IR.item_id
+            WHERE 
+                '.join(' AND ' ,$where).'
+            GROUP BY I.user_id
+        ', ['user_id' => $nUserId]);
+
+        return number_format((float) array_shift($avarageRating), 2);
+    }
+
+    public function getAuthorCategoriesAvarageRating($nUserId, $isShop)
+    {
+        $where = [
+            'I.user_id = :user_id',
+            $isShop ? 'I.shop_id > 0' : 'I.shop_id = 0',
+        ];
+
+        $ratings = $this->db->select("SELECT 
+                           I.cat_id1, 
+                           C.title,
+                           SUM(IR.value)/COUNT(IR.value) as value
+                        FROM ".TABLE_BBS_ITEMS." I 
+                            JOIN ".TABLE_BBS_ITEMS_RATINGS." IR  ON I.id = IR.item_id
+                            JOIN  ".TABLE_BBS_CATEGORIES." C ON I.`cat_id1` = C.id       
+                        WHERE 
+                            ".join(' AND ' ,$where)."
+                        GROUP BY C.id",
+            ['user_id' => $nUserId]
+        );
+
+        return $ratings;
     }
 
     /**

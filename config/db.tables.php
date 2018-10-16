@@ -33,6 +33,7 @@
     define('TABLE_BBS_ITEMS_COUNTERS',            DB_PREFIX.'bbs_items_counters'); // счетчики объявлений
     define('TABLE_BBS_ITEMS_LIMITS',              DB_PREFIX.'bbs_items_limits'); // лимиты объявлений
     define('TABLE_BBS_ITEMS_LIMITS_USERS',        DB_PREFIX.'bbs_items_limits_users'); // лимиты объявлений, купленные пользователем
+    define('TABLE_BBS_ITEMS_RATINGS',             DB_PREFIX.'bbs_items_ratings'); // рейтинг объявлений
 
     # Регионы(страны, области, города, ...) (geo)
     define('TABLE_REGIONS',                     DB_PREFIX.'regions'); // регионы

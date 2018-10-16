@@ -13,7 +13,7 @@
 ?>
 
 <div class="ad-author">
-  
+
   <?php // Shop
   if ($shop_id && $shop) { ?>
     <div class="ad-author-in ad-author-shop">
@@ -161,9 +161,111 @@
     <?php } ?>
   </div><!-- /.ad-author-contact -->
   <?php } # $contacts['has'] ?>
-  <?php if ( ! $owner) { ?>
+
+    <? // TODO: clazion IK-6 IK-7 IK-8 Возможно стоит сделать чтоб было ровно (звезды Ваша и Срелняя на одно уровне)?>
+    <? // TODO: clazion IK-6 Сделать модальное окно если пользователь не авторизирован и нажимает на звезды в "Ваша")?>
+    <? // TODO: clazion IK-8 Разместить полученные оценки согласно макапам в задаче?>
+
+    <div class="ad-author-in">
+        <? $aCurrentUserRatingData = ['value' => $current_user_item_rating]; ?>
+        <span><?= _t('view', 'Ваша оценка') ?></span><br><?=$this->viewPHP($aCurrentUserRatingData, 'item.rating.current.user'); ?>
+    </div>
+
+
+        <div class="ad-author-in">
+            <? $aAvarageItemRatingData = ['value' => $avarage_item_rating, 'allow_edit' => true, 'class_prefix' => 'edit_']; ?>
+            <span><?= _t('view', 'Средняя объявления') ?></span><br><?=$this->viewPHP($aAvarageItemRatingData, 'item.rating.avarage'); ?>
+        </div>
+
+    <div class="ad-author-in">
+        <? $aAvarageAuthorRatingData = ['value' => $avarage_author_rating, 'class_prefix' => 'edit_']; ?>
+        <span>
+            <?= _t('view', 'Средняя оценка [user_title]', ['user_title'=> empty($shop_id) ? 'автора' : 'компании']) ?>
+        </span><br><?=$this->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+    </div>
+
+    <? if (!empty($avarage_author_categories_rating)): ?>
+        <div class="ad-author-in">
+            <? foreach ($avarage_author_categories_rating as $category_rating): ?>
+            <? $aAvarageAuthorCategoryData = ['value' => $category_rating['value']]; ?>
+            <span><?= _t('view', $category_rating['title']) ?></span><br><?=$this->viewPHP($aAvarageAuthorCategoryData, 'item.rating.author.cat.avarage'); ?><br>
+            <? endforeach; ?>
+        </div>
+    <? endif; ?>
+
+    <?php if ( ! $owner) { ?>
   <div class="ad-author-in">
     <a class="btn btn-block btn-info" href="#contact-form"><i class="fa fa-envelope"></i> <?= _t('view', 'Написать автору') ?></a>
   </div>
   <?php } ?>
 </div><!-- /.ad-author -->
+
+<script type="text/javascript">
+    <?php js::start() ?>
+        var star_rating_user = $('.star-rating-user .fa');
+        var star_rating_avarage = $('.edit_star-rating-item-avarage .fa');
+        var star_rating_author_avarage = $('.edit_star-rating-author-avarage .fa');
+        var itemId = <?=$item_id?>;
+        var userId = <?=User::id()?>;
+        var authorId = <?=$user['id']?>;
+        var isShop = <?= (int)!empty($shop_id)?>;
+
+        var SetRatingStar = function() {
+            star_rating_user.each(function() {
+                if (Math.round(star_rating_user.siblings('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
+                    return $(this).removeClass('fa-star-o').addClass('fa-star');
+                } else {
+                    return $(this).removeClass('fa-star').addClass('fa-star-o');
+                }
+            });
+
+            star_rating_avarage.each(function() {
+                if (Math.round($('#star-rating-item-avarage').html()) >= parseInt($(this).data('rating'))) {
+                    return $(this).removeClass('fa-star-o').addClass('fa-star');
+                } else {
+                    return $(this).removeClass('fa-star').addClass('fa-star-o');
+                }
+            });
+
+            star_rating_author_avarage.each(function() {
+                if (Math.round($('#star-rating-author-avarage').html()) >= parseInt($(this).data('rating'))) {
+                    return $(this).removeClass('fa-star-o').addClass('fa-star');
+                } else {
+                    return $(this).removeClass('fa-star').addClass('fa-star-o');
+                }
+            });
+
+            return;
+        };
+
+        star_rating_user.on('click', function() {
+
+            if (!userId) {
+                <? // TODO::IK-6 Сделать модальное окно если пользователь не авторизирован и нажимает на звезды в "Ваша")?>
+                return;
+            }
+
+            bff.ajax(bff.ajaxURL('bbs&ev=raitings', ''),
+                {
+                    item_id: itemId,
+                    user_id: userId,
+                    author_id: authorId,
+                    is_shop: isShop,
+                    value: $(this).data('rating')
+                },
+                function(data,errors) {
+                if(data && data.success) {
+                    $('#star-rating-item-avarage').html(data.avarage_item_rating);
+                    $('#star-rating-author-avarage').html(data.avarage_author_rating);
+                    star_rating_user.siblings('input.rating-value').val(data.new_rating);
+                    SetRatingStar();
+                }
+            });
+
+            return;
+        });
+
+        $(document).ready(function() {
+        });
+    <?php js::stop() ?>
+</script>
