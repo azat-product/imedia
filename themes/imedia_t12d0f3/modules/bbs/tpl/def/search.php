@@ -77,10 +77,11 @@
             </div>
           <?php } ?>
         <?php } ?>
+        <a name="search_list"></a>
         <h1 class="l-pageHeading-title"><?= ( $f_c > 0 ? $cat['titleh1'] : ( ! empty($f_q) ? _t('search', 'Результаты поиска по запросу "[query]"', array('query'=>$f_q)) : (!empty($cat['titleh1']) ? $cat['titleh1'] : _t('search', 'Поиск объявлений')) ) ) ?></h1>
 
       </div><!-- ./l-pageHeading -->
-      
+
       <div class="sr-listTop">
         <?php
         // List View
@@ -108,6 +109,11 @@
           </span>
         </div>
         <?php } ?>
+          <? if( ! empty($items) ) : ?>
+              <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
+              <input <?=$sort_by_rating ? 'checked="checked"' : '' ?> type="checkbox" name="sort_by_rating" onclick="return makeSortByRating();">
+              <span><?=_t('', ' по рейтингу')?></span>
+          <? endif;?>
       </div><!-- /.sr-listTop -->
 
       <?php if($filterVertical && DEVICE_PHONE) { ?>
@@ -194,7 +200,7 @@
 <?php js::stop(); ?>
 </script>
 <?php
-
+tpl::includeJS(array('bbs.shops.sort.raiting'), false);
 # актуализируем данные формы поиска
 # формируемой позже в фаблоне /tpl/filter.php
 $this->searchFormData($f);

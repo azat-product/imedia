@@ -19,6 +19,7 @@ class Shops_ extends ShopsBase
     {
         $pageSize = config::sysAdmin('shops.search.pagesize', 8, TYPE_UINT);
         $f = $this->searchFormData();
+        $f_sort_by_rating = $this->input->get('sort_by_rating', TYPE_BOOL);
         extract($f, EXTR_REFS | EXTR_PREFIX_ALL, 'f');
 
         # seo данные
@@ -179,7 +180,7 @@ class Shops_ extends ShopsBase
                 $res = $sphinx->searchShops($sphinxSearch, $sql, $f_c, false, $limit, $oPgn->getOffset());
                 $aData['items'] = $this->model->shopsList(array('id' => $res), false, false,  'LIMIT '.$limit, 'FIELD('.$sqlTablePrefix.'id,'.join(',', $res).')'); # MySQL only
             } else {
-                $aData['items'] = $this->model->shopsList($sql, $f_c, false, $oPgn->getLimitOffset());
+                $aData['items'] = $this->model->shopsList($sql, $f_c, false, $oPgn->getLimitOffset(), 'svc_fixed DESC, S.svc_fixed_order DESC, S.items_last DESC',$f_sort_by_rating);
             }
             if (!empty($aData['items'])) {
                 foreach ($aData['items'] as &$v) {
@@ -248,6 +249,7 @@ class Shops_ extends ShopsBase
         $listTypes[$f['lt']]['a'] = true;
         $aData['listTypes'] = &$listTypes;
         $aData['isMap'] = ($f['lt'] == static::LIST_TYPE_MAP);
+        $aData['sort_by_rating'] = $f_sort_by_rating;
 
         return $this->viewPHP($aData, 'search');
     }
@@ -472,6 +474,8 @@ class Shops_ extends ShopsBase
         if (!BFF_DEBUG) {
             Request::lastModified($data['shop']['modified']);
         }
+        $data['avarage_author_rating'] = BBS::model()->getAvarageAuthorRating($userID, true);
+        $data['avarage_author_categories_rating'] = BBS::model()->getAuthorCategoriesAvarageRating($userID, true);
 
         return $this->viewPHP($data, 'view');
     }

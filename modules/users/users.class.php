@@ -1131,6 +1131,9 @@ class Users_ extends UsersBase
             'is_owner' => User::isCurrent($userID),
         );
 
+        $data['avarage_author_rating'] = BBS::model()->getAvarageAuthorRating($userID, false);
+        $data['avarage_author_categories_rating'] = BBS::model()->getAuthorCategoriesAvarageRating($userID, false);
+
         return $this->viewPHP($data, 'profile');
     }
 

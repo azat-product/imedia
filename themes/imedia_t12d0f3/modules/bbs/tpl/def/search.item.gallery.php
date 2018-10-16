@@ -30,5 +30,13 @@
         <div class="slider-premium__title" title="<?= $item['title'] ?>">
             <?= $item['title'] ?>
         </div>
+        <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
+        <div class="">
+            <? $aAvarageItemRatingData = ['value' => $item['avarage_rating_value']]; ?>
+            <span>
+            <?= _t('view', 'Средняя оценка') ?>
+          </span>
+            <br><?= BBS::i()->viewPHP($aAvarageItemRatingData, 'item.rating.avarage'); ?>
+        </div>
     </div>
 </a>

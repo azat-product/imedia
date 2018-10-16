@@ -86,5 +86,20 @@
       </div>
     <?php } ?>
   <?php } # $shop['has_contacts'] ?>
+    <div class="ad-author-in">
+        <? $aAvarageAuthorRatingData = ['value' => $avarage_author_rating]; ?>
+        <span>
+          <?= _t('view', 'Средняя оценка компании') ?>
+      </span><br><?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+    </div>
+    <? if (!empty($avarage_author_categories_rating)): ?>
+        <div class="ad-author-in">
+            <? foreach ($avarage_author_categories_rating as $category_rating): ?>
+                <? $aAvarageAuthorCategoryData = ['value' => $category_rating['value']]; ?>
+                <span><?= _t('view', $category_rating['title']) ?></span>
+                <br><?= BBS::i()->viewPHP($aAvarageAuthorCategoryData, 'item.rating.author.cat.avarage'); ?><br>
+            <? endforeach; ?>
+        </div>
+    <? endif; ?>
 
 </div><!-- /.ad-author -->
