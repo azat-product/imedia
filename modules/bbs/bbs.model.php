@@ -451,12 +451,15 @@ class BBSModel_ extends Model
                  ((I.svc & ' . BBS::SERVICE_MARK . ') > 0) as svc_marked,
                  ((I.svc & ' . BBS::SERVICE_QUICK . ') > 0) as svc_quick,
                  I.svc_marked_to, I.svc_fixed_to, I.svc_premium_to, I.svc_quick_to, 
+                 SUM(IR.value)/COUNT(IR.value) as avarage_rating_value,
                  C.price_sett, C.price as price_on, CL.title as cat_title
                  '.( ! empty($aFields) ? ','.join(',', $aFields) : '').'
             FROM ' . TABLE_BBS_ITEMS . ' I
                 INNER JOIN ' . TABLE_BBS_CATEGORIES . ' C ON C.id = I.cat_id
                 INNER JOIN ' . TABLE_BBS_CATEGORIES_LANG . ' CL ON CL.id = I.cat_id AND CL.lang = :lang
+                LEFT JOIN ' . TABLE_BBS_ITEMS_RATINGS . ' IR ON I.id = IR.item_id 
             WHERE '.$this->db->prepareIN('I.id', $itemsID).'
+            GROUP BY I.id 
             ORDER BY FIELD(I.id,'.join(',', $itemsID).')',
             array(':lang'=>$this->locale->getCurrentLanguage())
         );
