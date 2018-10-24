@@ -24,17 +24,18 @@
   <div class="ad-author-in">
       <? $aAvarageAuthorRatingData = ['value' => $avarage_author_rating]; ?>
       <span>
-          <?= _t('view', 'Средняя оценка [user_title]', ['user_title' => empty($shop_id) ? 'автора' : 'компании']) ?>
-      </span><br><?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+          <?= _t('view', 'Средняя оценка [user_title]', ['user_title' => empty($shop_id) ? 'автора:' : 'компании:']) ?>
+      </span>
+      <?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
   </div>
   <? if (!empty($avarage_author_categories_rating)): ?>
-      <div class="ad-author-in">
-          <? foreach ($avarage_author_categories_rating as $category_rating): ?>
+      <? foreach ($avarage_author_categories_rating as $category_rating): ?>
+          <div class="ad-author-in">
               <? $aAvarageAuthorCategoryData = ['value' => $category_rating['value']]; ?>
               <span><?= _t('view', $category_rating['title']) ?></span>
-              <br><?= BBS::i()->viewPHP($aAvarageAuthorCategoryData, 'item.rating.author.cat.avarage'); ?><br>
-          <? endforeach; ?>
-      </div>
+              <?= BBS::i()->viewPHP($aAvarageAuthorCategoryData, 'item.rating.author.cat.avarage'); ?>
+          </div>
+      <? endforeach; ?>
   <? endif; ?>
   <?php if(!empty($user['phones']) || !empty($user['contacts'])) { ?>
     <div class="ad-author-in ad-author-contact">

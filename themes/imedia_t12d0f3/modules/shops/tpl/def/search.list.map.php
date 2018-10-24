@@ -29,12 +29,12 @@ if (empty($items)) {
         <div class="sh-map-list-item-descr">
           <?= tpl::truncate($v['descr'], 150, '...', true) ?>
         </div>
-        <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
-        <div class="ad-author-in">
+        <div class="mrgt5">
           <? $aAvarageAuthorRatingData = ['value' => $v['shop_avarage_value']]; ?>
-          <span>
-            <?= _t('view', 'Средняя оценка компании') ?>
-          </span><br><?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+          <div class="mrgb-10">
+            <?= _t('view', 'Средняя оценка компании:') ?>
+          </div>
+            <?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
         </div>
       </div>
     </div>

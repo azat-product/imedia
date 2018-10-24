@@ -162,35 +162,42 @@
   </div><!-- /.ad-author-contact -->
   <?php } # $contacts['has'] ?>
 
-    <? // TODO: clazion IK-6 IK-7 IK-8 Возможно стоит сделать чтоб было ровно (звезды Ваша и Срелняя на одно уровне)?>
-    <? // TODO: clazion IK-6 Сделать модальное окно если пользователь не авторизирован и нажимает на звезды в "Ваша")?>
-    <? // TODO: clazion IK-8 Разместить полученные оценки согласно макапам в задаче?>
 
-    <div class="ad-author-in">
+    <div class="ad-author-in flex flex_sb flex_aic">
         <? $aCurrentUserRatingData = ['value' => $current_user_item_rating]; ?>
-        <span><?= _t('view', 'Ваша оценка') ?></span><br><?=$this->viewPHP($aCurrentUserRatingData, 'item.rating.current.user'); ?>
+        <span>
+            <?= _t('view', 'Ваша оценка:') ?>
+        </span>
+        <?=$this->viewPHP($aCurrentUserRatingData, 'item.rating.current.user'); ?>
     </div>
 
 
-        <div class="ad-author-in">
-            <? $aAvarageItemRatingData = ['value' => $avarage_item_rating, 'allow_edit' => true, 'class_prefix' => 'edit_']; ?>
-            <span><?= _t('view', 'Средняя объявления') ?></span><br><?=$this->viewPHP($aAvarageItemRatingData, 'item.rating.avarage'); ?>
+    <div class="ad-author-in ">
+        <? $aAvarageItemRatingData = ['value' => $avarage_item_rating, 'allow_edit' => true, 'class_prefix' => 'edit_']; ?>
+        <div>
+            <?= _t('view', 'Средняя объявления:') ?>
         </div>
+        <?=$this->viewPHP($aAvarageItemRatingData, 'item.rating.avarage'); ?>
+    </div>
 
     <div class="ad-author-in">
         <? $aAvarageAuthorRatingData = ['value' => $avarage_author_rating, 'class_prefix' => 'edit_']; ?>
         <span>
-            <?= _t('view', 'Средняя оценка [user_title]', ['user_title'=> empty($shop_id) ? 'автора' : 'компании']) ?>
-        </span><br><?=$this->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+            <?= _t('view', 'Средняя оценка [user_title]', ['user_title'=> empty($shop_id) ? 'автора:' : 'компании:']) ?>
+        </span>
+        <?=$this->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
     </div>
 
     <? if (!empty($avarage_author_categories_rating)): ?>
-        <div class="ad-author-in">
-            <? foreach ($avarage_author_categories_rating as $category_rating): ?>
-            <? $aAvarageAuthorCategoryData = ['value' => $category_rating['value']]; ?>
-            <span><?= _t('view', $category_rating['title']) ?></span><br><?=$this->viewPHP($aAvarageAuthorCategoryData, 'item.rating.author.cat.avarage'); ?><br>
-            <? endforeach; ?>
-        </div>
+        <? foreach ($avarage_author_categories_rating as $category_rating): ?>
+            <div class="ad-author-in">
+                <? $aAvarageAuthorCategoryData = ['value' => $category_rating['value']]; ?>
+                <span>
+                    <?= _t('view', $category_rating['title']) ?>:
+                </span>
+                <?=$this->viewPHP($aAvarageAuthorCategoryData, 'item.rating.author.cat.avarage'); ?>
+            </div>
+        <? endforeach; ?>
     <? endif; ?>
 
     <?php if ( ! $owner) { ?>
@@ -199,6 +206,33 @@
   </div>
   <?php } ?>
 </div><!-- /.ad-author -->
+
+<? if(!User::id() ): ?>
+    <div class="modal fade" id="modal-reg" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <?= _t('view', 'Вы не можете оставить оценку') ?>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        <?= _t('', '<a [link_login]>Войдите</a> или <a [link_register]>зарегистрируйтесь</a> что бы оставить оценку',
+                            array(
+                                'link_login' => 'href="'.Users::url('login').'"',
+                                'link_register' => 'href="'.Users::url('register').'"',
+                                )
+                        ) ?>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+<? endif; ?>
 
 <script type="text/javascript">
     <?php js::start() ?>
@@ -213,25 +247,25 @@
         var SetRatingStar = function() {
             star_rating_user.each(function() {
                 if (Math.round(star_rating_user.siblings('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
-                    return $(this).removeClass('fa-star-o').addClass('fa-star');
+                    return $(this).addClass('active');
                 } else {
-                    return $(this).removeClass('fa-star').addClass('fa-star-o');
+                    return $(this).removeClass('active');
                 }
             });
 
             star_rating_avarage.each(function() {
                 if (Math.round($('#star-rating-item-avarage').html()) >= parseInt($(this).data('rating'))) {
-                    return $(this).removeClass('fa-star-o').addClass('fa-star');
+                    return $(this).addClass('active');
                 } else {
-                    return $(this).removeClass('fa-star').addClass('fa-star-o');
+                    return $(this).removeClass('active');
                 }
             });
 
             star_rating_author_avarage.each(function() {
                 if (Math.round($('#star-rating-author-avarage').html()) >= parseInt($(this).data('rating'))) {
-                    return $(this).removeClass('fa-star-o').addClass('fa-star');
+                    return $(this).addClass('active');
                 } else {
-                    return $(this).removeClass('fa-star').addClass('fa-star-o');
+                    return $(this).removeClass('active');
                 }
             });
 
@@ -241,7 +275,7 @@
         star_rating_user.on('click', function() {
 
             if (!userId) {
-                <? // TODO::IK-6 Сделать модальное окно если пользователь не авторизирован и нажимает на звезды в "Ваша")?>
+                $("#modal-reg").modal().show();
                 return;
             }
 

@@ -23,7 +23,7 @@ tpl::includeJS('bbs.items', false);
   <input type="hidden" name="c" value="<?= $f['c'] ?>" class="j-cat-value" />
   <input type="hidden" name="page" value="<?= $f['page'] ?>" />
 
-  <div class="mrgb15">
+  <div class="mrgb15 flex flex_aic">
     <ul class="nav nav-pills j-cat">
       <li class="dropdown">
         <a class="btn btn-default btn-sm j-cat-dropdown" data-toggle="dropdown" href="#">
@@ -45,9 +45,10 @@ tpl::includeJS('bbs.items', false);
       </li>
     </ul>
       <? if( ! empty($items) ) : ?>
-          <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
-          <input <?=$sort_by_rating ? 'checked="checked"' : '' ?> type="checkbox" name="sort_by_rating" onclick="return makeSortByRating();">
-          <span><?=_t('', ' по рейтингу')?></span>
+          <span class="mrgl10">
+              <input <?=$sort_by_rating ? 'checked="checked"' : '' ?> type="checkbox" name="sort_by_rating" onclick="return makeSortByRating();">
+              <span><?=_t('', ' по рейтингу')?></span>
+          </span>
       <? endif;?>
   </div>
 

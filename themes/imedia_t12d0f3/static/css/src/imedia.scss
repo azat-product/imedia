@@ -1,3 +1,22 @@
+.flex {
+  display: flex;
+  &_sb {
+    justify-content: space-between;
+  }
+  &_aic {
+    align-items: center;
+  }
+  @media(min-width: 768px) {
+    &_jcfe-md {
+      justify-content: flex-end;
+    }
+  }
+}
+
+.mrgb-10 {
+  margin-bottom: -10px;
+}
+
 .slick-slider {
   background: inherit;
 }
@@ -124,5 +143,67 @@
   }
   &:hover {
     color: #3b5998;
+  }
+}
+
+
+.rating-control {
+  display: inline-block;
+  color: #ccc;
+  label {
+    font-family: 'FontAwesome';
+    font-weight: 900;
+    font-size: 0;
+    display: inline-block;
+    line-height: 1;
+    float: right;
+    cursor: pointer;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    padding-right: 3px;
+    &:before {
+      content: '\f005';
+      font-size: 18px;
+    }
+  }
+  input {
+    display: none;
+    &:checked ~ label {
+      background: linear-gradient(135deg, #4854a2, #772088);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+  &:hover {
+    label {
+      background: linear-gradient(135deg, #ccc, #ccc) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      &:hover {
+        &, ~ label {
+          background: linear-gradient(135deg, #4854a2, #772088) !important;
+          -webkit-background-clip: text !important;
+          -webkit-text-fill-color: transparent !important;
+        }
+      }
+    }
+  }
+}
+
+.star-imedia {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  .fa-star {
+    padding-right: 3px;
+    background: linear-gradient(135deg, #ccc, #ccc) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-size: 18px;
+    &.active {
+      background: linear-gradient(135deg, #4854a2, #772088) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+    }
   }
 }

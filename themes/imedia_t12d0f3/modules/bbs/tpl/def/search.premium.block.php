@@ -49,6 +49,13 @@ if(DEVICE_PHONE) {
                     <div class="slider-premium__title" title="<?= $v['title'] ?>">
                         <?= $v['title'] ?>
                     </div>
+                    <div class="">
+                        <? $aAvarageItemRatingData = ['value' => $v['avarage_rating_value']]; ?>
+                        <div style="margin-bottom: -10px;">
+                            <?= _t('view', 'Средняя оценка:') ?>
+                        </div>
+                        <?= BBS::i()->viewPHP($aAvarageItemRatingData, 'item.rating.avarage'); ?>
+                    </div>
                 </div>
             </a>
             <? if($i == $count): ?>
@@ -73,34 +80,3 @@ if(DEVICE_PHONE) {
     });
     <?php js::stop(); ?>
 </script>
-<?/*
-<div class="sr-vip">
-  <div class="sr-vip-title"><?= _t('search', 'Премиум объявления'); ?></div>
-  <ul class="sr-vip-content">
-    <?php foreach($items as $v): ?>
-      <li>
-        <a href="<?= $v['link'] ?>">
-          <?php if( ! empty($v['img_m'])): ?><div class="sr-vip-content-img"><img src="<?= $v['img_m'] ?>" alt="<?= $v['title'] ?>"></div><?php endif; ?>
-          <div class="sr-vip-content-title"><?= $v['title'] ?></div>
-          <div class="sr-vip-content-price">
-            <?php if($v['price_on']) { ?>
-            <strong><?= $v['price'] ?></strong>
-            <small><?= $v['price_mod'] ?></small>
-            <?php } ?>
-          </div>
-        </a>
-          <div class="sr-glItem-subtext">
-              <span class="sr-glItem-subtext-i">
-                  <?= $v['cat_title'] ?>
-              </span>
-              <span class="sr-glItem-subtext-i">
-                  <? if ( ! empty($v['city_title'])): ?>
-                      <i class="fa fa-map-marker"></i> <?= $v['city_title'] ?>
-                    <?= ! empty($v['district_title']) ? ', '.$v['district_title'] : ''?>
-                  <? endif; ?>
-              </span>
-          </div>
-      </li>
-    <?php endforeach; ?>
-  </ul>
-</div>*/?>

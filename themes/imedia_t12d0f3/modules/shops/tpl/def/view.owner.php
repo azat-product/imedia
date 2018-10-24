@@ -89,8 +89,9 @@
     <div class="ad-author-in">
         <? $aAvarageAuthorRatingData = ['value' => $avarage_author_rating]; ?>
         <span>
-          <?= _t('view', 'Средняя оценка компании') ?>
-      </span><br><?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+          <?= _t('view', 'Средняя оценка компании:') ?>
+      </span>
+        <?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
     </div>
     <? if (!empty($avarage_author_categories_rating)): ?>
         <div class="ad-author-in">
