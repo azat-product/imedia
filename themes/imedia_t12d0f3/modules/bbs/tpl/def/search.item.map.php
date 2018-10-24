@@ -39,13 +39,12 @@
           <div class="c-price-sub"><?= $item['price_mod'] ?></div>
       <?php } ?>
     </div>
-      <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
       <div class="">
           <? $aAvarageItemRatingData = ['value' => $item['avarage_rating_value']]; ?>
-          <span>
-            <?= _t('view', 'Средняя оценка') ?>
+          <span class="mrgb-10">
+            <?= _t('view', 'Средняя оценка:') ?>
           </span>
-          <br><?= BBS::i()->viewPHP($aAvarageItemRatingData, 'item.rating.avarage'); ?>
+          <?= BBS::i()->viewPHP($aAvarageItemRatingData, 'item.rating.avarage'); ?>
       </div>
   </div>
 </div>

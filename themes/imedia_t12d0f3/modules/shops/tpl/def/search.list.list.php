@@ -66,14 +66,14 @@ $listBanner = function($positionNumber) use ($device) {
             <i class="fa fa-globe sh-list-item-contact-item-ico"></i> <a href="<?= bff::urlAway($v['site']) ?>" rel="nofollow noopener" target="_blank"><?= str_replace(array('https://','http://','www.'), '', $v['site']) ?></a>
           </div>
         <?php } ?>
+          <div class="mrgt5 ">
+              <? $aAvarageAuthorRatingData = ['value' => $v['shop_avarage_value']]; ?>
+              <div class="mrgb-10">
+                  <?= _t('view', 'Средняя оценка компании:') ?>
+              </div>
+              <?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
+          </div>
       </div>
-        <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
-        <div class="ad-author-in">
-            <? $aAvarageAuthorRatingData = ['value' => $v['shop_avarage_value']]; ?>
-            <span>
-            <?= _t('view', 'Средняя оценка компании') ?>
-            </span><br><?= BBS::i()->viewPHP($aAvarageAuthorRatingData, 'item.rating.author.avarage'); ?>
-        </div>
     </div>
   </div>
 

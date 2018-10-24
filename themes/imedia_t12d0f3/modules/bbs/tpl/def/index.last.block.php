@@ -27,7 +27,7 @@ if(DEVICE_PHONE) {
           <? endif; ?>
           <? $i++; ?>
 
-            <? echo View::template('search.item.gallery', array('item' => &$v), 'bbs'); ?>
+            <? echo View::template('search.item.gallery.premium', array('item' => &$v), 'bbs'); ?>
 
           <? if($i == $count): ?>
               </div>

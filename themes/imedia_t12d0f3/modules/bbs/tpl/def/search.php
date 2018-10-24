@@ -110,9 +110,10 @@
         </div>
         <?php } ?>
           <? if( ! empty($items) ) : ?>
-              <? # TODO: clazion IK-8 - внешний вид согласно макапу?>
-              <input <?=$sort_by_rating ? 'checked="checked"' : '' ?> type="checkbox" name="sort_by_rating" onclick="return makeSortByRating();">
-              <span><?=_t('', ' по рейтингу')?></span>
+              <span class="mrgl10">
+                  <input <?=$sort_by_rating ? 'checked="checked"' : '' ?> type="checkbox" name="sort_by_rating" onclick="return makeSortByRating();">
+                  <span><?=_t('', ' по рейтингу')?></span>
+              </span>
           <? endif;?>
       </div><!-- /.sr-listTop -->
 
