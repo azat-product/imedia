@@ -12,7 +12,7 @@
           <img src="<?= $user['avatar'] ?>" alt=""/>
       </a>
       <div class="ad-author-user-info">
-          <div class="ad-author-user-name">6<?= $user['name'] ?></div>
+          <div class="ad-author-user-name"><?= $user['name'] ?></div>
           <?php if ($user['region_id']) { ?>
               <div class="ad-author-user-subtext"><?= $user['region_title'] ?></div>
           <?php } ?>
