@@ -17,8 +17,10 @@ node_modules
 # files
 files/cache/cache_*
 files/logs/*.log
+files/logs/*.log.*
 files/locale/ru_RU/LC_MESSAGES/msg.pot.*
 files/locale/uk_UA/LC_MESSAGES/msg.pot.*
+public_html/files/images/tmp/*
 
 # config
 config/site.php
