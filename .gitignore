@@ -21,6 +21,7 @@ files/logs/*.log.*
 files/locale/ru_RU/LC_MESSAGES/msg.pot.*
 files/locale/uk_UA/LC_MESSAGES/msg.pot.*
 public_html/files/images/tmp/*
+public_html/files/sitemap.xml
 
 # config
 config/site.php
