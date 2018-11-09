@@ -64,7 +64,7 @@ if(DEVICE_PHONE) {
             <? endif; ?>
         <? endforeach; ?>
         <? if ($i <= $count): ?>
-            </div>
+<!--            </div>-->
         <? endif; ?>
     </div>
 </div>
