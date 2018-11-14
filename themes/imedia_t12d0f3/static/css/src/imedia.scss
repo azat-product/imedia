@@ -207,3 +207,34 @@
     }
   }
 }
+
+.sort-rating {
+  //display: inline-block;
+  //position: relative;
+  //top: 5px;
+  //&__text {
+  //  display: flex;
+  //  align-items: center;
+  //  font-weight: normal;
+  //}
+  label {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  svg {
+    width: 14px;
+  }
+  input {
+    display: none;
+    &:checked {
+      & + .sort-rating__text {
+        color: #772088!important;
+        background-color: #e6e6e6;
+        border-color: #adadad;
+        svg {
+          fill: #772088;
+        }
+      }
+    }
+  }
+}
