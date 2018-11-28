@@ -23,6 +23,19 @@ $url = array(
         <!-- Guest User -->
         <?php if( ! User::id() ) { $favsCounter = BBS::i()->getFavorites(0, true); ?>
 
+          <script type="text/javascript">
+            <?php js::start() ?>
+              bff.ajax(
+                bff.ajaxURL('users','get-owner-id'),
+                {},
+                function(data){
+                  if (Boolean(data.id)) {
+                    location.reload();
+                  }
+              });
+            <?php js::stop() ?>
+          </script>
+          
           <div class="l-header-user-links">
             <?= _t('header', '<a [login_link]>Войдите</a> или <a [reg_link]>Зарегистрируйтесь</a>', array('login_link'=>'href="'.$url['user.login'].'"','reg_link'=>'href="'.$url['user.register'].'"')) ?>
           </div>
@@ -35,7 +48,6 @@ $url = array(
             <?php } ?>
             <a class="btn btn-success" href="<?= $url['item.add'] ?>"><i class="fa fa-plus"></i> <?= _t('header', 'Добавить объявление') ?></a>
           </div>
-        
         <!-- Logged User -->
         <?php } else { $userMenu = Users::i()->my_header_menu(); ?>
           <div class="l-header-user-buttons">

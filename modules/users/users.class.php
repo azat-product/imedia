@@ -2162,6 +2162,9 @@ class Users_ extends UsersBase
                 }
             }
             break;
+            case 'get-owner-id':
+                $response['id'] = User::id();
+            break;
         }
 
         $this->ajaxResponseForm($response);

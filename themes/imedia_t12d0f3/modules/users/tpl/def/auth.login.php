@@ -10,7 +10,7 @@
 <div class="row">
   <div class="col-sm-6">
     <form class="form-horizontal" id="j-u-login-form" action="">
-      <input type="hidden" name="back" value="<?= HTML::escape($back) ?>" />
+      <input type="text" name="back" value="<?= HTML::escape($back) ?>" />
       <div class="form-group">
         <label class="col-md-6 control-label" for="j-u-login-email"><?= _t('users', 'Электронная почта') ?><span class="required-mark">*</span></label>
         <div class="col-md-6">
